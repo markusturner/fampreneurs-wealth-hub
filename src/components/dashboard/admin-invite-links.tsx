@@ -380,28 +380,28 @@ export function AdminInviteLinks() {
                 const status = !l.is_active ? 'Revoked' : expired ? 'Expired' : maxedOut ? 'Used up' : 'Active'
                 const statusColor = status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'
                 return (
-                  <div key={l.id} className="rounded-lg border p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <Badge className={`text-xs ${statusColor}`}>{status}</Badge>
-                          <Badge variant="outline" className="text-xs capitalize">{l.invite_type}</Badge>
-                          {l.program_name && <Badge variant="outline" className="text-xs">{l.program_name}</Badge>}
-                          <Badge variant="outline" className="text-xs capitalize">{l.plan_type.replace('_', ' ')}</Badge>
+                  <div key={l.id} className="rounded-lg border p-3 space-y-2 overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="min-w-0 w-full sm:flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                          <Badge className={`text-[10px] ${statusColor}`}>{status}</Badge>
+                          <Badge variant="outline" className="text-[10px] capitalize">{l.invite_type}</Badge>
+                          {l.program_name && <Badge variant="outline" className="text-[10px] max-w-full truncate">{l.program_name}</Badge>}
+                          <Badge variant="outline" className="text-[10px] capitalize">{l.plan_type.replace('_', ' ')}</Badge>
                         </div>
-                        <code className="text-xs bg-muted px-2 py-1 rounded break-all">{inviteUrl(l.token)}</code>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <code className="block w-full text-[11px] bg-muted px-2 py-1 rounded break-all leading-snug">{inviteUrl(l.token)}</code>
+                        <p className="text-[11px] text-muted-foreground mt-1 break-words">
                           Uses: {l.uses_count}{l.max_uses != null ? ` / ${l.max_uses}` : ''} · Created {format(new Date(l.created_at), 'MMM d, yyyy')}
                           {l.expires_at ? ` · Expires ${format(new Date(l.expires_at), 'MMM d, yyyy h:mm a')}` : ''}
                           {l.note ? ` · ${l.note}` : ''}
                         </p>
                       </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button size="sm" variant="outline" onClick={() => copyLink(l.token)}>
+                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => copyLink(l.token)}>
                           <Copy className="h-3.5 w-3.5 mr-1" /> Copy
                         </Button>
                         {l.is_active && (
-                          <Button size="sm" variant="outline" onClick={() => revoke(l.id)}>Revoke</Button>
+                          <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => revoke(l.id)}>Revoke</Button>
                         )}
                         <Button size="sm" variant="ghost" onClick={() => remove(l.id)}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -409,6 +409,7 @@ export function AdminInviteLinks() {
                       </div>
                     </div>
                   </div>
+
                 )
               })}
             </div>
