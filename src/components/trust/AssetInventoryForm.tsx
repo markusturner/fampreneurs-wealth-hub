@@ -435,12 +435,9 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
           <p className="text-xs text-muted-foreground">Required to assign this submission to you.</p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <Button onClick={downloadPdf} variant="secondary" className="gap-2">
-            <Download className="h-4 w-4" /> Download PDF
-          </Button>
           <Button onClick={handleSubmit} disabled={submitting || !submitterName.trim()} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Submit Asset Inventory
+            Submit & Preview Document
           </Button>
         </div>
       </div>
