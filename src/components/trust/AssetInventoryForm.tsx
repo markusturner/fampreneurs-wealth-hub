@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, Plus, Trash2, Download } from "lucide-react"
+import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -157,6 +158,7 @@ const keys = (cols: Column[]) => cols.map(c => c.key)
 export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void }) {
   const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
   const [submitterName, setSubmitterName] = useState("")
   const [restored, setRestored] = useState(false)
