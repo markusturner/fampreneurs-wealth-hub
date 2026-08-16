@@ -109,6 +109,12 @@ const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   tffm: 'The ultimate mastermind for families ready to build and protect generational fortune.',
 }
 
+const PROGRAM_GROUP_IDS: Record<string, string> = {
+  tfv: 'e03335fa-3e1f-4e64-9f0b-d89b103ba80c',
+  tfba: '2dc58020-a889-4b5f-b5f2-1613a57caa66',
+  tffm: '3948275b-06bf-4731-a89f-e0850e26f0e4',
+}
+
 // Program upgrade hierarchy: fbu -> tfv -> tfba -> tffm
 const PROGRAM_UPGRADE_MAP: Record<string, string> = {
   fbu: 'tfv',
@@ -299,30 +305,32 @@ export default function WorkspaceCommunity() {
 
   useEffect(() => { fetchPosts() }, [fetchPosts])
 
-  useEffect(() => {
-    setCommunityName(programName)
-    setCommunityDesc(programDesc)
-  }, [programName, programDesc])
-
-  // Load persisted community photo from community_groups
+  // Load the persisted community profile. Use the stable group ID so custom
+  // names remain editable and do not break future lookups.
   useEffect(() => {
     if (!program) return
-    const loadCommunityPhoto = async () => {
-      const groupName = PROGRAM_NAMES[program]
-      if (!groupName) return
-      const { data } = await supabase
+    const loadCommunityProfile = async () => {
+      setCommunityName(programName)
+      setCommunityDesc(programDesc)
+
+      let query = supabase
         .from('community_groups')
-        .select('image_url')
-        .eq('name', groupName)
-        .maybeSingle()
-      if (data?.image_url) {
-        setCommunityPhoto(data.image_url)
+        .select('name, description, image_url')
+
+      const groupId = PROGRAM_GROUP_IDS[program]
+      query = groupId ? query.eq('id', groupId) : query.eq('name', programName)
+      const { data, error } = await query.maybeSingle()
+      if (error) console.error('Error loading community settings:', error)
+      if (data) {
+        setCommunityName(data.name || programName)
+        setCommunityDesc(data.description || programDesc)
+        setCommunityPhoto(data.image_url || null)
       } else {
         setCommunityPhoto(null)
       }
     }
-    loadCommunityPhoto()
-  }, [program])
+    loadCommunityProfile()
+  }, [program, programName, programDesc])
 
   const getEligibleCommunityUserIds = useCallback(async (): Promise<string[]> => {
     if (!program) return []
@@ -763,11 +771,12 @@ export default function WorkspaceCommunity() {
         .from('community-photos')
         .getPublicUrl(fileName)
 
-      const groupName = PROGRAM_NAMES[program]
-      const { error: updateError } = await supabase
+      const groupId = PROGRAM_GROUP_IDS[program]
+      let updateQuery = supabase
         .from('community_groups')
         .update({ image_url: publicUrl })
-        .eq('name', groupName)
+      updateQuery = groupId ? updateQuery.eq('id', groupId) : updateQuery.eq('name', PROGRAM_NAMES[program])
+      const { error: updateError } = await updateQuery
 
       if (updateError) throw updateError
 
@@ -776,6 +785,32 @@ export default function WorkspaceCommunity() {
     } catch (error) {
       console.error('Error uploading community photo:', error)
       toast({ title: 'Error', description: 'Failed to save community photo.', variant: 'destructive' })
+    }
+  }
+
+  const handleSaveCommunitySettings = async () => {
+    if (!program || !communityName.trim()) return
+
+    try {
+      const groupId = PROGRAM_GROUP_IDS[program]
+      let updateQuery = supabase
+        .from('community_groups')
+        .update({
+          name: communityName.trim(),
+          description: communityDesc.trim() || null,
+        })
+      updateQuery = groupId ? updateQuery.eq('id', groupId) : updateQuery.eq('name', PROGRAM_NAMES[program])
+      const { data, error } = await updateQuery.select('name, description').maybeSingle()
+      if (error) throw error
+      if (!data) throw new Error('Community record was not found.')
+
+      setCommunityName(data.name)
+      setCommunityDesc(data.description || '')
+      setSettingsOpen(false)
+      toast({ title: 'Settings saved' })
+    } catch (error) {
+      console.error('Error saving community settings:', error)
+      toast({ title: 'Error', description: 'Failed to save community settings.', variant: 'destructive' })
     }
   }
 
@@ -2061,8 +2096,8 @@ export default function WorkspaceCommunity() {
                 <input ref={communityPhotoRef} type="file" accept="image/*" className="hidden" onChange={handleCommunityPhotoUpload} />
               </div>
               <CardContent className="p-4 text-center space-y-3">
-                <h3 className="font-bold text-lg">{programName}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{programDesc}</p>
+                <h3 className="font-bold text-lg">{communityName || programName}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{communityDesc || programDesc}</p>
                 <div className="flex justify-center gap-6 py-2">
                   <div className="text-center">
                     <p className="font-bold text-lg">{memberCount}</p>
@@ -2128,7 +2163,7 @@ export default function WorkspaceCommunity() {
                 </SelectContent>
               </Select>
             </div>
-            <Button className="w-full" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>
+            <Button className="w-full" onClick={handleSaveCommunitySettings}>
               Save Settings
             </Button>
           </div>
