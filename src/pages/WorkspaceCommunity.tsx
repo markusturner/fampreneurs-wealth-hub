@@ -1778,6 +1778,18 @@ export default function WorkspaceCommunity() {
                   <Card key={post.id} className="border-border/50 hover:border-border transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
+                        {selectMode && (isAdmin || isOwner) && (
+                          <input
+                            type="checkbox"
+                            className="mt-3 h-4 w-4 accent-[#ffb500] cursor-pointer flex-shrink-0"
+                            checked={selectedPostIds.includes(post.id)}
+                            onChange={(e) =>
+                              setSelectedPostIds(prev =>
+                                e.target.checked ? [...prev, post.id] : prev.filter(id => id !== post.id)
+                              )
+                            }
+                          />
+                        )}
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           {post.author_avatar && <AvatarImage src={post.author_avatar} />}
                           <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
