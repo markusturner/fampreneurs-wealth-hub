@@ -171,6 +171,9 @@ export default function WorkspaceCommunity() {
   const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
   const [posts, setPosts] = useState<Post[]>([])
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([])
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
@@ -666,6 +669,30 @@ export default function WorkspaceCommunity() {
       toast({ title: 'Error', description: error?.message || 'Failed to delete post.', variant: 'destructive' })
     }
   }
+
+  const handleBulkDelete = async () => {
+    if (!(isAdmin || isOwner) || selectedPostIds.length === 0) return
+    setBulkDeleting(true)
+    try {
+      const { data, error } = await supabase
+        .from('community_posts')
+        .delete()
+        .in('id', selectedPostIds)
+        .select('id')
+      if (error) throw error
+      const deleted = new Set((data || []).map(d => d.id))
+      setPosts(prev => prev.filter(p => !deleted.has(p.id)))
+      setSelectedPostIds([])
+      setSelectMode(false)
+      toast({ title: `${deleted.size} post${deleted.size === 1 ? '' : 's'} deleted` })
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to delete posts.', variant: 'destructive' })
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1677,6 +1704,49 @@ export default function WorkspaceCommunity() {
               ))}
             </div>
 
+            {/* Bulk delete toolbar (admins & owners only) */}
+            {(isAdmin || isOwner) && filteredPosts.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {!selectMode ? (
+                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setSelectMode(true)}>
+                    <ListChecks className="h-3.5 w-3.5" /> Select posts
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        setSelectedPostIds(
+                          selectedPostIds.length === filteredPosts.length ? [] : filteredPosts.map(p => p.id)
+                        )
+                      }
+                    >
+                      {selectedPostIds.length === filteredPosts.length ? 'Clear all' : 'Select all'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-8 text-xs"
+                      disabled={selectedPostIds.length === 0 || bulkDeleting}
+                      onClick={handleBulkDelete}
+                    >
+                      Delete {selectedPostIds.length > 0 ? `(${selectedPostIds.length})` : ''}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 text-xs"
+                      onClick={() => { setSelectMode(false); setSelectedPostIds([]) }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Feed */}
             <div className="space-y-3">
               {loading ? (
@@ -1708,6 +1778,18 @@ export default function WorkspaceCommunity() {
                   <Card key={post.id} className="border-border/50 hover:border-border transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
+                        {selectMode && (isAdmin || isOwner) && (
+                          <input
+                            type="checkbox"
+                            className="mt-3 h-4 w-4 accent-[#ffb500] cursor-pointer flex-shrink-0"
+                            checked={selectedPostIds.includes(post.id)}
+                            onChange={(e) =>
+                              setSelectedPostIds(prev =>
+                                e.target.checked ? [...prev, post.id] : prev.filter(id => id !== post.id)
+                              )
+                            }
+                          />
+                        )}
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           {post.author_avatar && <AvatarImage src={post.author_avatar} />}
                           <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
