@@ -52,6 +52,8 @@ function addRecurrence(date: Date, rec: Recurrence): Date {
 
 interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
 
+type ScopeChoice = 'this' | 'following' | 'all'
+
 function toGoogleUTC(d: Date) {
   return d.toISOString().replace(/[-:]|\.\d{3}/g, '')
 }
