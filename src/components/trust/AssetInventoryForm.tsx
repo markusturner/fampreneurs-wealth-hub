@@ -458,6 +458,13 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
 
   return (
     <div className="space-y-6">
+      {savedAt && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+          <span>Draft saved automatically at {savedAt.toLocaleTimeString()}</span>
+        </div>
+      )}
+
       <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
         <p className="text-sm text-muted-foreground">
           This worksheet helps you organize your financial information for the purpose of transferring assets into your trust.
