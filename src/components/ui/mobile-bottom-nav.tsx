@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
+import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse, BarChart3, ClipboardList } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -125,8 +125,11 @@ export function MobileBottomNav() {
   const moreItems = [...workspaceItems, ...truHeirsItems]
 
   const adminItems = (isAdmin || isOwner) && !isLite ? [
+    { name: 'Client Metrics', href: '/client-metrics', icon: BarChart3 },
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
     { name: 'Client Retention', href: '/client-retention', icon: HeartPulse },
+    { name: 'Attendance Log', href: '/client-retention?tab=attendance', icon: ClipboardList },
+    { name: 'Surveys', href: '/surveys', icon: FileText },
   ] : []
 
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)

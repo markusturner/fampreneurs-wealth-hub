@@ -1794,7 +1794,7 @@ export default function WorkspaceCommunity() {
                 </Card>
               ) : (
                 filteredPosts.map(post => (
-                  <Card key={post.id} className="border-border/50 hover:border-border transition-colors">
+                  <Card key={post.id} className={`transition-colors ${post.pinned ? 'border-[#ffb500] ring-1 ring-[#ffb500]/50 shadow-[0_0_18px_rgba(255,181,0,0.35)] bg-[#ffb500]/[0.04]' : 'border-border/50 hover:border-border'}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         {selectMode && (isAdmin || isOwner) && (
