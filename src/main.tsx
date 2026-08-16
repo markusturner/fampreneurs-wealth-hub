@@ -16,6 +16,7 @@ import AuthFamily from "./pages/AuthFamily";
 import SignUp from "./pages/SignUp";
 import ThankYou from "./pages/ThankYou";
 import InviteAccept from "./pages/InviteAccept";
+import SetupLogin from "./pages/SetupLogin";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
@@ -115,6 +116,7 @@ function AppWithNotifications() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/invite/:token" element={<InviteAccept />} />
+        <Route path="/setup-login" element={<SetupLogin />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/security" element={<Security />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />

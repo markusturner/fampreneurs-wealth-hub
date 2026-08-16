@@ -172,6 +172,7 @@ serve(async (req) => {
             program_name: invite.program_name || null,
             truheirs_access: invite.truheirs_access,
             invited_via: "direct_invite_link",
+            needs_password_setup: true,
             invite_token: invite.token,
           },
         });
@@ -193,6 +194,11 @@ serve(async (req) => {
           } as any)
           .eq("user_id", userId);
       }
+
+      // Always require credential setup on direct (no-login) access
+      await admin.auth.admin.updateUserById(userId!, {
+        user_metadata: { needs_password_setup: true },
+      });
 
       const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
         type: "magiclink",
