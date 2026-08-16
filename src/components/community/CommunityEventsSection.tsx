@@ -166,14 +166,15 @@ export function CommunityEventsSection({ program }: Props) {
 
   const openCreate = () => {
     setEditing(null)
+    setEditScope('all')
+    setScopeInstanceAt(null)
     setForm(emptyForm)
     setOpen(true)
   }
 
-  const openEdit = (ev: CommunityEvent) => {
-    const d = new Date(ev.event_at)
-    setEditing(ev)
-    setForm({
+  const formFrom = (ev: CommunityEvent, atISO?: string) => {
+    const d = new Date(atISO || ev.event_at)
+    return {
       title: ev.title,
       description: ev.description || '',
       date: format(d, 'yyyy-MM-dd'),
@@ -182,10 +183,91 @@ export function CommunityEventsSection({ program }: Props) {
       location: ev.location || '',
       join_url: ev.join_url || '',
       recurrence: (ev.recurrence || 'none') as Recurrence,
-      recurrence_mode: ev.recurrence_end_date ? 'until' : 'forever',
+      recurrence_mode: (ev.recurrence_end_date ? 'until' : 'forever') as 'forever' | 'until',
       recurrence_end_date: ev.recurrence_end_date || '',
-    })
+    }
+  }
+
+  // Entry point from the event popup — asks for scope when recurring
+  const requestEdit = (ev: EventInstance) => {
+    if (ev.recurrence && ev.recurrence !== 'none') {
+      setScopePrompt({ instance: ev, action: 'edit' })
+      setScopeChoice('this')
+      return
+    }
+    setEditing(ev)
+    setEditScope('all')
+    setScopeInstanceAt(null)
+    setForm(formFrom(ev))
     setOpen(true)
+  }
+
+  const requestDelete = (ev: EventInstance) => {
+    if (ev.recurrence && ev.recurrence !== 'none') {
+      setScopePrompt({ instance: ev, action: 'delete' })
+      setScopeChoice('this')
+      return
+    }
+    if (!confirm(`Delete "${ev.title}"?`)) return
+    hardDelete(ev.id)
+  }
+
+  const hardDelete = async (id: string) => {
+    const { error } = await supabase.from('community_events').delete().eq('id', id)
+    if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
+    toast({ title: 'Event deleted' })
+    load()
+  }
+
+  const confirmScope = async () => {
+    if (!scopePrompt) return
+    const { instance, action } = scopePrompt
+    setScopePrompt(null)
+    if (action === 'edit') {
+      setEditing(instance)
+      setEditScope(scopeChoice)
+      setScopeInstanceAt(instance.instance_at)
+      setForm(formFrom(instance, instance.instance_at))
+      setOpen(true)
+      return
+    }
+    await applyDelete(instance, scopeChoice)
+  }
+
+  const applyDelete = async (instance: EventInstance, scope: ScopeChoice) => {
+    const base = events.find(e => e.id === instance.id)
+    if (!base) return
+    const isFirst = new Date(instance.instance_at).getTime() === new Date(base.event_at).getTime()
+    const dayBefore = format(addDays(new Date(instance.instance_at), -1), 'yyyy-MM-dd')
+    const next = addRecurrence(new Date(instance.instance_at), base.recurrence)
+
+    if (scope === 'all') return hardDelete(base.id)
+
+    if (scope === 'following') {
+      if (isFirst) return hardDelete(base.id)
+      const { error } = await supabase.from('community_events')
+        .update({ recurrence_end_date: dayBefore }).eq('id', base.id)
+      if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
+      toast({ title: 'Following events deleted' })
+      return load()
+    }
+
+    // single occurrence
+    if (isFirst) {
+      const { error } = await supabase.from('community_events')
+        .update({ event_at: next.toISOString() }).eq('id', base.id)
+      if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
+    } else {
+      const { error } = await supabase.from('community_events')
+        .update({ recurrence_end_date: dayBefore }).eq('id', base.id)
+      if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
+      const { id, ...rest } = base
+      const { error: e2 } = await supabase.from('community_events')
+        .insert({ ...rest, event_at: next.toISOString(), recurrence_end_date: base.recurrence_end_date })
+      if (e2) return toast({ title: 'Delete failed', description: e2.message, variant: 'destructive' })
+    }
+    toast({ title: 'Event deleted' })
+    load()
   }
 
   const save = async () => {
@@ -199,6 +281,10 @@ export function CommunityEventsSection({ program }: Props) {
     }
     setSaving(true)
     const event_at = new Date(`${form.date}T${form.time}`).toISOString()
+    const seriesEnd =
+      form.recurrence !== 'none' && form.recurrence_mode === 'until' && form.recurrence_end_date
+        ? form.recurrence_end_date
+        : null
     const payload = {
       program,
       title: form.title,
@@ -209,14 +295,43 @@ export function CommunityEventsSection({ program }: Props) {
       join_url: form.join_url || null,
       created_by: user?.id as string,
       recurrence: form.recurrence,
-      recurrence_end_date:
-        form.recurrence !== 'none' && form.recurrence_mode === 'until' && form.recurrence_end_date
-          ? form.recurrence_end_date
-          : null,
+      recurrence_end_date: seriesEnd,
     }
-    const { error } = editing
-      ? await supabase.from('community_events').update(payload).eq('id', editing.id)
-      : await supabase.from('community_events').insert(payload)
+
+    let error: { message: string } | null = null
+    const base = editing ? events.find(e => e.id === editing.id) : null
+
+    if (editing && base && editScope !== 'all' && scopeInstanceAt && base.recurrence !== 'none') {
+      const isFirst = new Date(scopeInstanceAt).getTime() === new Date(base.event_at).getTime()
+      const dayBefore = format(addDays(new Date(scopeInstanceAt), -1), 'yyyy-MM-dd')
+      const next = addRecurrence(new Date(scopeInstanceAt), base.recurrence)
+      const { id: _id, ...baseRest } = base
+
+      if (isFirst && editScope === 'following') {
+        ;({ error } = await supabase.from('community_events').update(payload).eq('id', base.id))
+      } else if (editScope === 'following') {
+        ;({ error } = await supabase.from('community_events').update({ recurrence_end_date: dayBefore }).eq('id', base.id))
+        if (!error) ({ error } = await supabase.from('community_events').insert(payload))
+      } else {
+        // this event only → single override + keep the rest of the series
+        if (isFirst) {
+          ;({ error } = await supabase.from('community_events')
+            .update({ event_at: next.toISOString() }).eq('id', base.id))
+        } else {
+          ;({ error } = await supabase.from('community_events')
+            .update({ recurrence_end_date: dayBefore }).eq('id', base.id))
+          if (!error) ({ error } = await supabase.from('community_events')
+            .insert({ ...baseRest, event_at: next.toISOString(), recurrence_end_date: base.recurrence_end_date }))
+        }
+        if (!error) ({ error } = await supabase.from('community_events')
+          .insert({ ...payload, recurrence: 'none', recurrence_end_date: null }))
+      }
+    } else if (editing) {
+      ;({ error } = await supabase.from('community_events').update(payload).eq('id', editing.id))
+    } else {
+      ;({ error } = await supabase.from('community_events').insert(payload))
+    }
+
     setSaving(false)
     if (error) {
       toast({ title: 'Save failed', description: error.message, variant: 'destructive' })
@@ -224,17 +339,11 @@ export function CommunityEventsSection({ program }: Props) {
     }
     toast({ title: editing ? 'Event updated' : 'Event created' })
     setOpen(false)
+    setEditScope('all')
+    setScopeInstanceAt(null)
     load()
   }
 
-  const remove = async (ev: CommunityEvent) => {
-    const isRecurring = ev.recurrence && ev.recurrence !== 'none'
-    if (!confirm(`Delete "${ev.title}"${isRecurring ? ' and all its recurring instances' : ''}?`)) return
-    const { error } = await supabase.from('community_events').delete().eq('id', ev.id)
-    if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
-    toast({ title: 'Event deleted' })
-    load()
-  }
 
   const instances = expandEvents(events)
   const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
