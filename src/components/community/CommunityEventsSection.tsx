@@ -260,13 +260,28 @@ export function CommunityEventsSection({ program }: Props) {
       ) : (
         <>
           <MonthCalendar instances={instances} onOpenEvent={setDetail} />
+          {canManage && events.length > 0 && (
+            <Section
+              title="Manage all events"
+              events={events.map(e => ({ ...e, instance_at: e.event_at, is_recurring_instance: false }))}
+              canManage
+              onEdit={openEdit}
+              onDelete={remove}
+            />
+          )}
           {past.length > 0 && (
             <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
           )}
         </>
       )}
 
-      <EventDetailDialog event={detail} onClose={() => setDetail(null)} />
+      <EventDetailDialog
+        event={detail}
+        onClose={() => setDetail(null)}
+        canManage={canManage}
+        onEdit={openEdit}
+        onDelete={remove}
+      />
 
 
       <Dialog open={open} onOpenChange={setOpen}>
