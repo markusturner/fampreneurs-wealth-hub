@@ -1,0 +1,2 @@
+ALTER TABLE public.community_events DROP CONSTRAINT IF EXISTS community_events_recurrence_check;
+ALTER TABLE public.community_events ADD CONSTRAINT community_events_recurrence_check CHECK (recurrence IN ('none','daily','weekly','biweekly','monthly','monthly_nth'));
