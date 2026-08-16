@@ -508,7 +508,7 @@ export function CommunityEventsSection({ program }: Props) {
                 <Label>Repeats</Label>
                 <select
                   className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={form.recurrence}
+                  value={form.recurrence === 'monthly_nth' ? 'monthly' : form.recurrence}
                   onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
                 >
                   <option value="none">Does not repeat</option>
@@ -518,6 +518,23 @@ export function CommunityEventsSection({ program }: Props) {
                   <option value="monthly">Monthly</option>
                 </select>
               </div>
+              {(form.recurrence === 'monthly' || form.recurrence === 'monthly_nth') && (
+                <div>
+                  <Label>Monthly pattern</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.recurrence}
+                    onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
+                  >
+                    <option value="monthly">{monthlyPatternLabel(form.date, 'monthly')}</option>
+                    <option value="monthly_nth">{monthlyPatternLabel(form.date, 'monthly_nth')}</option>
+                  </select>
+                  {form.recurrence === 'monthly_nth' && form.date && weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) === 4 && (
+                    <p className="text-xs text-muted-foreground mt-1">Months without a fifth {format(new Date(`${form.date}T12:00:00`), 'EEEE')} are skipped.</p>
+                  )}
+                </div>
+              )}
+
               {form.recurrence !== 'none' && (
                 <div className="space-y-2">
                   <Label>Ends</Label>
