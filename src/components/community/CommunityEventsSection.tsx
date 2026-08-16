@@ -132,6 +132,10 @@ export function CommunityEventsSection({ program }: Props) {
   const [editing, setEditing] = useState<CommunityEvent | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [scopePrompt, setScopePrompt] = useState<{ instance: EventInstance; action: 'edit' | 'delete' } | null>(null)
+  const [scopeChoice, setScopeChoice] = useState<ScopeChoice>('this')
+  const [editScope, setEditScope] = useState<ScopeChoice>('all')
+  const [scopeInstanceAt, setScopeInstanceAt] = useState<string | null>(null)
 
   const cacheKey = `truheirs:community_events:${program}`
 
