@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, Plus, Trash2, Download } from "lucide-react"
+import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -157,6 +158,7 @@ const keys = (cols: Column[]) => cols.map(c => c.key)
 export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void }) {
   const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
   const [submitterName, setSubmitterName] = useState("")
   const [restored, setRestored] = useState(false)
@@ -302,16 +304,20 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
     setSubmitting(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("trust_submissions")
         .insert({ user_id: user.id, trust_type: "asset_inventory", form_data: formData, submitter_name: submitterName.trim() } as any)
+        .select("id")
+        .single()
       if (error) throw error
-      toast({ title: "Asset Inventory submitted", description: "Your asset inventory has been recorded." })
+      toast({ title: "Asset Inventory submitted", description: "Opening your document preview." })
       onSubmitted()
+      navigate(data?.id ? `/asset-inventory-preview/${data.id}` : "/asset-inventory-preview")
     } catch (err: any) {
       if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "You have already submitted your asset inventory.", variant: "destructive" })
+        toast({ title: "Already submitted", description: "Opening your saved document." })
         onSubmitted()
+        navigate("/asset-inventory-preview")
       } else {
         console.error("Error submitting asset inventory:", err)
         toast({ title: "Error", description: "Failed to submit asset inventory.", variant: "destructive" })
@@ -321,102 +327,6 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
   }
 
-  const downloadPdf = async () => {
-    const { default: jsPDF } = await import("jspdf")
-    const autoTable = (await import("jspdf-autotable")).default
-    const doc = new jsPDF({ unit: "pt", format: "letter", orientation: "landscape" })
-    const pageW = doc.internal.pageSize.getWidth()
-
-    doc.setFillColor(41, 10, 82)
-    doc.rect(0, 0, pageW, 84, "F")
-    doc.setTextColor(255, 181, 0)
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(20)
-    doc.text("Asset Inventory", 40, 42)
-    doc.setTextColor(255, 255, 255)
-    doc.setFont("helvetica", "normal")
-    doc.setFontSize(10)
-    doc.text(`${submitterName || "Prepared"} • ${new Date().toLocaleDateString()}`, 40, 64)
-
-    let startY = 108
-
-    const addTable = (title: string, head: string[], body: string[][]) => {
-      const filled = body.filter(r => r.some(c => c && c.trim()))
-      if (!filled.length) return
-      autoTable(doc, {
-        head: [head],
-        body: filled,
-        startY,
-        margin: { left: 40, right: 40 },
-        styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", textColor: [40, 40, 40] },
-        headStyles: { fillColor: [41, 10, 82], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8 },
-        alternateRowStyles: { fillColor: [246, 244, 250] },
-        didDrawPage: () => {},
-        willDrawPage: () => {},
-        theme: "grid",
-        tableLineColor: [220, 216, 228],
-        tableLineWidth: 0.5,
-        // section heading
-        beforePageBreak: () => {},
-      } as any)
-      // @ts-ignore
-      startY = (doc as any).lastAutoTable.finalY + 34
-      if (startY > doc.internal.pageSize.getHeight() - 120) {
-        doc.addPage()
-        startY = 60
-      }
-    }
-
-    const heading = (title: string) => {
-      if (startY > doc.internal.pageSize.getHeight() - 120) {
-        doc.addPage()
-        startY = 60
-      }
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(12)
-      doc.setTextColor(41, 10, 82)
-      doc.text(title, 40, startY)
-      startY += 12
-    }
-
-    const section = (title: string, cols: Column[], rows: TableRow[]) => {
-      const body = rows.map(r => cols.map(c => r[c.key] || ""))
-      if (!body.some(r => r.some(c => c.trim()))) return
-      heading(title)
-      addTable(title, cols.map(c => c.label), body)
-    }
-
-    section("Family & Beneficiary Information", COLS.beneficiaries, beneficiaries)
-
-    const estateBody = estateDocs
-      .map(d => [d, estateDocStatus[d]?.hasIt === "yes" ? "Yes" : estateDocStatus[d]?.hasIt === "no" ? "No" : "", estateDocStatus[d]?.location || ""])
-      .filter(r => r[1] || r[2])
-    if (estateBody.length) {
-      heading("Estate Planning Documents")
-      addTable("Estate Planning Documents", ["Document", "Have It?", "Location"], estateBody)
-    }
-
-    section("Bank Accounts", COLS.bankAccounts, bankAccounts)
-    section("Brokerage Accounts", COLS.brokerageAccounts, brokerageAccounts)
-    section("Securities in Certificate Form", COLS.securities, securities)
-    section("Personal Retirement Accounts", COLS.retirementAccounts, retirementAccounts)
-    section("Digital Assets", COLS.digitalAssets, digitalAssets)
-    section("Phone Passcodes", COLS.phonePasscodes, phonePasscodes)
-    section("Employer-Sponsored Retirement Plans", COLS.employerPlans, employerPlans)
-    section("Health Savings Accounts", COLS.hsaAccounts, hsaAccounts)
-    section("Annuities / Pensions", COLS.annuities, annuities)
-    section("Real Estate", COLS.realEstate, realEstate)
-    section("Safe Deposit Box", COLS.safeDeposit, safeDeposit)
-    section("Personal Property", COLS.personalProperty, personalProperty)
-    section("Life Insurance", COLS.lifeInsurance, lifeInsurance)
-    section("Property & Casualty Insurance", COLS.propertyCasualty, propertyCasualty)
-    section("Unsecured Debts", COLS.unsecuredDebts, unsecuredDebts)
-    section("Debt Owed To You", COLS.debtOwed, debtOwed)
-    section("Personal Advisors", COLS.advisors, advisors)
-    section("Business Interests", COLS.businessInterests, businessInterests)
-
-    doc.save(`Asset-Inventory-${(submitterName || "TruHeirs").replace(/\s+/g, "-")}.pdf`)
-  }
 
   const renderTableSection = (
     title: string,
@@ -531,12 +441,9 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
           <p className="text-xs text-muted-foreground">Required to assign this submission to you.</p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <Button onClick={downloadPdf} variant="secondary" className="gap-2">
-            <Download className="h-4 w-4" /> Download PDF
-          </Button>
           <Button onClick={handleSubmit} disabled={submitting || !submitterName.trim()} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Submit Asset Inventory
+            Submit & Preview Document
           </Button>
         </div>
       </div>

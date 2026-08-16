@@ -53,6 +53,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import TrustCreation from "./pages/TrustCreation";
+import AssetInventoryPreview from "./pages/AssetInventoryPreview";
 import SuccessionPlanning from "./pages/SuccessionPlanning";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
@@ -160,6 +161,8 @@ function AppWithNotifications() {
         <Route path="/contact-support" element={<ContactSupport />} />
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
+        <Route path="/asset-inventory-preview" element={<WithLayout><AssetInventoryPreview /></WithLayout>} />
+        <Route path="/asset-inventory-preview/:id" element={<WithLayout><AssetInventoryPreview /></WithLayout>} />
         <Route path="/succession-planning" element={<WithLayout><SuccessionPlanning /></WithLayout>} />
         <Route path="/trust-form-submissions" element={<WithLayout><TrustFormSubmissions /></WithLayout>} />
         <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
