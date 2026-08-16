@@ -13,7 +13,7 @@ import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
 import { format, isPast, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, isSameMonth, isToday } from 'date-fns'
 
-type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'
+type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'monthly_nth'
 
 interface CommunityEvent {
   id: string
@@ -40,6 +40,23 @@ const emptyForm = {
   recurrence_end_date: '',
 }
 
+const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth']
+
+// nth weekday position (0-based) of a date inside its month
+function weekdayIndexInMonth(d: Date) {
+  return Math.floor((d.getDate() - 1) / 7)
+}
+
+// date of the nth (0-based) given weekday in a month, or null if it doesn't exist
+function nthWeekdayOfMonth(year: number, month: number, weekday: number, nth: number): Date | null {
+  const first = new Date(year, month, 1)
+  const offset = (weekday - first.getDay() + 7) % 7
+  const day = 1 + offset + nth * 7
+  const candidate = new Date(year, month, day)
+  if (candidate.getMonth() !== month) return null
+  return candidate
+}
+
 function addRecurrence(date: Date, rec: Recurrence): Date {
   const d = new Date(date)
   switch (rec) {
@@ -47,9 +64,32 @@ function addRecurrence(date: Date, rec: Recurrence): Date {
     case 'weekly': d.setDate(d.getDate() + 7); break
     case 'biweekly': d.setDate(d.getDate() + 14); break
     case 'monthly': d.setMonth(d.getMonth() + 1); break
+    case 'monthly_nth': {
+      const weekday = d.getDay()
+      const nth = weekdayIndexInMonth(d)
+      for (let step = 1; step <= 12; step++) {
+        const probe = new Date(d.getFullYear(), d.getMonth() + step, 1)
+        const hit = nthWeekdayOfMonth(probe.getFullYear(), probe.getMonth(), weekday, nth)
+        if (hit) {
+          hit.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0)
+          return hit
+        }
+      }
+      d.setMonth(d.getMonth() + 1)
+      break
+    }
   }
   return d
 }
+
+function monthlyPatternLabel(dateStr: string, mode: 'monthly' | 'monthly_nth') {
+  if (!dateStr) return mode === 'monthly' ? 'Monthly on the same date' : 'Monthly on the same weekday'
+  const d = new Date(`${dateStr}T12:00:00`)
+  if (isNaN(d.getTime())) return mode === 'monthly' ? 'Monthly on the same date' : 'Monthly on the same weekday'
+  if (mode === 'monthly') return `One month from now — day ${d.getDate()} of each month`
+  return `Every ${ORDINALS[weekdayIndexInMonth(d)]} ${format(d, 'EEEE')} of the month`
+}
+
 
 interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
 
@@ -468,7 +508,7 @@ export function CommunityEventsSection({ program }: Props) {
                 <Label>Repeats</Label>
                 <select
                   className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={form.recurrence}
+                  value={form.recurrence === 'monthly_nth' ? 'monthly' : form.recurrence}
                   onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
                 >
                   <option value="none">Does not repeat</option>
@@ -478,6 +518,23 @@ export function CommunityEventsSection({ program }: Props) {
                   <option value="monthly">Monthly</option>
                 </select>
               </div>
+              {(form.recurrence === 'monthly' || form.recurrence === 'monthly_nth') && (
+                <div>
+                  <Label>Monthly pattern</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.recurrence}
+                    onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
+                  >
+                    <option value="monthly">{monthlyPatternLabel(form.date, 'monthly')}</option>
+                    <option value="monthly_nth">{monthlyPatternLabel(form.date, 'monthly_nth')}</option>
+                  </select>
+                  {form.recurrence === 'monthly_nth' && form.date && weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) === 4 && (
+                    <p className="text-xs text-muted-foreground mt-1">Months without a fifth {format(new Date(`${form.date}T12:00:00`), 'EEEE')} are skipped.</p>
+                  )}
+                </div>
+              )}
+
               {form.recurrence !== 'none' && (
                 <div className="space-y-2">
                   <Label>Ends</Label>
@@ -543,6 +600,7 @@ function Section({
             const recurringLabel =
               ev.recurrence && ev.recurrence !== 'none'
                 ? ev.recurrence === 'biweekly' ? 'Every 2 weeks'
+                : ev.recurrence === 'monthly_nth' ? `${ORDINALS[weekdayIndexInMonth(when)]} ${format(when, 'EEEE')}`
                 : ev.recurrence.charAt(0).toUpperCase() + ev.recurrence.slice(1)
                 : null
             return (
