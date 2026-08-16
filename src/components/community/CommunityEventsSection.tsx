@@ -397,7 +397,7 @@ function Section({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-sm truncate">{ev.title}</p>
+                      <p className="font-semibold text-sm break-words min-w-0">{ev.title}</p>
                       {recurringLabel && (
                         <span className="text-[10px] uppercase tracking-wide bg-[#290a52]/10 text-[#290a52] px-1.5 py-0.5 rounded">
                           {recurringLabel}
