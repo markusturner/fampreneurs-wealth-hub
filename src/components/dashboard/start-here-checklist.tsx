@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, Circle } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 
 type Props = {
   userId: string
@@ -19,15 +19,11 @@ const TASKS: { id: TaskId; label: string }[] = [
 
 export function StartHereChecklist({ userId, onWatchVideo, onGoCommunity }: Props) {
   const doneKey = `truheirs:startHere:done:${userId}`
-  const dismissKey = `truheirs:startHere:dismissed:${userId}`
   const [done, setDone] = useState<TaskId[]>([])
-  const [dismissed, setDismissed] = useState(true)
+  const [open, setOpen] = useState(true)
 
   useEffect(() => {
-    try {
-      setDone(JSON.parse(localStorage.getItem(doneKey) || '[]'))
-      setDismissed(localStorage.getItem(dismissKey) === 'true')
-    } catch { setDismissed(false) }
+    try { setDone(JSON.parse(localStorage.getItem(doneKey) || '[]')) } catch {}
   }, [userId])
 
   const complete = (id: TaskId) => {
@@ -39,16 +35,9 @@ export function StartHereChecklist({ userId, onWatchVideo, onGoCommunity }: Prop
     })
   }
 
-  const dismiss = () => {
-    try { localStorage.setItem(dismissKey, 'true') } catch {}
-    setDismissed(true)
-  }
-
-  if (dismissed) return null
+  if (done.length >= TASKS.length) return null
 
   const pct = Math.round((done.length / TASKS.length) * 100)
-  const r = 9
-  const c = 2 * Math.PI * r
 
   const handle = (id: TaskId) => {
     complete(id)
@@ -58,45 +47,54 @@ export function StartHereChecklist({ userId, onWatchVideo, onGoCommunity }: Prop
   }
 
   return (
-    <div className="w-full max-w-xl mb-5 rounded-xl border border-border bg-card text-left overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <svg width="22" height="22" viewBox="0 0 22 22" className="-rotate-90">
-            <circle cx="11" cy="11" r={r} fill="none" strokeWidth="2.5" className="stroke-muted" />
-            <circle
-              cx="11" cy="11" r={r} fill="none" strokeWidth="2.5" strokeLinecap="round"
-              className="stroke-secondary transition-all duration-500"
-              strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100}
-            />
-          </svg>
-          <span className="text-sm font-semibold text-foreground">Welcome! Start here</span>
+    <div className="w-full max-w-md mb-5 text-left">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-3 px-1 py-1.5 group"
+      >
+        <span className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+          Start here
+        </span>
+        <span className="flex-1 h-px bg-border relative overflow-hidden">
+          <span
+            className="absolute inset-y-0 left-0 bg-secondary transition-all duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </span>
+        <span className="text-[10px] tracking-[0.15em] text-muted-foreground tabular-nums">
+          {done.length}/{TASKS.length}
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <ul className="pt-2 space-y-1">
+            {TASKS.map(t => {
+              const isDone = done.includes(t.id)
+              return (
+                <li key={t.id}>
+                  <button
+                    onClick={() => handle(t.id)}
+                    className="w-full flex items-center gap-3 px-1 py-1.5 text-left rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <span
+                      className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                        isDone ? 'bg-secondary border-secondary' : 'border-border'
+                      }`}
+                    >
+                      {isDone && <Check className="h-2.5 w-2.5 text-secondary-foreground" />}
+                    </span>
+                    <span className={`text-xs sm:text-sm ${isDone ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                      {t.label}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
         </div>
-        <button onClick={dismiss} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-          Dismiss
-        </button>
       </div>
-      <ul className="px-4 py-3 space-y-2.5">
-        {TASKS.map(t => {
-          const isDone = done.includes(t.id)
-          return (
-            <li key={t.id} className="flex items-center gap-3">
-              {isDone ? (
-                <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <Check className="h-3 w-3 text-secondary-foreground" />
-                </span>
-              ) : (
-                <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
-              )}
-              <button
-                onClick={() => handle(t.id)}
-                className={`text-sm text-left hover:underline ${isDone ? 'text-muted-foreground' : 'text-accent'}`}
-              >
-                {t.label}
-              </button>
-            </li>
-          )
-        })}
-      </ul>
     </div>
   )
 }
