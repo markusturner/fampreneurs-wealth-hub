@@ -580,7 +580,10 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                         <span
                           key={i}
                           title={ev.title}
-                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); onOpenEvent(ev) }}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_12px_rgba(255,181,0,0.85)] hover:ring-1 hover:ring-[#ffb500] ${
                             isSel
                               ? 'bg-white/20 text-white'
                               : 'bg-[#ffb500]/20 text-[#290a52]'
@@ -589,6 +592,7 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                           {ev.title}
                         </span>
                       ))}
+
                       {dayEvents.length > 2 && (
                         <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
                           +{dayEvents.length - 2} more
