@@ -502,7 +502,7 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
               <button
                 key={key}
                 onClick={() => setSelected(day)}
-                className={`min-h-[68px] sm:min-h-[84px] rounded-md text-xs flex flex-col items-stretch p-1 transition-colors border text-left ${
+                className={`aspect-square sm:aspect-auto sm:min-h-[84px] w-full overflow-hidden rounded-md text-xs flex flex-col items-center sm:items-stretch justify-start p-0.5 sm:p-1 transition-colors border text-center sm:text-left ${
                   isSel
                     ? 'bg-[#290a52] text-white border-[#290a52]'
                     : today
@@ -510,28 +510,40 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
                       : 'border-transparent hover:bg-muted'
                 } ${inMonth ? '' : 'text-muted-foreground/50'}`}
               >
-                <span className="font-medium leading-none px-0.5 pt-0.5 text-center sm:text-left">{format(day, 'd')}</span>
+                <span className="font-medium leading-none px-0.5 pt-1 sm:pt-0.5">{format(day, 'd')}</span>
                 {dayEvents.length > 0 && (
-                  <span className="mt-1 flex flex-col gap-0.5 overflow-hidden">
-                    {dayEvents.slice(0, 2).map((ev, i) => (
-                      <span
-                        key={i}
-                        title={ev.title}
-                        className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
-                          isSel
-                            ? 'bg-white/20 text-white'
-                            : 'bg-[#ffb500]/20 text-[#290a52]'
-                        }`}
-                      >
-                        {ev.title}
-                      </span>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        +{dayEvents.length - 2} more
-                      </span>
-                    )}
-                  </span>
+                  <>
+                    {/* Mobile: compact dots */}
+                    <span className="sm:hidden mt-1 flex items-center justify-center gap-0.5">
+                      {dayEvents.slice(0, 3).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1 w-1 rounded-full ${isSel ? 'bg-white' : 'bg-[#ffb500]'}`}
+                        />
+                      ))}
+                    </span>
+                    {/* Desktop: event titles */}
+                    <span className="hidden sm:flex mt-1 flex-col gap-0.5 overflow-hidden">
+                      {dayEvents.slice(0, 2).map((ev, i) => (
+                        <span
+                          key={i}
+                          title={ev.title}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                            isSel
+                              ? 'bg-white/20 text-white'
+                              : 'bg-[#ffb500]/20 text-[#290a52]'
+                          }`}
+                        >
+                          {ev.title}
+                        </span>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
+                          +{dayEvents.length - 2} more
+                        </span>
+                      )}
+                    </span>
+                  </>
                 )}
               </button>
             )
