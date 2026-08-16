@@ -1002,20 +1002,27 @@ export default function WorkspaceCommunity() {
     let lastIndex = 0
     let match
 
-    const pushText = (text: string, key: string) => {
-      // Inline formatting: **bold**, __underline__, *italic*
-      const fmt = /(\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*)/g
+    const renderInline = (text: string, key: string): React.ReactNode[] => {
+      // Inline formatting: **bold**, __underline__, *italic* (supports nesting)
+      const out: React.ReactNode[] = []
+      const fmt = /(\*\*([\s\S]+?)\*\*|__([\s\S]+?)__|\*([^*\n]+)\*)/g
       let idx = 0
       let m: RegExpExecArray | null
       while ((m = fmt.exec(text)) !== null) {
-        if (m.index > idx) linkifyText(text.slice(idx, m.index), `${key}-p${idx}`).forEach(n => parts.push(n))
-        if (m[2] !== undefined) parts.push(<strong key={`${key}-b${m.index}`} className="font-bold">{m[2]}</strong>)
-        else if (m[3] !== undefined) parts.push(<u key={`${key}-u${m.index}`}>{m[3]}</u>)
-        else parts.push(<em key={`${key}-i${m.index}`} className="italic">{m[4]}</em>)
+        if (m.index > idx) linkifyText(text.slice(idx, m.index), `${key}-p${idx}`).forEach(n => out.push(n))
+        if (m[2] !== undefined) out.push(<strong key={`${key}-b${m.index}`} className="font-bold">{renderInline(m[2], `${key}-b${m.index}i`)}</strong>)
+        else if (m[3] !== undefined) out.push(<u key={`${key}-u${m.index}`}>{renderInline(m[3], `${key}-u${m.index}i`)}</u>)
+        else out.push(<em key={`${key}-i${m.index}`} className="italic">{renderInline(m[4], `${key}-i${m.index}i`)}</em>)
         idx = m.index + m[0].length
       }
-      if (idx < text.length) linkifyText(text.slice(idx), `${key}-e${idx}`).forEach(n => parts.push(n))
+      if (idx < text.length) linkifyText(text.slice(idx), `${key}-e${idx}`).forEach(n => out.push(n))
+      return out
     }
+
+    const pushText = (text: string, key: string) => {
+      renderInline(text, key).forEach(n => parts.push(n))
+    }
+
 
     while ((match = mentionRegex.exec(content)) !== null) {
       if (match.index > lastIndex) {
