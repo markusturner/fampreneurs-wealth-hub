@@ -440,7 +440,13 @@ function Section({
   )
 }
 
-function EventDetailDialog({ event, onClose }: { event: EventInstance | null; onClose: () => void }) {
+function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
+  event: EventInstance | null
+  onClose: () => void
+  canManage?: boolean
+  onEdit?: (e: EventInstance) => void
+  onDelete?: (e: EventInstance) => void
+}) {
   if (!event) return null
   const when = new Date(event.instance_at)
   const end = new Date(when.getTime() + (event.duration_minutes || 60) * 60000)
