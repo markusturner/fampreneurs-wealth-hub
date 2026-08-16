@@ -292,7 +292,7 @@ export function CommunityEventsSection({ program }: Props) {
                 <Input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Duration (min)</Label>
                 <Input type="number" value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} />
