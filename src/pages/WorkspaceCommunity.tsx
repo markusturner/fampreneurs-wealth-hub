@@ -670,6 +670,30 @@ export default function WorkspaceCommunity() {
     }
   }
 
+  const handleBulkDelete = async () => {
+    if (!(isAdmin || isOwner) || selectedPostIds.length === 0) return
+    setBulkDeleting(true)
+    try {
+      const { data, error } = await supabase
+        .from('community_posts')
+        .delete()
+        .in('id', selectedPostIds)
+        .select('id')
+      if (error) throw error
+      const deleted = new Set((data || []).map(d => d.id))
+      setPosts(prev => prev.filter(p => !deleted.has(p.id)))
+      setSelectedPostIds([])
+      setSelectMode(false)
+      toast({ title: `${deleted.size} post${deleted.size === 1 ? '' : 's'} deleted` })
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to delete posts.', variant: 'destructive' })
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
