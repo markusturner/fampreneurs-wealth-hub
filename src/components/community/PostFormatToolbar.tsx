@@ -71,6 +71,8 @@ export function PostFormatToolbar({ getTextarea, value, onChange, className = ''
   const btn =
     'h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors'
 
+  if (!hasSelection) return null
+
   return (
     <div className={`flex items-center gap-0.5 ${className}`}>
       <button type="button" tabIndex={-1} className={btn} title="Bold" onMouseDown={(e) => { e.preventDefault(); apply('**', '**') }}>
