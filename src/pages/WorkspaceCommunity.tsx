@@ -231,7 +231,7 @@ export default function WorkspaceCommunity() {
       const { data: postsData, error } = await supabase
         .from('community_posts')
         .select('*')
-        .or(`program.eq.${program},program.is.null`)
+        .eq('program', program)
         .order('created_at', { ascending: false })
         .limit(500)
 
