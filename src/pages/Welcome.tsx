@@ -9,6 +9,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
+import { StartHereChecklist } from '@/components/dashboard/start-here-checklist'
+
 import { useTutorialVideo } from '@/hooks/useTutorialVideo'
 import { profileProgramCodes, programLabel, type ProgramCode } from '@/lib/programs'
 import { supabase } from '@/integrations/supabase/client'
@@ -269,6 +271,18 @@ export default function Welcome() {
               <Sparkles className="h-3.5 w-3.5 text-accent" />
               <span>{programBadgeLabel}</span>
             </div>
+
+            {user && (
+              <StartHereChecklist
+                userId={user.id}
+                onWatchVideo={() => setTutorialOpen(true)}
+                onGoCommunity={() => {
+                  const slug = (userCodes.filter(c => c !== 'fbu')[0] as string) || 'tfv'
+                  go('community', `/workspace-community?program=${slug}`, slug)
+                }}
+              />
+            )}
+
 
             {lastUsed ? (
               <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
