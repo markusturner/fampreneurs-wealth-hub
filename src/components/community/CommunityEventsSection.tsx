@@ -260,13 +260,28 @@ export function CommunityEventsSection({ program }: Props) {
       ) : (
         <>
           <MonthCalendar instances={instances} onOpenEvent={setDetail} />
+          {canManage && events.length > 0 && (
+            <Section
+              title="Manage all events"
+              events={events.map(e => ({ ...e, instance_at: e.event_at, is_recurring_instance: false }))}
+              canManage
+              onEdit={openEdit}
+              onDelete={remove}
+            />
+          )}
           {past.length > 0 && (
             <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
           )}
         </>
       )}
 
-      <EventDetailDialog event={detail} onClose={() => setDetail(null)} />
+      <EventDetailDialog
+        event={detail}
+        onClose={() => setDetail(null)}
+        canManage={canManage}
+        onEdit={openEdit}
+        onDelete={remove}
+      />
 
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -440,7 +455,13 @@ function Section({
   )
 }
 
-function EventDetailDialog({ event, onClose }: { event: EventInstance | null; onClose: () => void }) {
+function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
+  event: EventInstance | null
+  onClose: () => void
+  canManage?: boolean
+  onEdit?: (e: EventInstance) => void
+  onDelete?: (e: EventInstance) => void
+}) {
   if (!event) return null
   const when = new Date(event.instance_at)
   const end = new Date(when.getTime() + (event.duration_minutes || 60) * 60000)
@@ -484,6 +505,19 @@ function EventDetailDialog({ event, onClose }: { event: EventInstance | null; on
               </Button>
             )}
           </div>
+          {canManage && (
+            <div className="flex flex-wrap gap-2 border-t pt-3">
+              <Button size="sm" variant="outline" onClick={() => { onClose(); onEdit?.(event) }}>
+                <Pencil className="h-4 w-4 mr-1.5" /> Edit event
+              </Button>
+              <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => { onClose(); onDelete?.(event) }}>
+                <Trash2 className="h-4 w-4 mr-1.5" /> Delete event
+              </Button>
+              {event.is_recurring_instance && (
+                <p className="w-full text-xs text-muted-foreground">Changes apply to the whole recurring series.</p>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
