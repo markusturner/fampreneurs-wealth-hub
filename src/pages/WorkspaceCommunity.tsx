@@ -223,9 +223,6 @@ export default function WorkspaceCommunity() {
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
-  const modalComposerRef = useRef<HTMLTextAreaElement | null>(null)
-  const inlineComposerRef = useRef<HTMLTextAreaElement | null>(null)
-  const editPostRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
