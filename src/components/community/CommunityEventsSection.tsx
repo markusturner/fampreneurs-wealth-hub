@@ -763,7 +763,7 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                               : 'bg-[#ffb500]/20 text-[#290a52]'
                           }`}
                         >
-                          {ev.title}
+                          {format(new Date(ev.instance_at), 'ha')} EST - {ev.title}
                         </span>
                       ))}
 
