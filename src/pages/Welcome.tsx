@@ -9,6 +9,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
+import { StartHereChecklist } from '@/components/dashboard/start-here-checklist'
+
 import { useTutorialVideo } from '@/hooks/useTutorialVideo'
 import { profileProgramCodes, programLabel, type ProgramCode } from '@/lib/programs'
 import { supabase } from '@/integrations/supabase/client'
