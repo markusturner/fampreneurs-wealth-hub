@@ -270,6 +270,18 @@ export default function Welcome() {
               <span>{programBadgeLabel}</span>
             </div>
 
+            {user && (
+              <StartHereChecklist
+                userId={user.id}
+                onWatchVideo={() => setTutorialOpen(true)}
+                onGoCommunity={() => {
+                  const slug = (userCodes.filter(c => c !== 'fbu')[0] as string) || 'tfv'
+                  go('community', `/workspace-community?program=${slug}`, slug)
+                }}
+              />
+            )}
+
+
             {lastUsed ? (
               <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
                 Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
