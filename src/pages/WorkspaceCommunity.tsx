@@ -7,7 +7,7 @@ import { CommunityViewToggle, useCommunityView } from '@/components/community/Co
 import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
 import { MentionTextarea } from '@/components/community/MentionTextarea'
-import { PostFormatToolbar } from '@/components/community/PostFormatToolbar'
+import { PostRichEditor } from '@/components/community/PostRichEditor'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -223,9 +223,6 @@ export default function WorkspaceCommunity() {
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
-  const modalComposerRef = useRef<HTMLTextAreaElement | null>(null)
-  const inlineComposerRef = useRef<HTMLTextAreaElement | null>(null)
-  const editPostRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
@@ -1436,19 +1433,12 @@ export default function WorkspaceCommunity() {
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
-                  <PostFormatToolbar
-                    getTextarea={() => modalComposerRef.current}
-                    value={newPost}
-                    onChange={setNewPost}
-                    className="border-b border-border/60 pb-1 mb-1"
-                  />
-                  <MentionTextarea
-                    ref={(el) => { modalComposerRef.current = el }}
+                  <PostRichEditor
                     placeholder="Share something with the community..."
                     value={newPost}
-                    onChange={(v) => setNewPost(v)}
+                    onChange={setNewPost}
                     program={program}
-                    className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
+                    minHeight="180px"
                     autoFocus
                   />
 
@@ -1572,19 +1562,13 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => setNewPostTitle(e.target.value)}
                       className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
                     />
-                    <PostFormatToolbar
-                      getTextarea={() => inlineComposerRef.current}
-                      value={newPost}
-                      onChange={setNewPost}
-                    />
-                    <MentionTextarea
-                      ref={(el) => { inlineComposerRef.current = el }}
+                    <PostRichEditor
                       placeholder="Write something..."
                       value={newPost}
-                      onChange={(v) => setNewPost(v)}
+                      onChange={setNewPost}
                       program={program}
-                      className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
-                      rows={1}
+                      minHeight="44px"
+                      className="bg-muted/50 rounded-lg px-4 py-2.5"
                     />
                     {pollEnabled && (
                       <PollDraftEditor
@@ -1843,31 +1827,12 @@ export default function WorkspaceCommunity() {
                                 onChange={(e) => setEditingPostTitle(e.target.value)}
                                 className="h-9 bg-muted/50 rounded-lg px-3 text-sm font-semibold focus-visible:ring-1"
                               />
-                              <PostFormatToolbar
-                                getTextarea={() => editPostRef.current}
+                              <PostRichEditor
                                 value={editingPostContent}
                                 onChange={setEditingPostContent}
-                              />
-                              <Textarea
-                                value={editingPostContent}
-                                onChange={(e) => {
-                                  setEditingPostContent(e.target.value);
-                                  e.target.style.height = 'auto';
-                                  if (e.target.value) {
-                                    e.target.style.height = e.target.scrollHeight + 'px';
-                                  } else {
-                                    e.target.style.height = '';
-                                  }
-                                }}
-                                className="min-h-[44px] resize-none bg-muted/50 rounded-lg px-3 py-2 text-sm overflow-hidden focus-visible:ring-1"
-                                rows={1}
-                                ref={(el) => {
-                                  editPostRef.current = el;
-                                  if (el) {
-                                    el.style.height = 'auto';
-                                    el.style.height = el.scrollHeight + 'px';
-                                  }
-                                }}
+                                program={program}
+                                minHeight="44px"
+                                className="bg-muted/50 rounded-lg px-3 py-2"
                               />
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Select value={editingPostCategory} onValueChange={setEditingPostCategory}>
