@@ -600,6 +600,7 @@ function Section({
             const recurringLabel =
               ev.recurrence && ev.recurrence !== 'none'
                 ? ev.recurrence === 'biweekly' ? 'Every 2 weeks'
+                : ev.recurrence === 'monthly_nth' ? `${ORDINALS[weekdayIndexInMonth(when)]} ${format(when, 'EEEE')}`
                 : ev.recurrence.charAt(0).toUpperCase() + ev.recurrence.slice(1)
                 : null
             return (
