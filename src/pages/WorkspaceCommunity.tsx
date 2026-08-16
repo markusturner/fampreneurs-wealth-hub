@@ -1677,6 +1677,49 @@ export default function WorkspaceCommunity() {
               ))}
             </div>
 
+            {/* Bulk delete toolbar (admins & owners only) */}
+            {(isAdmin || isOwner) && filteredPosts.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {!selectMode ? (
+                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setSelectMode(true)}>
+                    <ListChecks className="h-3.5 w-3.5" /> Select posts
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        setSelectedPostIds(
+                          selectedPostIds.length === filteredPosts.length ? [] : filteredPosts.map(p => p.id)
+                        )
+                      }
+                    >
+                      {selectedPostIds.length === filteredPosts.length ? 'Clear all' : 'Select all'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-8 text-xs"
+                      disabled={selectedPostIds.length === 0 || bulkDeleting}
+                      onClick={handleBulkDelete}
+                    >
+                      Delete {selectedPostIds.length > 0 ? `(${selectedPostIds.length})` : ''}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 text-xs"
+                      onClick={() => { setSelectMode(false); setSelectedPostIds([]) }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Feed */}
             <div className="space-y-3">
               {loading ? (
