@@ -440,7 +440,57 @@ function Section({
   )
 }
 
-function MonthCalendar({ instances }: { instances: EventInstance[] }) {
+function EventDetailDialog({ event, onClose }: { event: EventInstance | null; onClose: () => void }) {
+  if (!event) return null
+  const when = new Date(event.instance_at)
+  const end = new Date(when.getTime() + (event.duration_minutes || 60) * 60000)
+  return (
+    <Dialog open={!!event} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl">{event.title}</DialogTitle>
+          <DialogDescription className="sr-only">Event details</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <div className="flex items-start gap-2">
+            <CalendarDays className="h-4 w-4 mt-0.5 text-[#290a52]" />
+            <div>
+              <p className="font-medium">{format(when, 'EEEE, MMMM do')} @ {format(when, 'h:mm a')} - {format(end, 'h:mm a')}</p>
+              <p className="text-xs text-muted-foreground">{event.duration_minutes || 60} minutes</p>
+            </div>
+          </div>
+          {event.location && (
+            <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#290a52]" /><span>{event.location}</span></div>
+          )}
+          {event.join_url && (
+            <div className="flex items-center gap-2">
+              <Video className="h-4 w-4 text-[#2eb2ff]" />
+              <a href={event.join_url} target="_blank" rel="noreferrer" className="text-[#2eb2ff] hover:underline break-all">{event.join_url}</a>
+            </div>
+          )}
+          {event.description && (
+            <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+          )}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button asChild size="sm" className="bg-[#290a52] hover:bg-[#290a52]/90 text-white">
+              <a href={googleCalUrl(event)} target="_blank" rel="noreferrer"><CalendarDays className="h-4 w-4 mr-1.5" /> Add to Google</a>
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => downloadIcs(event)}>
+              <CalendarDays className="h-4 w-4 mr-1.5" /> Apple / .ics
+            </Button>
+            {event.join_url && (
+              <Button asChild size="sm" variant="outline">
+                <a href={event.join_url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 mr-1.5" /> Join</a>
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[]; onOpenEvent: (e: EventInstance) => void }) {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<Date | null>(new Date())
 
