@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react'
 
 interface Props {
