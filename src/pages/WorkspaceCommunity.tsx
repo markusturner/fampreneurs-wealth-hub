@@ -1837,6 +1837,11 @@ export default function WorkspaceCommunity() {
                                 onChange={(e) => setEditingPostTitle(e.target.value)}
                                 className="h-9 bg-muted/50 rounded-lg px-3 text-sm font-semibold focus-visible:ring-1"
                               />
+                              <PostFormatToolbar
+                                getTextarea={() => editPostRef.current}
+                                value={editingPostContent}
+                                onChange={setEditingPostContent}
+                              />
                               <Textarea
                                 value={editingPostContent}
                                 onChange={(e) => {
@@ -1851,6 +1856,7 @@ export default function WorkspaceCommunity() {
                                 className="min-h-[44px] resize-none bg-muted/50 rounded-lg px-3 py-2 text-sm overflow-hidden focus-visible:ring-1"
                                 rows={1}
                                 ref={(el) => {
+                                  editPostRef.current = el;
                                   if (el) {
                                     el.style.height = 'auto';
                                     el.style.height = el.scrollHeight + 'px';
