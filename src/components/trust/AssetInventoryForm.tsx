@@ -302,16 +302,20 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
     setSubmitting(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("trust_submissions")
         .insert({ user_id: user.id, trust_type: "asset_inventory", form_data: formData, submitter_name: submitterName.trim() } as any)
+        .select("id")
+        .single()
       if (error) throw error
-      toast({ title: "Asset Inventory submitted", description: "Your asset inventory has been recorded." })
+      toast({ title: "Asset Inventory submitted", description: "Opening your document preview." })
       onSubmitted()
+      navigate(data?.id ? `/asset-inventory-preview/${data.id}` : "/asset-inventory-preview")
     } catch (err: any) {
       if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "You have already submitted your asset inventory.", variant: "destructive" })
+        toast({ title: "Already submitted", description: "Opening your saved document." })
         onSubmitted()
+        navigate("/asset-inventory-preview")
       } else {
         console.error("Error submitting asset inventory:", err)
         toast({ title: "Error", description: "Failed to submit asset inventory.", variant: "destructive" })
