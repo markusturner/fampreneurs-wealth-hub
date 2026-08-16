@@ -243,13 +243,13 @@ export function CommunityEventsSection({ program }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h3 className="text-lg font-semibold">Events</h3>
           <p className="text-xs text-muted-foreground">Community-specific calls, workshops, and meetings.</p>
         </div>
         {canManage && (
-          <Button onClick={openCreate} className="bg-[#290a52] hover:bg-[#290a52]/90 text-white">
+          <Button onClick={openCreate} size="sm" className="w-full sm:w-auto bg-[#290a52] hover:bg-[#290a52]/90 text-white">
             <Plus className="h-4 w-4 mr-1.5" /> New Event
           </Button>
         )}
