@@ -55,9 +55,10 @@ export function markdownToHtml(md: string): string {
   let list: 'ul' | 'ol' | null = null
   const inline = (t: string) =>
     escapeHtml(t)
-      .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/__([^_\n]+)__/g, '<u>$1</u>')
+      .replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([\s\S]+?)__/g, '<u>$1</u>')
       .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+
   const close = () => { if (list) { out.push(`</${list}>`); list = null } }
   for (const line of lines) {
     const bullet = line.match(/^\s*•\s+(.*)$/)
