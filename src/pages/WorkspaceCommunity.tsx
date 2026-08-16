@@ -7,6 +7,7 @@ import { CommunityViewToggle, useCommunityView } from '@/components/community/Co
 import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
 import { MentionTextarea } from '@/components/community/MentionTextarea'
+import { PostFormatToolbar } from '@/components/community/PostFormatToolbar'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -222,6 +223,9 @@ export default function WorkspaceCommunity() {
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
+  const modalComposerRef = useRef<HTMLTextAreaElement | null>(null)
+  const inlineComposerRef = useRef<HTMLTextAreaElement | null>(null)
+  const editPostRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
@@ -1002,7 +1006,18 @@ export default function WorkspaceCommunity() {
     let match
 
     const pushText = (text: string, key: string) => {
-      linkifyText(text, key).forEach(n => parts.push(n))
+      // Inline formatting: **bold**, __underline__, *italic*
+      const fmt = /(\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*)/g
+      let idx = 0
+      let m: RegExpExecArray | null
+      while ((m = fmt.exec(text)) !== null) {
+        if (m.index > idx) linkifyText(text.slice(idx, m.index), `${key}-p${idx}`).forEach(n => parts.push(n))
+        if (m[2] !== undefined) parts.push(<strong key={`${key}-b${m.index}`} className="font-bold">{m[2]}</strong>)
+        else if (m[3] !== undefined) parts.push(<u key={`${key}-u${m.index}`}>{m[3]}</u>)
+        else parts.push(<em key={`${key}-i${m.index}`} className="italic">{m[4]}</em>)
+        idx = m.index + m[0].length
+      }
+      if (idx < text.length) linkifyText(text.slice(idx), `${key}-e${idx}`).forEach(n => parts.push(n))
     }
 
     while ((match = mentionRegex.exec(content)) !== null) {
@@ -1421,7 +1436,14 @@ export default function WorkspaceCommunity() {
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
+                  <PostFormatToolbar
+                    getTextarea={() => modalComposerRef.current}
+                    value={newPost}
+                    onChange={setNewPost}
+                    className="border-b border-border/60 pb-1 mb-1"
+                  />
                   <MentionTextarea
+                    ref={(el) => { modalComposerRef.current = el }}
                     placeholder="Share something with the community..."
                     value={newPost}
                     onChange={(v) => setNewPost(v)}
@@ -1550,7 +1572,13 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => setNewPostTitle(e.target.value)}
                       className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
                     />
+                    <PostFormatToolbar
+                      getTextarea={() => inlineComposerRef.current}
+                      value={newPost}
+                      onChange={setNewPost}
+                    />
                     <MentionTextarea
+                      ref={(el) => { inlineComposerRef.current = el }}
                       placeholder="Write something..."
                       value={newPost}
                       onChange={(v) => setNewPost(v)}
@@ -1815,6 +1843,11 @@ export default function WorkspaceCommunity() {
                                 onChange={(e) => setEditingPostTitle(e.target.value)}
                                 className="h-9 bg-muted/50 rounded-lg px-3 text-sm font-semibold focus-visible:ring-1"
                               />
+                              <PostFormatToolbar
+                                getTextarea={() => editPostRef.current}
+                                value={editingPostContent}
+                                onChange={setEditingPostContent}
+                              />
                               <Textarea
                                 value={editingPostContent}
                                 onChange={(e) => {
@@ -1829,6 +1862,7 @@ export default function WorkspaceCommunity() {
                                 className="min-h-[44px] resize-none bg-muted/50 rounded-lg px-3 py-2 text-sm overflow-hidden focus-visible:ring-1"
                                 rows={1}
                                 ref={(el) => {
+                                  editPostRef.current = el;
                                   if (el) {
                                     el.style.height = 'auto';
                                     el.style.height = el.scrollHeight + 'px';
