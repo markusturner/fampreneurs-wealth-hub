@@ -1572,7 +1572,13 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => setNewPostTitle(e.target.value)}
                       className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
                     />
+                    <PostFormatToolbar
+                      getTextarea={() => inlineComposerRef.current}
+                      value={newPost}
+                      onChange={setNewPost}
+                    />
                     <MentionTextarea
+                      ref={(el) => { inlineComposerRef.current = el }}
                       placeholder="Write something..."
                       value={newPost}
                       onChange={(v) => setNewPost(v)}
