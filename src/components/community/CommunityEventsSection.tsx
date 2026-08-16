@@ -237,8 +237,8 @@ export function CommunityEventsSection({ program }: Props) {
   }
 
   const instances = expandEvents(events)
-  const upcoming = instances.filter(e => !isPast(new Date(e.instance_at)))
   const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
+  const [detail, setDetail] = useState<EventInstance | null>(null)
 
 
   return (
@@ -259,13 +259,15 @@ export function CommunityEventsSection({ program }: Props) {
         <p className="text-sm text-muted-foreground py-6 text-center">Loading events…</p>
       ) : (
         <>
-          <MonthCalendar instances={instances} />
-          <Section title="Upcoming" events={upcoming} canManage={canManage} onEdit={openEdit} onDelete={remove} empty="No upcoming events yet." />
+          <MonthCalendar instances={instances} onOpenEvent={setDetail} />
           {past.length > 0 && (
             <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
           )}
         </>
       )}
+
+      <EventDetailDialog event={detail} onClose={() => setDetail(null)} />
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
