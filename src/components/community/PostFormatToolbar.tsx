@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react'
 
 interface Props {
@@ -12,6 +13,24 @@ interface Props {
  * Bold **text**, italic *text*, underline __text__, plus bullet / numbered lists.
  */
 export function PostFormatToolbar({ getTextarea, value, onChange, className = '' }: Props) {
+  const [hasSelection, setHasSelection] = useState(false)
+
+  useEffect(() => {
+    const check = () => {
+      const ta = getTextarea()
+      const active = ta && document.activeElement === ta
+      setHasSelection(!!active && (ta as HTMLTextAreaElement).selectionStart !== (ta as HTMLTextAreaElement).selectionEnd)
+    }
+    document.addEventListener('selectionchange', check)
+    document.addEventListener('keyup', check)
+    document.addEventListener('mouseup', check)
+    return () => {
+      document.removeEventListener('selectionchange', check)
+      document.removeEventListener('keyup', check)
+      document.removeEventListener('mouseup', check)
+    }
+  }, [getTextarea])
+
   const apply = (before: string, after: string) => {
     const ta = getTextarea()
     const start = ta?.selectionStart ?? value.length
@@ -51,6 +70,8 @@ export function PostFormatToolbar({ getTextarea, value, onChange, className = ''
 
   const btn =
     'h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors'
+
+  if (!hasSelection) return null
 
   return (
     <div className={`flex items-center gap-0.5 ${className}`}>
