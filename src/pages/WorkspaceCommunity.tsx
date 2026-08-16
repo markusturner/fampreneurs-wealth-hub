@@ -7,6 +7,7 @@ import { CommunityViewToggle, useCommunityView } from '@/components/community/Co
 import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
 import { MentionTextarea } from '@/components/community/MentionTextarea'
+import { PostFormatToolbar } from '@/components/community/PostFormatToolbar'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
