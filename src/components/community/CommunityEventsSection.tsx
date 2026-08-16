@@ -390,8 +390,8 @@ function Section({
                 : null
             return (
               <Card key={`${ev.id}-${ev.instance_at}`} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
-                <CardContent className="p-4 flex items-start gap-4">
-                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
+                <CardContent className="p-3 sm:p-4 flex items-start gap-3 sm:gap-4">
+                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-12 sm:w-14 py-2 flex-shrink-0">
                     <span className="text-[10px] uppercase tracking-wide">{format(when, 'MMM')}</span>
                     <span className="text-xl font-bold leading-none">{format(when, 'd')}</span>
                   </div>
