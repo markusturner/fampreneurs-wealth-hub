@@ -523,11 +523,6 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
           />
           <p className="text-xs text-muted-foreground">Required to assign this submission to you.</p>
         </div>
-        {savedAt && (
-          <p className="text-xs text-muted-foreground">
-            Draft saved automatically at {savedAt.toLocaleTimeString()}
-          </p>
-        )}
         <div className="flex flex-wrap justify-end gap-2">
           <Button onClick={downloadPdf} variant="secondary" className="gap-2">
             <Download className="h-4 w-4" /> Download PDF
