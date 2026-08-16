@@ -77,6 +77,15 @@ export default function Welcome() {
   const answerRef = useRef<HTMLDivElement | null>(null)
   const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
 
+  // Invited users who entered with a temporary link must create their login first
+  useEffect(() => {
+    if (!loading && (user as any)?.user_metadata?.needs_password_setup) {
+      navigate('/setup-login', { replace: true })
+    }
+  }, [loading, user, navigate])
+
+
+
   useEffect(() => {
     const el = answerRef.current
     if (!el) { setAnswerScrollable(false); return }

@@ -65,7 +65,7 @@ export default function InviteAccept() {
       toast({ title: 'Could not sign you in', description: otpErr.message, variant: 'destructive' })
       return
     }
-    navigate('/welcome')
+    navigate('/setup-login', { replace: true })
   }
 
 
