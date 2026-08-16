@@ -116,11 +116,11 @@ function makeSectionWin(
       const count = completers.length;
       return {
         title,
-        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} ${didLine}! 🎉
+        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} ${didLine}! 
 
 ${closingLine}
 
-Congratulations, and keep that momentum going. Who's next? 👇
+Congratulations, and keep that momentum going. Who's next? 
 
 — Markus`,
       };
@@ -155,8 +155,8 @@ const TEMPLATES: TemplateDef[] = [
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
       if (!top) return null;
       return {
-        title: "🌟 Student of the Month",
-        body: `Huge shout-out to our Student of the Month! 🎉
+        title: "Student of the Month",
+        body: `Huge shout-out to our Student of the Month! 
 
 Someone in this community has been showing up — completing trust submissions and pushing their succession plan forward over the last 30 days. That's exactly the kind of momentum legacy is built on.
 
@@ -175,15 +175,15 @@ Keep going, family.
       if (members.length === 0) return null;
       const count = members.length;
       return {
-        title: "👋 Welcome to our newest members!",
-        body: `Big welcome to the ${count === 1 ? "new family member" : `${count} new family members`} who joined this week! 💛
+        title: "Welcome to our newest members!",
+        body: `Big welcome to the ${count === 1 ? "new family member" : `${count} new family members`} who joined this week! 
 
 **Quick start:**
 - Drop a hello in the comments and tell us where you're from
 - Share one goal you want to hit this quarter
 - Open the Classroom and start Week 1 of Legacy Launchpad
 
-Reply below — let's get to know you 👇`,
+Reply below — let's get to know you `,
       };
     },
   },
@@ -203,18 +203,18 @@ Reply below — let's get to know you 👇`,
         .limit(1)
         .maybeSingle();
       const meetingLine = meeting
-        ? `📅 This week's live call: **${meeting.title}** on ${meeting.meeting_date}${meeting.meeting_time ? ` at ${meeting.meeting_time}` : ""}. Find it in the Calendar tab.`
-        : `📅 Check the Calendar tab for this week's live call.`;
+        ? `This week's live call: **${meeting.title}** on ${meeting.meeting_date}${meeting.meeting_time ? ` at ${meeting.meeting_time}` : ""}. Find it in the Calendar tab.`
+        : `Check the Calendar tab for this week's live call.`;
       return {
-        title: "🧭 New Member Orientation — Start Here",
-        body: `Welcome again to everyone who just joined 👋
+        title: "New Member Orientation — Start Here",
+        body: `Welcome again to everyone who just joined 
 
 Two things to lock in this week:
 
 1. ${meetingLine}
-2. 🎓 Open the **Classroom** and start **Week 1 of Legacy Launchpad** — it's the foundation everything else builds on.
+2. Open the **Classroom** and start **Week 1 of Legacy Launchpad** — it's the foundation everything else builds on.
 
-Do those two and you're already ahead of 90% of new members. Reply below once you've started Week 1 👇`,
+Do those two and you're already ahead of 90% of new members. Reply below once you've started Week 1 `,
         replyToKey: "welcome_new_members",
       };
     },
@@ -287,12 +287,12 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
       );
 
       return {
-        title: "🏆 Community Wins — Trust Creation Completed!",
-        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} just completed **all three trust names and trust creation submissions**! 🎉
+        title: "Community Wins — Trust Creation Completed!",
+        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} just completed **all three trust names and trust creation submissions**! 
 
 That's family, ministry, and business — all locked in. Protection that will outlive them.
 
-Congratulations, and keep that momentum going. Who's next? 👇
+Congratulations, and keep that momentum going. Who's next? 
 
 — Markus`,
       };
@@ -301,14 +301,14 @@ Congratulations, and keep that momentum going. Who's next? 👇
   makeSectionWin(
     "family_protection_plan_wins",
     ["family_protection_plan"],
-    "🛡️ Community Wins — Family Protection Plan Completed!",
+    "Community Wins — Family Protection Plan Completed!",
     "just completed their **Family Protection Plan**",
     "That's their family's safety net documented and in place.",
   ),
   makeSectionWin(
     "asset_transfer_wins",
     ["trust_asset_uploads", "asset_inventory"],
-    "📦 Community Wins — Assets Transferred Into Trust!",
+    "Community Wins — Assets Transferred Into Trust!",
     "just completed their **Schedule B and proof of transfer**",
     "Their assets are officially moving into the trust — that's where protection becomes real.",
   ),
@@ -327,13 +327,13 @@ Congratulations, and keep that momentum going. Who's next? 👇
       if (!newCourses.length && !newMeetings.length) return null;
       let body = `Here's what's new inside TruHeirs this week:\n\n`;
       if (newCourses.length) {
-        body += `**🎓 New in the Classroom:**\n` + newCourses.map((c) => `- ${c.title}`).join("\n") + `\n\n`;
+        body += `**New in the Classroom:**\n` + newCourses.map((c) => `- ${c.title}`).join("\n") + `\n\n`;
       }
       if (newMeetings.length) {
-        body += `**📅 New calls on the Calendar:**\n` + newMeetings.map((m) => `- ${m.title} — ${m.meeting_date}`).join("\n") + `\n\n`;
+        body += `**New calls on the Calendar:**\n` + newMeetings.map((m) => `- ${m.title} — ${m.meeting_date}`).join("\n") + `\n\n`;
       }
-      body += `Log in, take a look, and tell us what you want to see next 👇`;
-      return { title: "🚀 New Updates Inside TruHeirs", body };
+      body += `Log in, take a look, and tell us what you want to see next `;
+      return { title: "New Updates Inside TruHeirs", body };
     },
   },
 ];

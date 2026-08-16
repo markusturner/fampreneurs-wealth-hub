@@ -237,8 +237,8 @@ export function CommunityEventsSection({ program }: Props) {
   }
 
   const instances = expandEvents(events)
-  const upcoming = instances.filter(e => !isPast(new Date(e.instance_at)))
   const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
+  const [detail, setDetail] = useState<EventInstance | null>(null)
 
 
   return (
@@ -259,13 +259,15 @@ export function CommunityEventsSection({ program }: Props) {
         <p className="text-sm text-muted-foreground py-6 text-center">Loading events…</p>
       ) : (
         <>
-          <MonthCalendar instances={instances} />
-          <Section title="Upcoming" events={upcoming} canManage={canManage} onEdit={openEdit} onDelete={remove} empty="No upcoming events yet." />
+          <MonthCalendar instances={instances} onOpenEvent={setDetail} />
           {past.length > 0 && (
             <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
           )}
         </>
       )}
+
+      <EventDetailDialog event={detail} onClose={() => setDetail(null)} />
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
@@ -438,7 +440,57 @@ function Section({
   )
 }
 
-function MonthCalendar({ instances }: { instances: EventInstance[] }) {
+function EventDetailDialog({ event, onClose }: { event: EventInstance | null; onClose: () => void }) {
+  if (!event) return null
+  const when = new Date(event.instance_at)
+  const end = new Date(when.getTime() + (event.duration_minutes || 60) * 60000)
+  return (
+    <Dialog open={!!event} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl">{event.title}</DialogTitle>
+          <DialogDescription className="sr-only">Event details</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <div className="flex items-start gap-2">
+            <CalendarDays className="h-4 w-4 mt-0.5 text-[#290a52]" />
+            <div>
+              <p className="font-medium">{format(when, 'EEEE, MMMM do')} @ {format(when, 'h:mm a')} - {format(end, 'h:mm a')}</p>
+              <p className="text-xs text-muted-foreground">{event.duration_minutes || 60} minutes</p>
+            </div>
+          </div>
+          {event.location && (
+            <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#290a52]" /><span>{event.location}</span></div>
+          )}
+          {event.join_url && (
+            <div className="flex items-center gap-2">
+              <Video className="h-4 w-4 text-[#2eb2ff]" />
+              <a href={event.join_url} target="_blank" rel="noreferrer" className="text-[#2eb2ff] hover:underline break-all">{event.join_url}</a>
+            </div>
+          )}
+          {event.description && (
+            <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+          )}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button asChild size="sm" className="bg-[#290a52] hover:bg-[#290a52]/90 text-white">
+              <a href={googleCalUrl(event)} target="_blank" rel="noreferrer"><CalendarDays className="h-4 w-4 mr-1.5" /> Add to Google</a>
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => downloadIcs(event)}>
+              <CalendarDays className="h-4 w-4 mr-1.5" /> Apple / .ics
+            </Button>
+            {event.join_url && (
+              <Button asChild size="sm" variant="outline">
+                <a href={event.join_url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 mr-1.5" /> Join</a>
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[]; onOpenEvent: (e: EventInstance) => void }) {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<Date | null>(new Date())
 
@@ -528,7 +580,10 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
                         <span
                           key={i}
                           title={ev.title}
-                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); onOpenEvent(ev) }}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_12px_rgba(255,181,0,0.85)] hover:ring-1 hover:ring-[#ffb500] ${
                             isSel
                               ? 'bg-white/20 text-white'
                               : 'bg-[#ffb500]/20 text-[#290a52]'
@@ -537,6 +592,7 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
                           {ev.title}
                         </span>
                       ))}
+
                       {dayEvents.length > 2 && (
                         <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
                           +{dayEvents.length - 2} more
@@ -559,29 +615,20 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
             ) : (
               <div className="space-y-1.5">
                 {selectedEvents.map(ev => (
-                  <div key={`${ev.id}-${ev.instance_at}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                  <button
+                    type="button"
+                    key={`${ev.id}-${ev.instance_at}`}
+                    onClick={() => onOpenEvent(ev)}
+                    className="w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)]"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500] flex-shrink-0" />
                     <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
                     <span className="min-w-0 break-words">{ev.title}</span>
-                    <span className="w-full sm:w-auto sm:ml-auto flex items-center gap-3">
-                      {ev.join_url && (
-                        <a href={ev.join_url} target="_blank" rel="noreferrer" className="text-[#2eb2ff] hover:underline inline-flex items-center gap-1">
-                          <Video className="h-3 w-3" /> Join
-                        </a>
-                      )}
-                      <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className="text-[#290a52] hover:underline inline-flex items-center gap-1">
-                        <CalendarDays className="h-3 w-3" /> Google
-                      </a>
-                      <button type="button" onClick={() => downloadIcs(ev)} className="text-[#290a52] hover:underline inline-flex items-center gap-1">
-                        <CalendarDays className="h-3 w-3" /> .ics
-                      </button>
-                    </span>
-
-
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
+
           </div>
         )}
       </CardContent>
