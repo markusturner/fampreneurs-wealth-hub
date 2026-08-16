@@ -13,7 +13,7 @@ import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
 import { format, isPast, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, isSameMonth, isToday } from 'date-fns'
 
-type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'
+type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'monthly_nth'
 
 interface CommunityEvent {
   id: string
