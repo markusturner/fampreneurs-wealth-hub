@@ -53,6 +53,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import TrustCreation from "./pages/TrustCreation";
+import AssetInventoryPreview from "./pages/AssetInventoryPreview";
 import SuccessionPlanning from "./pages/SuccessionPlanning";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
