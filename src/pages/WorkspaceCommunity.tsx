@@ -52,6 +52,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
+import { CommentReactions } from '@/components/community/CommentReactions'
+
 
 interface Post {
   id: string
