@@ -1109,7 +1109,7 @@ export type Database = {
             foreignKeyName: "community_comment_reactions_comment_id_fkey"
             columns: ["comment_id"]
             isOneToOne: false
-            referencedRelation: "community_posts"
+            referencedRelation: "community_comments"
             referencedColumns: ["id"]
           },
         ]

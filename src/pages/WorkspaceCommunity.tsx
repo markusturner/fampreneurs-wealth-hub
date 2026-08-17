@@ -52,6 +52,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
+import { CommentReactions } from '@/components/community/CommentReactions'
+
 
 interface Post {
   id: string
@@ -2031,7 +2033,9 @@ export default function WorkspaceCommunity() {
                                         <audio src={comment.audio_url} controls className="mt-2 w-full h-8" />
                                       )}
                                     </div>
+                                    <CommentReactions commentId={comment.id} userId={user?.id} />
                                   </div>
+
                                 </div>
                               ))}
 
