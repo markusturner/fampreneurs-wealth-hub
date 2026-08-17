@@ -11,7 +11,7 @@ export type CommunityView = 'feed' | 'events' | 'leaderboard'
 export function CommunityViewToggle({ value, onChange, hideEvents }: { value: CommunityView; onChange: (v: CommunityView) => void; hideEvents?: boolean }) {
   return (
     <div className="flex justify-center">
-      <div className="inline-flex items-center gap-1 rounded-xl bg-muted/50 p-1">
+      <div className="inline-flex items-center gap-1 rounded-xl p-1 border-2 border-[#290a52]">
         {TABS.filter(t => !(hideEvents && t.key === 'events')).map(t => {
           const active = t.key === value
           return (
@@ -22,8 +22,8 @@ export function CommunityViewToggle({ value, onChange, hideEvents }: { value: Co
                 !t.mobile ? 'hidden md:inline-flex' : ''
               } ${
                 active
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-[#ffb500] text-[#290a52] shadow-sm'
+                  : 'text-[#290a52] hover:text-white hover:bg-[#2eb2ff]'
               }`}
             >
               {t.label}
