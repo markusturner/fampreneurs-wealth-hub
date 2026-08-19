@@ -87,7 +87,24 @@ export function MobileBottomNav() {
     // If only 1 community, default NavLink behavior handles it
   }
 
-  const communityHref = `/workspace-community?program=${programSlug}`
+  // Remember the last community the user opened on mobile
+  const urlProgram = location.pathname === '/workspace-community'
+    ? new URLSearchParams(location.search).get('program')
+    : null
+  if (urlProgram && typeof window !== 'undefined') {
+    try { localStorage.setItem('mobile:lastCommunity', urlProgram) } catch { /* ignore */ }
+  }
+  const storedCommunity = typeof window !== 'undefined'
+    ? (() => { try { return localStorage.getItem('mobile:lastCommunity') } catch { return null } })()
+    : null
+  const activeCommunitySlug = urlProgram
+    || (storedCommunity && userCommunities.some(c => c.slug === storedCommunity) ? storedCommunity : null)
+    || userCommunities[0]?.slug
+    || programSlug
+
+  const communityHref = `/workspace-community?program=${activeCommunitySlug}`
+  const calendarHref = `/workspace-community?program=${activeCommunitySlug}&view=events`
+
   const classroomHref = '/classroom'
 
   const isActive = (href: string) => {
@@ -97,14 +114,16 @@ export function MobileBottomNav() {
     return true
   }
 
-  const isCommunityActive = location.pathname === '/workspace-community'
+  const isEventsView = new URLSearchParams(location.search).get('view') === 'events'
+  const isCommunityActive = location.pathname === '/workspace-community' && !isEventsView
 
   const navItems = [
     { name: 'Messages', href: '/messenger', icon: Mail },
-    { name: 'Calendar', href: '/workspace-calendar', icon: Calendar },
+    { name: 'Calendar', href: calendarHref, icon: Calendar, isCalendar: true },
     { name: 'Community', href: communityHref, icon: MessageSquare, isCommunity: true },
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
+
 
   
 
@@ -139,7 +158,12 @@ export function MobileBottomNav() {
       <nav className="bg-[hsl(262_86%_19%)] backdrop-blur-xl rounded-full px-4 shadow-lg">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
-            const active = (item as any).isCommunity ? isCommunityActive : isActive(item.href)
+            const active = (item as any).isCommunity
+              ? isCommunityActive
+              : (item as any).isCalendar
+                ? (location.pathname === '/workspace-community' && isEventsView)
+                : isActive(item.href)
+
             const Icon = item.icon
 
             if ((item as any).isCommunity && (isAdmin || isOwner) && userCommunities.length > 1) {
