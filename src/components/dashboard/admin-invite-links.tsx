@@ -50,7 +50,7 @@ export function AdminInviteLinks() {
   // form
   const [inviteType, setInviteType] = useState<InviteType>('temporary')
   const [duration, setDuration] = useState<string>('7d')
-  const [maxUsesInput, setMaxUsesInput] = useState<string>('1')
+  const [maxUsesInput, setMaxUsesInput] = useState<string>('')
   const [role, setRole] = useState<RoleType>('family_member')
   const [programName, setProgramName] = useState('')
   const [tfbaVariant, setTfbaVariant] = useState<'standard' | 'vip_weekend'>('standard')
@@ -246,7 +246,7 @@ export function AdminInviteLinks() {
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label>Max Uses (blank = unlimited)</Label>
-                  <Input type="number" min="1" value={maxUsesInput} onChange={(e) => setMaxUsesInput(e.target.value)} placeholder="e.g. 1, 10, 100" />
+                  <Input type="number" min="1" value={maxUsesInput} onChange={(e) => setMaxUsesInput(e.target.value)} placeholder="Leave blank for unlimited" />
                 </div>
               </>
             )}

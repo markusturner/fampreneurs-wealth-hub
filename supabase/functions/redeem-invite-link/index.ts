@@ -95,7 +95,7 @@ serve(async (req) => {
     }
 
     if (invite.max_uses != null && invite.uses_count >= invite.max_uses) {
-      return new Response(JSON.stringify({ error: "This invite has reached its usage limit." }), {
+      return new Response(JSON.stringify({ error: "This invite was already used. Please sign in with your email and password." }), {
         status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
