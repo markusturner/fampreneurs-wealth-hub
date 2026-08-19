@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useUserRole } from "@/hooks/useUserRole"
 import { supabase } from "@/integrations/supabase/client"
+import { expandProgramCodes } from "@/lib/programs"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
