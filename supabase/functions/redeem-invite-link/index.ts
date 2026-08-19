@@ -76,10 +76,15 @@ serve(async (req) => {
     }
 
     if (!invite.is_active) {
-      return new Response(JSON.stringify({ error: "This invite has been revoked." }), {
-        status: 410,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const alreadyUsed = (invite.uses_count ?? 0) > 0;
+      return new Response(
+        JSON.stringify({
+          error: alreadyUsed
+            ? "This invite was already used. Please sign in with your email and password."
+            : "This invite has been revoked.",
+        }),
+        { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
@@ -90,7 +95,7 @@ serve(async (req) => {
     }
 
     if (invite.max_uses != null && invite.uses_count >= invite.max_uses) {
-      return new Response(JSON.stringify({ error: "This invite has reached its usage limit." }), {
+      return new Response(JSON.stringify({ error: "This invite was already used. Please sign in with your email and password." }), {
         status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
