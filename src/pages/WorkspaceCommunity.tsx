@@ -1328,8 +1328,6 @@ export default function WorkspaceCommunity() {
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
 
-            {/* Community section toggle - sleek centered */}
-            <CommunityViewToggle value={communityView} onChange={setCommunityView} />
 
             {communityView === 'events' && (
               <CommunityEventsSection program={program} />
