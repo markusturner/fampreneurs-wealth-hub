@@ -158,7 +158,12 @@ export function MobileBottomNav() {
       <nav className="bg-[hsl(262_86%_19%)] backdrop-blur-xl rounded-full px-4 shadow-lg">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
-            const active = (item as any).isCommunity ? isCommunityActive : isActive(item.href)
+            const active = (item as any).isCommunity
+              ? isCommunityActive
+              : (item as any).isCalendar
+                ? (location.pathname === '/workspace-community' && isEventsView)
+                : isActive(item.href)
+
             const Icon = item.icon
 
             if ((item as any).isCommunity && (isAdmin || isOwner) && userCommunities.length > 1) {
