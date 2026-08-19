@@ -87,7 +87,24 @@ export function MobileBottomNav() {
     // If only 1 community, default NavLink behavior handles it
   }
 
-  const communityHref = `/workspace-community?program=${programSlug}`
+  // Remember the last community the user opened on mobile
+  const urlProgram = location.pathname === '/workspace-community'
+    ? new URLSearchParams(location.search).get('program')
+    : null
+  if (urlProgram && typeof window !== 'undefined') {
+    try { localStorage.setItem('mobile:lastCommunity', urlProgram) } catch { /* ignore */ }
+  }
+  const storedCommunity = typeof window !== 'undefined'
+    ? (() => { try { return localStorage.getItem('mobile:lastCommunity') } catch { return null } })()
+    : null
+  const activeCommunitySlug = urlProgram
+    || (storedCommunity && userCommunities.some(c => c.slug === storedCommunity) ? storedCommunity : null)
+    || userCommunities[0]?.slug
+    || programSlug
+
+  const communityHref = `/workspace-community?program=${activeCommunitySlug}`
+  const calendarHref = `/workspace-community?program=${activeCommunitySlug}&view=events`
+
   const classroomHref = '/classroom'
 
   const isActive = (href: string) => {
