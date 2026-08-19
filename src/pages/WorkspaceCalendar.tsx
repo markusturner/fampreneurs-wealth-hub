@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useUserRole } from "@/hooks/useUserRole"
 import { supabase } from "@/integrations/supabase/client"
+import { expandProgramCodes } from "@/lib/programs"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
@@ -134,20 +135,26 @@ export default function WorkspaceCalendar() {
       if (error) throw error
       setUserGroupIds((data || []).map((d: any) => d.group_id))
       
-      // Map group names to short IDs used in meeting community_ids
+      // Map group names (including legacy names) to short IDs used in meeting community_ids
       const nameToShortId: Record<string, string> = {
         'Family Business University': 'fbu',
+        'The Family Business University': 'fbu',
         'The Family Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
+        'The Family Business Accelerator': 'tfba',
+        'The Succession Society': 'tffm',
         'The Family Fortune Mastermind': 'tffm',
         'The Family Legacy: VIP Weekend': 'tflvip',
       }
-      const shortIds = (data || [])
+      const matched = (data || [])
         .map((d: any) => {
           const name = d.community_groups?.name
           return name ? nameToShortId[name] : null
         })
         .filter(Boolean) as string[]
+      // Higher tiers inherit access to lower-tier program events
+      const expanded = expandProgramCodes(matched) as string[]
+      const shortIds = Array.from(new Set([...matched, ...expanded]))
       setUserCommunityShortIds(shortIds)
     } catch (error) {
       console.error('Error fetching user groups:', error)
