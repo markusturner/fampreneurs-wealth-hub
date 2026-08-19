@@ -114,14 +114,16 @@ export function MobileBottomNav() {
     return true
   }
 
-  const isCommunityActive = location.pathname === '/workspace-community'
+  const isEventsView = new URLSearchParams(location.search).get('view') === 'events'
+  const isCommunityActive = location.pathname === '/workspace-community' && !isEventsView
 
   const navItems = [
     { name: 'Messages', href: '/messenger', icon: Mail },
-    { name: 'Calendar', href: '/workspace-calendar', icon: Calendar },
+    { name: 'Calendar', href: calendarHref, icon: Calendar, isCalendar: true },
     { name: 'Community', href: communityHref, icon: MessageSquare, isCommunity: true },
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
+
 
   
 
