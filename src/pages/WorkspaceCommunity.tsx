@@ -3,7 +3,7 @@ import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
 import { EmojiButton, GifButton, PollDraftEditor } from '@/components/community/PostComposerExtras'
 import { PollDisplay } from '@/components/community/PollDisplay'
-import { useCommunityView } from '@/components/community/CommunityViewToggle'
+import { CommunityViewToggle, useCommunityView } from '@/components/community/CommunityViewToggle'
 import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
 import { MentionTextarea } from '@/components/community/MentionTextarea'
@@ -1328,6 +1328,10 @@ export default function WorkspaceCommunity() {
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
 
+            {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
+            <div className="hidden md:block">
+              <CommunityViewToggle value={communityView} onChange={setCommunityView} />
+            </div>
 
             {communityView === 'events' && (
               <CommunityEventsSection program={program} />
