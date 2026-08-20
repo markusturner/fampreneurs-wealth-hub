@@ -1328,6 +1328,10 @@ export default function WorkspaceCommunity() {
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
 
+            {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
+            <div className="hidden md:block">
+              <CommunityViewToggle value={communityView} onChange={setCommunityView} />
+            </div>
 
             {communityView === 'events' && (
               <CommunityEventsSection program={program} />
