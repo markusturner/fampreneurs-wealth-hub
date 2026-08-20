@@ -12,7 +12,7 @@ const APP_STORE_URL = 'https://apps.apple.com/us/app/truheirs/id6755499709'
 type TaskId = 'video' | 'post' | 'app'
 
 const TASKS: { id: TaskId; label: string }[] = [
-  { id: 'video', label: 'Watch 60 minute intro video' },
+  { id: 'video', label: 'Watch 60 second intro video' },
   { id: 'post', label: 'Read welcome post in the community' },
   { id: 'app', label: 'Download the app' },
 ]
