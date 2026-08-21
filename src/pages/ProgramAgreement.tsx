@@ -14,6 +14,50 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 
+function AgreementText({ text }: { text: string }) {
+  const startMarker = 'The program will include:'
+  const startIdx = text.indexOf(startMarker)
+  const endIdx = startIdx === -1 ? -1 : text.indexOf('Payment Terms:', startIdx + startMarker.length)
+  if (startIdx === -1 || endIdx === -1) {
+    return <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{text}</div>
+  }
+  const before = text.slice(0, startIdx + startMarker.length)
+  const listBlock = text.slice(startIdx + startMarker.length, endIdx)
+  const after = text.slice(endIdx)
+
+  type Seg = { type: 'text' | 'list'; content: string[] }
+  const segs: Seg[] = []
+  let cur: Seg | null = null
+  for (const line of listBlock.split('\n')) {
+    const m = line.match(/^\s*\d+\.\s+(.+)$/)
+    if (m) {
+      if (!cur || cur.type !== 'list') { cur = { type: 'list', content: [] }; segs.push(cur) }
+      cur.content.push(m[1].trim())
+    } else {
+      if (!cur || cur.type !== 'text') { cur = { type: 'text', content: [] }; segs.push(cur) }
+      cur.content.push(line)
+    }
+  }
+
+  return (
+    <div className="text-sm leading-relaxed text-foreground">
+      <div className="whitespace-pre-wrap">{before}</div>
+      {segs.map((seg, i) =>
+        seg.type === 'list' ? (
+          <ol key={i} className="list-decimal pl-8 mt-2 space-y-2">
+            {seg.content.map((it, j) => (
+              <li key={j} className="pl-1">{it}</li>
+            ))}
+          </ol>
+        ) : (
+          <div key={i} className="whitespace-pre-wrap mt-2">{seg.content.join('\n')}</div>
+        ),
+      )}
+      <div className="whitespace-pre-wrap mt-2">{after}</div>
+    </div>
+  )
+}
+
 const TFV_AGREEMENT = `Program Services Agreement
 
 Thank you for choosing The Fampreneurs to advise and implement how to start a family business by showing you how to leverage family credit, trusts, and legacy. We are excited to work with you to start and grow your family business.
