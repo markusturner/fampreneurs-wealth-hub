@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, ClipboardList, FileCheck, Camera, Users, ArrowRight, Lock } from 'lucide-react'
+import { Shield, ClipboardList, FileCheck, Camera, Users, ArrowRight, Lock, Calendar } from 'lucide-react'
 
 const steps = [
   {
