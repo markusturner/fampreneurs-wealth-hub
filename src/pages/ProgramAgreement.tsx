@@ -46,7 +46,7 @@ function AgreementText({ text }: { text: string }) {
   return (
     <div className="text-sm leading-relaxed text-foreground">
       <div className="whitespace-pre-wrap">{before}</div>
-      {segs.map((seg, i) =>
+      {finalSegs.map((seg, i) =>
         seg.type === 'list' ? (
           <ol key={i} className="list-decimal pl-8 mt-2 space-y-2">
             {seg.content.map((it, j) => (
