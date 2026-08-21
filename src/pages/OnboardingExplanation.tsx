@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, ClipboardList, FileCheck, Camera, Users, ArrowRight, Lock } from 'lucide-react'
+import { Shield, ClipboardList, FileCheck, Camera, Users, ArrowRight, Lock, Calendar } from 'lucide-react'
 
 const steps = [
   {
@@ -34,8 +34,15 @@ const steps = [
     bg: 'bg-green-50',
   },
   {
+    icon: Calendar,
+    title: '5. Onboarding Call',
+    description: 'Schedule your private onboarding call so our team can walk you through your trust design and next steps.',
+    color: 'text-orange-600',
+    bg: 'bg-orange-50',
+  },
+  {
     icon: Users,
-    title: '5. Community Access',
+    title: '6. Community Access',
     description: 'Once all steps are complete, you\'ll gain full access to the TruHeirs community, courses, AI tools, and your personalized dashboard.',
     color: 'text-sky-600',
     bg: 'bg-sky-50',
