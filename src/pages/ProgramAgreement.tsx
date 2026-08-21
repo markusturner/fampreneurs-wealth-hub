@@ -33,11 +33,15 @@ function AgreementText({ text }: { text: string }) {
     if (m) {
       if (!cur || cur.type !== 'list') { cur = { type: 'list', content: [] }; segs.push(cur) }
       cur.content.push(m[1].trim())
+    } else if (line.trim() === '') {
+      // Keep list grouping open across blank lines; preserve blanks only inside text segments
+      if (cur && cur.type === 'text') cur.content.push(line)
     } else {
       if (!cur || cur.type !== 'text') { cur = { type: 'text', content: [] }; segs.push(cur) }
       cur.content.push(line)
     }
   }
+  const finalSegs = segs.filter((s) => s.type === 'list' || s.content.some((l) => l.trim()))
 
   return (
     <div className="text-sm leading-relaxed text-foreground">
