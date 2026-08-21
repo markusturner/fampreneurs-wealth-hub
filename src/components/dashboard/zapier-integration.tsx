@@ -113,9 +113,20 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
         mode: "no-cors",
         body: JSON.stringify({
           test: true,
+          event_type: "invite_created",
           timestamp: new Date().toISOString(),
           triggered_from: window.location.origin,
           user_id: userId,
+          email: "sample.contact@example.com",
+          first_name: "Sample",
+          last_name: "Contact",
+          invite_url: "https://truheirs.app/invite/SAMPLE1234",
+          invite_type: "temporary",
+          role: "family_member",
+          program_name: "The Family Vault",
+          plan_type: "paid_in_full",
+          total_amount: 5000,
+          note: "Test payload from TruHeirs",
         }),
       });
 
@@ -218,6 +229,18 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
           </p>
         </div>
 
+        <div className="rounded-lg border p-4 space-y-1 bg-muted/30">
+          <p className="text-sm font-medium">How to send contacts to GoHighLevel</p>
+          <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
+            <li>In Zapier, create a Zap with the trigger "Webhooks by Zapier → Catch Hook".</li>
+            <li>Copy the hook URL, paste it above, and click Save.</li>
+            <li>Click Test Webhook so Zapier can see the fields.</li>
+            <li>Add the action "LeadConnector (GoHighLevel) → Create/Update Contact" and map <code>email</code>, <code>first_name</code>, <code>program_name</code>, and <code>invite_url</code>.</li>
+            <li>Add a second action to add the contact to your workflow, then turn the Zap on.</li>
+          </ol>
+        </div>
+
+
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={isSaving || !webhookUrl}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -242,7 +265,9 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
           <div className="p-4 bg-muted rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Status:</span>
-              <span className="text-sm text-green-600">Active</span>
+              <span className={`text-sm ${existingWebhook.is_active ? 'text-green-600' : 'text-muted-foreground'}`}>
+                {existingWebhook.is_active ? 'Active' : 'Paused'}
+              </span>
             </div>
             {existingWebhook.webhook_name && (
               <div className="flex items-center justify-between">
