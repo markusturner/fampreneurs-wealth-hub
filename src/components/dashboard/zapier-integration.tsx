@@ -113,9 +113,20 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
         mode: "no-cors",
         body: JSON.stringify({
           test: true,
+          event_type: "invite_created",
           timestamp: new Date().toISOString(),
           triggered_from: window.location.origin,
           user_id: userId,
+          email: "sample.contact@example.com",
+          first_name: "Sample",
+          last_name: "Contact",
+          invite_url: "https://truheirs.app/invite/SAMPLE1234",
+          invite_type: "temporary",
+          role: "family_member",
+          program_name: "The Family Vault",
+          plan_type: "paid_in_full",
+          total_amount: 5000,
+          note: "Test payload from TruHeirs",
         }),
       });
 
