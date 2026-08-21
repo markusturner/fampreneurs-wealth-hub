@@ -208,89 +208,119 @@ export function AdminInviteLinks() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5" style={{ color: '#ffb500' }} />
             <CardTitle>Create Invite Link</CardTitle>
           </div>
-          <CardDescription>
-            Generate a shareable URL that new members can use to join — just like Discord. Choose temporary (expires or limited uses) or permanent (never expires).
+          <CardDescription className="text-xs">
+            Generate a shareable URL — like Discord. Choose temporary (expires/limited) or permanent (never expires).
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
-            <Label>Access Style</Label>
-            <Select value={accessMode} onValueChange={(v) => setAccessMode(v as 'signup' | 'direct')}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="signup">Sign-up form (they create an account)</SelectItem>
-                <SelectItem value="direct">Instant access (no login — code only)</SelectItem>
-              </SelectContent>
-            </Select>
-            {accessMode === 'direct' && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Their Email (account it opens)</Label>
-                  <Input type="email" value={directEmail} onChange={(e) => setDirectEmail(e.target.value)} placeholder="grandpa@example.com" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Access Code (4–8 digits)</Label>
-                  <Input value={accessPin} onChange={(e) => setAccessPin(e.target.value)} placeholder="e.g. 4821" />
-                </div>
-                <p className="text-xs text-muted-foreground sm:col-span-2">
-                  They click the link, type this code, and land on the welcome page — no password. The code locks out for 15 minutes after 5 wrong tries, and you can revoke the link anytime.
-                </p>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Access Style</Label>
+              <Select value={accessMode} onValueChange={(v) => setAccessMode(v as 'signup' | 'direct')}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="signup">Sign-up form (they create account)</SelectItem>
+                  <SelectItem value="direct">Instant access (no login — code only)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {accessMode === 'direct' ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input type="email" value={directEmail} onChange={(e) => setDirectEmail(e.target.value)} placeholder="their email" className="h-9 text-sm" />
+                <Input value={accessPin} onChange={(e) => setAccessPin(e.target.value)} placeholder="access code (4–8 digits)" className="h-9 text-sm" />
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link Type</Label>
+                <Select value={inviteType} onValueChange={(v) => setInviteType(v as InviteType)}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="temporary"><span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Temporary</span></SelectItem>
+                    <SelectItem value="permanent"><span className="inline-flex items-center gap-1.5"><InfinityIcon className="h-3.5 w-3.5" /> Permanent</span></SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          {accessMode === 'direct' && (
+            <p className="text-[11px] text-muted-foreground -mt-1">
+              They click the link, type the code, land on welcome — no password. Locks out 15 min after 5 wrong tries.
+            </p>
+          )}
 
-            <div className="space-y-2">
-              <Label>Link Type</Label>
-              <Select value={inviteType} onValueChange={(v) => setInviteType(v as InviteType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="temporary"><span className="inline-flex items-center gap-2"><Clock className="h-3.5 w-3.5" /> Temporary</span></SelectItem>
-                  <SelectItem value="permanent"><span className="inline-flex items-center gap-2"><InfinityIcon className="h-3.5 w-3.5" /> Permanent</span></SelectItem>
-                </SelectContent>
-              </Select>
+          {inviteType === 'temporary' && accessMode === 'signup' && (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Expires After</Label>
+                <Select value={duration} onValueChange={setDuration}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30m">30 min</SelectItem>
+                    <SelectItem value="1h">1 hour</SelectItem>
+                    <SelectItem value="6h">6 hours</SelectItem>
+                    <SelectItem value="1d">1 day</SelectItem>
+                    <SelectItem value="7d">7 days</SelectItem>
+                    <SelectItem value="30d">30 days</SelectItem>
+                    <SelectItem value="never">Never (uses only)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label className="text-xs">Max Uses (blank = unlimited)</Label>
+                <Input type="number" min="1" value={maxUsesInput} onChange={(e) => setMaxUsesInput(e.target.value)} placeholder="Leave blank for unlimited" className="h-9 text-sm" />
+              </div>
             </div>
+          )}
 
-            {inviteType === 'temporary' && (
-              <>
-                <div className="space-y-2">
-                  <Label>Expires After</Label>
-                  <Select value={duration} onValueChange={setDuration}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30m">30 minutes</SelectItem>
-                      <SelectItem value="1h">1 hour</SelectItem>
-                      <SelectItem value="6h">6 hours</SelectItem>
-                      <SelectItem value="1d">1 day</SelectItem>
-                      <SelectItem value="7d">7 days</SelectItem>
-                      <SelectItem value="30d">30 days</SelectItem>
-                      <SelectItem value="never">Never (uses only)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label>Max Uses (blank = unlimited)</Label>
-                  <Input type="number" min="1" value={maxUsesInput} onChange={(e) => setMaxUsesInput(e.target.value)} placeholder="Leave blank for unlimited" />
-                </div>
-              </>
-            )}
-          </div>
+          {accessMode === 'direct' && (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link Type</Label>
+                <Select value={inviteType} onValueChange={(v) => setInviteType(v as InviteType)}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="temporary"><span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Temporary</span></SelectItem>
+                    <SelectItem value="permanent"><span className="inline-flex items-center gap-1.5"><InfinityIcon className="h-3.5 w-3.5" /> Permanent</span></SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {inviteType === 'temporary' && <div className="space-y-1.5">
+                <Label className="text-xs">Expires After</Label>
+                <Select value={duration} onValueChange={setDuration}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30m">30 min</SelectItem>
+                    <SelectItem value="1h">1 hour</SelectItem>
+                    <SelectItem value="6h">6 hours</SelectItem>
+                    <SelectItem value="1d">1 day</SelectItem>
+                    <SelectItem value="7d">7 days</SelectItem>
+                    <SelectItem value="30d">30 days</SelectItem>
+                    <SelectItem value="never">Never (uses only)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>}
+              {inviteType === 'temporary' && <div className="space-y-1.5">
+                <Label className="text-xs">Max Uses</Label>
+                <Input type="number" min="1" value={maxUsesInput} onChange={(e) => setMaxUsesInput(e.target.value)} placeholder="unlimited" className="h-9 text-sm" />
+              </div>}
+            </div>
+          )}
 
-          <Separator />
+          <Separator className="my-1" />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Role</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Role</Label>
               <Select value={role} onValueChange={(v) => setRole(v as RoleType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="trustee">Trustee</SelectItem>
                   <SelectItem value="family_office_member">Family Office Member</SelectItem>
@@ -298,99 +328,85 @@ export function AdminInviteLinks() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Program</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Program</Label>
               <Select value={programName} onValueChange={setProgramName}>
-                <SelectTrigger><SelectValue placeholder="Select a program (optional)" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select a program (optional)" /></SelectTrigger>
                 <SelectContent>
                   {PROGRAM_OPTIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
-              {programName === 'The Private Estate Accelerator' && (
-                <div className="pt-2">
-                  <Label className="text-xs text-muted-foreground">Sub-option</Label>
-                  <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
-                      <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    VIP Weekend still joins the Accelerator program, but the invitee signs the VIP Weekend agreement.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
+          {programName === 'The Private Estate Accelerator' && (
+            <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
+                <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
-
-
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <Label>TruHeirs Section Access</Label>
-              <p className="text-xs text-muted-foreground">Grants access to TruHeirs dashboard and family office features.</p>
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <div className="min-w-0">
+              <Label className="text-xs">TruHeirs Section Access</Label>
+              <p className="text-[11px] text-muted-foreground truncate">Dashboard & family office features</p>
             </div>
             <Switch checked={truheirsAccess} onCheckedChange={setTruheirsAccess} />
           </div>
 
-          <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+          <div className="rounded-lg border p-3 space-y-2.5 bg-muted/30">
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />
-              <Label className="text-base font-semibold">Payment Details</Label>
+              <Label className="text-sm font-semibold">Payment Details</Label>
             </div>
-            <div className="space-y-2">
-              <Label>Payment Type</Label>
-              <Select value={planType} onValueChange={(v) => setPlanType(v as PlanType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="paid_in_full">Paid in Full</SelectItem>
-                  <SelectItem value="payment_plan">Payment Plan</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {planType !== 'free' && (
-              <div className="space-y-2">
-                <Label>Total Program Amount ($)</Label>
-                <Input type="number" min="0" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} placeholder="e.g. 5000" />
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Payment Type</Label>
+                <Select value={planType} onValueChange={(v) => setPlanType(v as PlanType)}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="paid_in_full">Paid in Full</SelectItem>
+                    <SelectItem value="payment_plan">Payment Plan</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+              {planType !== 'free' && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Total Amount ($)</Label>
+                  <Input type="number" min="0" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} placeholder="e.g. 5000" className="h-9 text-sm" />
+                </div>
+              )}
+            </div>
             {planType === 'payment_plan' && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Installment Amount ($)</Label>
-                  <Input type="number" min="0" value={installmentAmount} onChange={(e) => setInstallmentAmount(e.target.value)} placeholder="e.g. 500" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <Select value={installmentFrequency} onValueChange={(v) => setInstallmentFrequency(v as any)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="biweekly">Bi-Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label>First Payment Due Date</Label>
-                  <Input type="date" value={paymentStartDate} onChange={(e) => setPaymentStartDate(e.target.value)} />
-                </div>
+              <div className="grid gap-2.5 sm:grid-cols-3">
+                <Input type="number" min="0" value={installmentAmount} onChange={(e) => setInstallmentAmount(e.target.value)} placeholder="Installment $" className="h-9 text-sm" />
+                <Select value={installmentFrequency} onValueChange={(v) => setInstallmentFrequency(v as any)}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input type="date" value={paymentStartDate} onChange={(e) => setPaymentStartDate(e.target.value)} className="h-9 text-sm" />
               </div>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label>Internal Note (optional)</Label>
-            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Twitter launch, John's referrals..." />
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Internal Note (optional)</Label>
+              <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Twitter launch, John's referrals..." className="h-9 text-sm" />
+            </div>
+            <Button onClick={create} disabled={creating} className="h-9 sm:self-end" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+              {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+              Create Link
+            </Button>
           </div>
-
-          <Button onClick={create} disabled={creating} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
-            {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-            Create Invite Link
-          </Button>
         </CardContent>
       </Card>
 

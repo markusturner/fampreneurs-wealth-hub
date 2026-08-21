@@ -182,173 +182,131 @@ export function AdminUserManagement() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5" style={{ color: '#ffb500' }} />
           <CardTitle>Bulk Invite Users</CardTitle>
         </div>
-        <CardDescription>
-          Invite users via email in bulk. They'll receive an invitation to complete their profile (name, address, etc.). Payment plans trigger automatic reminders.
+        <CardDescription className="text-xs">
+          Invite users via email in bulk. They'll receive an invitation to complete their profile. Payment plans trigger automatic reminders.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="bulkEmails">Email Addresses</Label>
+      <CardContent className="space-y-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="bulkEmails" className="text-xs">Email Addresses</Label>
           <Textarea
             id="bulkEmails"
             value={bulkEmails}
             onChange={(e) => setBulkEmails(e.target.value)}
-            placeholder={"Enter emails separated by commas or new lines:\njohn@example.com\njane@example.com, bob@example.com"}
-            rows={5}
+            placeholder={"john@example.com, jane@example.com"}
+            rows={2}
             disabled={isLoading}
+            className="text-sm resize-none"
           />
-          <p className="text-xs text-muted-foreground">
-            {emailCount > 0 ? `${emailCount} valid email${emailCount > 1 ? 's' : ''} detected` : 'Separate emails with commas, semicolons, or new lines'}
+          <p className="text-[11px] text-muted-foreground">
+            {emailCount > 0 ? `${emailCount} valid email${emailCount > 1 ? 's' : ''} detected` : 'Comma, semicolon, or new line separated'}
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="role">User Role</Label>
-          <Select value={role} onValueChange={(value) => setRole(value as UserRole)} disabled={isLoading}>
-            <SelectTrigger id="role">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="trustee">Trustee</SelectItem>
-              <SelectItem value="family_office_member">Family Office Member</SelectItem>
-              <SelectItem value="family_member">Family Member</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="role" className="text-xs">Role</Label>
+            <Select value={role} onValueChange={(value) => setRole(value as UserRole)} disabled={isLoading}>
+              <SelectTrigger id="role" className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="trustee">Trustee</SelectItem>
+                <SelectItem value="family_office_member">Family Office Member</SelectItem>
+                <SelectItem value="family_member">Family Member</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="program">Program</Label>
-          <Select value={programName} onValueChange={setProgramName} disabled={isLoading}>
-            <SelectTrigger id="program">
-              <SelectValue placeholder="Select a program (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              {PROGRAM_OPTIONS.map((p) => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {programName === 'The Private Estate Accelerator' && (
-            <div className="pt-2 space-y-1">
-              <Label className="text-xs text-muted-foreground">Sub-option</Label>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="program" className="text-xs">Program</Label>
+            <Select value={programName} onValueChange={setProgramName} disabled={isLoading}>
+              <SelectTrigger id="program" className="h-9 text-sm"><SelectValue placeholder="Select a program (optional)" /></SelectTrigger>
+              <SelectContent>
+                {PROGRAM_OPTIONS.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {programName === 'The Private Estate Accelerator' && (
               <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')} disabled={isLoading}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
                   <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                VIP Weekend still joins the Accelerator program, but the invitee signs the VIP Weekend agreement.
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-
-        <div className="flex items-center justify-between py-2">
-          <div className="space-y-0.5">
-            <Label htmlFor="truheirs-access">TruHeirs Section Access</Label>
-            <p className="text-sm text-muted-foreground">Allow access to TruHeirs dashboard, family office, and related features</p>
+        <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+          <div className="min-w-0">
+            <Label htmlFor="truheirs-access" className="text-xs">TruHeirs Section Access</Label>
+            <p className="text-[11px] text-muted-foreground truncate">Dashboard, family office & related features</p>
           </div>
-          <Switch
-            id="truheirs-access"
-            checked={truHeirsAccess}
-            onCheckedChange={setTruHeirsAccess}
-            disabled={isLoading}
-          />
+          <Switch id="truheirs-access" checked={truHeirsAccess} onCheckedChange={setTruHeirsAccess} disabled={isLoading} />
         </div>
 
         {/* Payment Plan Section */}
-        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+        <div className="rounded-lg border p-3 space-y-2.5 bg-muted/30">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />
-            <Label className="text-base font-semibold">Payment Details</Label>
+            <Label className="text-sm font-semibold">Payment Details</Label>
           </div>
 
-          <div className="space-y-2">
-            <Label>Payment Type</Label>
-            <Select value={planType} onValueChange={(v) => setPlanType(v as 'free' | 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="paid_in_full">Paid in Full</SelectItem>
-                <SelectItem value="payment_plan">Payment Plan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {planType !== 'free' && (
-            <div className="space-y-2">
-              <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
-              <Input
-                id="totalAmount"
-                type="number"
-                min="0"
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
-                placeholder="e.g. 5000"
-                disabled={isLoading}
-              />
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Payment Type</Label>
+              <Select value={planType} onValueChange={(v) => setPlanType(v as 'free' | 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="paid_in_full">Paid in Full</SelectItem>
+                  <SelectItem value="payment_plan">Payment Plan</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            {planType !== 'free' && (
+              <div className="space-y-1.5">
+                <Label htmlFor="totalAmount" className="text-xs">Total Amount ($)</Label>
+                <Input id="totalAmount" type="number" min="0" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} placeholder="e.g. 5000" disabled={isLoading} className="h-9 text-sm" />
+              </div>
+            )}
+          </div>
 
           {planType === 'payment_plan' && (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="installmentAmount">Installment Amount ($)</Label>
-                  <Input
-                    id="installmentAmount"
-                    type="number"
-                    min="0"
-                    value={installmentAmount}
-                    onChange={(e) => setInstallmentAmount(e.target.value)}
-                    placeholder="e.g. 500"
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <Select value={installmentFrequency} onValueChange={(v) => setInstallmentFrequency(v as any)} disabled={isLoading}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="biweekly">Bi-Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="installmentAmount" className="text-xs">Installment ($)</Label>
+                <Input id="installmentAmount" type="number" min="0" value={installmentAmount} onChange={(e) => setInstallmentAmount(e.target.value)} placeholder="e.g. 500" disabled={isLoading} className="h-9 text-sm" />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="paymentStartDate">First Payment Due Date</Label>
-                <Input
-                  id="paymentStartDate"
-                  type="date"
-                  value={paymentStartDate}
-                  onChange={(e) => setPaymentStartDate(e.target.value)}
-                  disabled={isLoading}
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs">Frequency</Label>
+                <Select value={installmentFrequency} onValueChange={(v) => setInstallmentFrequency(v as any)} disabled={isLoading}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-
-              <p className="text-xs text-muted-foreground">
-                📧 Automatic payment reminders will be sent 7 days, 3 days, and 24 hours before each due date. Access will be revoked after 2 consecutive missed payments.
+              <div className="space-y-1.5">
+                <Label htmlFor="paymentStartDate" className="text-xs">First Due Date</Label>
+                <Input id="paymentStartDate" type="date" value={paymentStartDate} onChange={(e) => setPaymentStartDate(e.target.value)} disabled={isLoading} className="h-9 text-sm" />
+              </div>
+              <p className="text-[11px] text-muted-foreground sm:col-span-3">
+                📧 Reminders sent 7d, 3d, 24h before each due date. Access revoked after 2 consecutive missed payments.
               </p>
-            </>
+            </div>
           )}
         </div>
 
-        <Button onClick={handleBulkInvite} disabled={isLoading || emailCount === 0} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+        <Button onClick={handleBulkInvite} disabled={isLoading || emailCount === 0} className="w-full h-9" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
