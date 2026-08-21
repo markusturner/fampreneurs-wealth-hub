@@ -153,17 +153,11 @@ The program will include:
 
 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Accountability and Trust Coaching Calls)
 
-3-months of Monthly 1-on-1 meetings with our Family Success Coach
+One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent
 
 FREE Private Access to 'The Fampreneurs Community'
 
 Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
-
-You will have FREE access to our Monthly Coaching Calls with "The Fampreneurs" 6 & 7-Figure Friends
-
-FOR CLIENTS UNDER 680 credit score - We offer access to our AI-powered credit disputing software and/or our done-for-you credit restoration service for 120-days ONLY, which leverages Consumer Law and Metro 2 Compliance standards to assist in repairing and improving your credit profile.
-
-FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking assessment designed to strategically position you to obtain up to $25,000 in credit funding under the entity of your choosing. A standard administrative fee of ten percent (10%) shall be assessed on the total amount of credit funding secured on your behalf.
 
 Payment Terms:
 
