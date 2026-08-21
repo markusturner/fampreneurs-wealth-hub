@@ -488,8 +488,8 @@ function toLegacyPeaPricing(text: string): string {
 function toLegacyPeaTerms(text: string): string {
   return text
     .replace(
-      '2. One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent',
-      '2. 3-months of Monthly 1-on-1 meetings with our Family Success Coach',
+      '    2. One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent',
+      '    2. 3-months of Monthly 1-on-1 meetings with our Family Success Coach',
     )
     .replace(
       'Payment Terms:',
