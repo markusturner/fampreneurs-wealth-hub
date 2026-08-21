@@ -167,25 +167,19 @@ The program will include:
 
 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Accountability and Trust Coaching Calls)
 
-3-months of Monthly 1-on-1 meetings with our Family Success Coach
+One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent
 
 FREE Private Access to 'The Fampreneurs Community'
 
 Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
 
-You will have FREE access to our Monthly Coaching Calls with "The Fampreneurs" 6 & 7-Figure Friends
-
-FOR CLIENTS UNDER 680 credit score - We offer access to our AI-powered credit disputing software and/or our done-for-you credit restoration service for 120-days ONLY, which leverages Consumer Law and Metro 2 Compliance standards to assist in repairing and improving your credit profile.
-
-FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking assessment designed to strategically position you to obtain up to $25,000 in credit funding under the entity of your choosing. A standard administrative fee of ten percent (10%) shall be assessed on the total amount of credit funding secured on your behalf.
-
 Payment Terms:
 
-Total Program Cost: The Private Estate Accelerator - Regularly $9,000, but today for ONLY $7,500.
+Total Program Cost: The Private Estate Accelerator - Regularly $12,000, but today for ONLY $9,000.
 
 Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
 
-If you are enrolling under a payment plan, the total investment is Nine Thousand Dollars ($9,000.00). An initial deposit of Three Thousand Dollars ($3,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Three Thousand Dollars ($3,000.00) each.
+If you are enrolling under a payment plan, the total investment is Twelve Thousand Dollars ($12,000.00). An initial deposit of Four Thousand Dollars ($4,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Four Thousand Dollars ($4,000.00) each.
 
 All payments are non refundable. The sign-up start time is considered to be at the time of signing this document. All sales are non-refundable and chargebacks are not allowed. All non-payment will result in a filing with UCC as a lien.
 
