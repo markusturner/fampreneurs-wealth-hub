@@ -1147,9 +1147,7 @@ export default function ProgramAgreement() {
 
             {/* Agreement text */}
             <ScrollArea className="h-[400px] border rounded-lg p-4">
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                {agreementText}
-              </div>
+              <AgreementText text={agreementText} />
             </ScrollArea>
 
             {/* Signature section */}
