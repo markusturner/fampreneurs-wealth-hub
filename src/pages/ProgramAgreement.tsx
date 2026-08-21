@@ -165,13 +165,13 @@ Program Details:
 
 The program will include:
 
-1. 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Accountability and Trust Coaching Calls)
+    1. 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Accountability and Trust Coaching Calls)
 
-2. One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent
+    2. One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent
 
-3. FREE Private Access to 'The Fampreneurs Community'
+    3. FREE Private Access to 'The Fampreneurs Community'
 
-4. Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
+    4. Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
 
 Payment Terms:
 
