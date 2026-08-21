@@ -114,8 +114,8 @@ export function AdminSettings() {
 
         {(isAdmin || isOwner) && (
           <TabsContent value="invites" className="space-y-6">
-            <AdminInviteLinks />
             <AdminUserManagement />
+            <AdminInviteLinks />
           </TabsContent>
         )}
 
