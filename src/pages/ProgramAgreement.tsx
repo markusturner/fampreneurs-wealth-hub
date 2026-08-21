@@ -213,7 +213,7 @@ Program Details:
 
 The program will include:
 
-    1. 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Accountability and Trust Coaching Calls)
+    1. 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Q&A Accountability Call)
 
     2. One (1) complimentary 1-on-1 call with the private trust attorney AND one (1) complimentary 1-on-1 call with the private insurance agent
 
