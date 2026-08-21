@@ -217,6 +217,9 @@ The program will include:
 
     4. Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
 
+    5. 90-Day FREE access to the TruHeirs software. After the 90-day period, access continues at $247 per quarter.
+
+
 Payment Terms:
 
 Total Program Cost: The Private Estate Accelerator - Regularly $12,000, but today for ONLY $9,000.
