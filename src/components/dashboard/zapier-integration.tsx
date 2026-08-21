@@ -265,7 +265,9 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
           <div className="p-4 bg-muted rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Status:</span>
-              <span className="text-sm text-green-600">Active</span>
+              <span className={`text-sm ${existingWebhook.is_active ? 'text-green-600' : 'text-muted-foreground'}`}>
+                {existingWebhook.is_active ? 'Active' : 'Paused'}
+              </span>
             </div>
             {existingWebhook.webhook_name && (
               <div className="flex items-center justify-between">
