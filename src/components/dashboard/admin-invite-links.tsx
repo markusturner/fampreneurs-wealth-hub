@@ -159,6 +159,38 @@ export function AdminInviteLinks() {
     setCreating(false)
     if (error) return toast({ title: 'Failed', description: error.message, variant: 'destructive' })
 
+    // Fire saved Zapier webhook (e.g. to add the contact to a GoHighLevel workflow)
+    try {
+      const { data: hook } = await supabase
+        .from('zapier_webhooks')
+        .select('webhook_url, is_active')
+        .eq('user_id', user?.id || '')
+        .maybeSingle()
+      if (hook?.is_active && hook.webhook_url) {
+        await fetch(hook.webhook_url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            event_type: 'invite_created',
+            timestamp: new Date().toISOString(),
+            triggered_from: window.location.origin,
+            email: accessMode === 'direct' ? directEmail.trim().toLowerCase() : null,
+            invite_url: inviteUrl(token),
+            invite_type: inviteType,
+            role,
+            program_name: effectiveProgram,
+            plan_type: planType,
+            total_amount: planType !== 'free' ? Number(totalAmount) : null,
+            note: note || null,
+          }),
+        })
+      }
+    } catch (e) {
+      console.error('Zapier webhook failed', e)
+    }
+
+
     toast({
       title: 'Invite link created',
       description: accessMode === 'direct'
