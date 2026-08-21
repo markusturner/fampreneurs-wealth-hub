@@ -33,16 +33,20 @@ function AgreementText({ text }: { text: string }) {
     if (m) {
       if (!cur || cur.type !== 'list') { cur = { type: 'list', content: [] }; segs.push(cur) }
       cur.content.push(m[1].trim())
+    } else if (line.trim() === '') {
+      // Keep list grouping open across blank lines; preserve blanks only inside text segments
+      if (cur && cur.type === 'text') cur.content.push(line)
     } else {
       if (!cur || cur.type !== 'text') { cur = { type: 'text', content: [] }; segs.push(cur) }
       cur.content.push(line)
     }
   }
+  const finalSegs = segs.filter((s) => s.type === 'list' || s.content.some((l) => l.trim()))
 
   return (
     <div className="text-sm leading-relaxed text-foreground">
       <div className="whitespace-pre-wrap">{before}</div>
-      {segs.map((seg, i) =>
+      {finalSegs.map((seg, i) =>
         seg.type === 'list' ? (
           <ol key={i} className="list-decimal pl-8 mt-2 space-y-2">
             {seg.content.map((it, j) => (
@@ -216,6 +220,9 @@ The program will include:
     3. FREE Private Access to 'The Fampreneurs Community'
 
     4. Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
+
+    5. 90-Day FREE access to the TruHeirs software. After the 90-day period, access continues at $247 per quarter.
+
 
 Payment Terms:
 
