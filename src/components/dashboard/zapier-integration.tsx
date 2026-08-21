@@ -229,6 +229,18 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
           </p>
         </div>
 
+        <div className="rounded-lg border p-4 space-y-1 bg-muted/30">
+          <p className="text-sm font-medium">How to send contacts to GoHighLevel</p>
+          <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-1">
+            <li>In Zapier, create a Zap with the trigger "Webhooks by Zapier → Catch Hook".</li>
+            <li>Copy the hook URL, paste it above, and click Save.</li>
+            <li>Click Test Webhook so Zapier can see the fields.</li>
+            <li>Add the action "LeadConnector (GoHighLevel) → Create/Update Contact" and map <code>email</code>, <code>first_name</code>, <code>program_name</code>, and <code>invite_url</code>.</li>
+            <li>Add a second action to add the contact to your workflow, then turn the Zap on.</li>
+          </ol>
+        </div>
+
+
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={isSaving || !webhookUrl}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
