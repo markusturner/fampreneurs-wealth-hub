@@ -473,6 +473,8 @@ export const AGREEMENT_TEXT_MAP: Record<string, string> = {
 
 // PEA pricing was raised on this date. Agreements signed before it keep the old numbers.
 export const PEA_PRICE_CHANGE_DATE = new Date('2026-08-05T00:00:00Z')
+// PEA program inclusions were revised on this date. Agreements signed before it keep the old terms.
+export const PEA_TERMS_CHANGE_DATE = new Date('2026-08-21T00:00:00Z')
 
 function toLegacyPeaPricing(text: string): string {
   return text
@@ -480,6 +482,24 @@ function toLegacyPeaPricing(text: string): string {
     .replace(
       'the total investment is Twelve Thousand Dollars ($12,000.00). An initial deposit of Four Thousand Dollars ($4,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Four Thousand Dollars ($4,000.00) each.',
       'the total investment is Nine Thousand Dollars ($9,000.00). An initial deposit of Three Thousand Dollars ($3,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Three Thousand Dollars ($3,000.00) each.',
+    )
+}
+
+function toLegacyPeaTerms(text: string): string {
+  return text
+    .replace(
+      'One (1) complimentary 1-on-1 call with the private trust attorney and private insurance agent',
+      '3-months of Monthly 1-on-1 meetings with our Family Success Coach',
+    )
+    .replace(
+      'Payment Terms:',
+      `You will have FREE access to our Monthly Coaching Calls with "The Fampreneurs" 6 & 7-Figure Friends
+
+FOR CLIENTS UNDER 680 credit score - We offer access to our AI-powered credit disputing software and/or our done-for-you credit restoration service for 120-days ONLY, which leverages Consumer Law and Metro 2 Compliance standards to assist in repairing and improving your credit profile.
+
+FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking assessment designed to strategically position you to obtain up to $25,000 in credit funding under the entity of your choosing. A standard administrative fee of ten percent (10%) shall be assessed on the total amount of credit funding secured on your behalf.
+
+Payment Terms:`,
     )
 }
 
@@ -493,8 +513,12 @@ export function getAgreementTextByProgram(
   if (n === 'tfv' || n.includes('vault')) return TFV_AGREEMENT
   if (n === 'tfba' || n.includes('accelerator')) {
     const signed = signedAt ? new Date(signedAt) : null
-    return signed && signed < PEA_PRICE_CHANGE_DATE ? toLegacyPeaPricing(TFBA_AGREEMENT) : TFBA_AGREEMENT
+    let text = TFBA_AGREEMENT
+    if (signed && signed < PEA_TERMS_CHANGE_DATE) text = toLegacyPeaTerms(text)
+    if (signed && signed < PEA_PRICE_CHANGE_DATE) text = toLegacyPeaPricing(text)
+    return text
   }
+
   if (n === 'tffm' || n.includes('mastermind') || n.includes('fortune')) return TFFM_AGREEMENT
   if (n === 'fbu' || n.includes('university')) return FBU_AGREEMENT
   // Try direct match
