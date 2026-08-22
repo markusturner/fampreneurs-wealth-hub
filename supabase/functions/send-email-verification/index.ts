@@ -16,7 +16,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email }: EmailVerificationRequest = await req.json();
+    const body: EmailVerificationRequest = await req.json();
+    const email = (body.email || '').trim().toLowerCase();
 
     if (!email) {
       throw new Error('Email is required');
@@ -33,15 +34,28 @@ const handler = async (req: Request): Promise<Response> => {
     // Store verification code temporarily (expires in 10 minutes)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     
+    // Clear any stale codes for this email so only the newest one is valid
     await supabase
       .from('verification_codes')
-      .upsert({
+      .delete()
+      .eq('email', email)
+      .eq('method', 'email')
+      .eq('verified', false);
+
+    const { error: insertError } = await supabase
+      .from('verification_codes')
+      .insert({
         email,
         code: verificationCode,
         method: 'email',
         expires_at: expiresAt,
         verified: false
       });
+
+    if (insertError) {
+      console.error('Failed to store verification code:', insertError);
+      throw new Error('Could not create a verification code. Please try again.');
+    }
 
     // Send email via Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
