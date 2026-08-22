@@ -2284,6 +2284,52 @@ export default function WorkspaceCommunity() {
                 </SelectContent>
               </Select>
             </div>
+            {(isAdmin || isOwner) && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label>Post Categories</Label>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => saveCategories(DEFAULT_CATEGORIES)}>
+                    <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                  </Button>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {categories.map((c, i) => (
+                    <div key={c.value} className="flex items-center gap-2">
+                      <Input
+                        value={c.emoji}
+                        onChange={e => saveCategories(categories.map((x, xi) => xi === i ? { ...x, emoji: e.target.value } : x))}
+                        className="h-8 w-12 text-center px-1"
+                        placeholder="🙂"
+                      />
+                      <Input
+                        value={c.label}
+                        onChange={e => saveCategories(categories.map((x, xi) => xi === i ? { ...x, label: e.target.value } : x))}
+                        className="h-8 flex-1"
+                        placeholder="Category name"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => saveCategories(categories.filter((_, xi) => xi !== i))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => saveCategories([...categories, { label: 'New Category', value: `cat-${Date.now()}`, emoji: '🏷️' }])}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Category
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Renaming keeps existing posts in that category. Category changes save instantly.</p>
+              </div>
+            )}
+
             <Button className="w-full" onClick={handleSaveCommunitySettings}>
               Save Settings
             </Button>
