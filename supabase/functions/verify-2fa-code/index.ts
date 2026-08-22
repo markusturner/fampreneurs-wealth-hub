@@ -42,7 +42,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, code, method, phoneNumber, secret }: VerifyCodeRequest = await req.json();
+    const payload: VerifyCodeRequest = await req.json();
+    const email = (payload.email || '').trim().toLowerCase();
+    const code = (payload.code || '').trim();
+    const { method, phoneNumber, secret } = payload;
 
     if (!email || !code || !method) {
       throw new Error('Email, code, and method are required');
@@ -71,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
             secret,
             enabled: true,
             verified_at: new Date().toISOString()
-          });
+          }, { onConflict: 'email' });
       }
     } else {
       // Verify SMS or email code
@@ -83,7 +86,9 @@ const handler = async (req: Request): Promise<Response> => {
         .eq('code', code)
         .eq('verified', false)
         .gte('expires_at', new Date().toISOString())
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (verificationRecord) {
         isValid = true;
@@ -103,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
             phone_number: method === 'phone' ? phoneNumber : null,
             enabled: true,
             verified_at: new Date().toISOString()
-          });
+          }, { onConflict: 'email' });
       }
     }
 

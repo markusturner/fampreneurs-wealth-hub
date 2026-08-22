@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { sanitizeFileName } from "@/lib/sanitize-file-name"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { Upload, Trash2, FileText, Loader2, Image, File } from "lucide-react"
@@ -187,11 +188,17 @@ export function TrustAssetUploads({ onSubmitted }: TrustAssetUploadsProps) {
 
     try {
       for (const file of Array.from(files)) {
-        const filePath = `${user.id}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
+        if (file.size > 50 * 1024 * 1024) {
+          throw new Error(`"${file.name}" is larger than 50MB. Please upload a smaller file or split it up.`)
+        }
+        const filePath = `${user.id}/${category}/${Date.now()}_${sanitizeFileName(file.name)}`
 
         const { error: storageError } = await supabase.storage
           .from("trust-asset-uploads")
-          .upload(filePath, file)
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type || "application/octet-stream",
+          })
         if (storageError) throw storageError
 
         const { error: dbError } = await supabase
