@@ -11,6 +11,7 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { toast } = useToast()
+  const canSubmit = email.trim().length > 0 && password.length > 0
 
   // Track affiliate ref visits + persist for signup attribution
   useEffect(() => {
