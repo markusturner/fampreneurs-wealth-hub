@@ -27,7 +27,7 @@ import * as tus from 'tus-js-client'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks, Plus, Trash2, RotateCcw
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { MessageSquare, CalendarDays, Trophy } from 'lucide-react'
