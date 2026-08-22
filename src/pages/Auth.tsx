@@ -152,29 +152,29 @@ export default function Auth() {
             </button>
           </div>
 
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center pt-3">
             <button
               type="submit"
               disabled={isLoading}
               aria-label="Sign in"
-              className={`group inline-flex items-center justify-center rounded-full font-semibold text-sm transition-all duration-500 ease-out disabled:opacity-50 ${
+              className={`group inline-flex items-center justify-center rounded-full font-medium text-sm transition-all duration-500 ease-out disabled:opacity-40 ${
                 canSubmit
-                  ? 'px-6 py-2.5 gap-2 bg-[#290a52] text-white shadow-lg shadow-[#290a52]/40'
-                  : 'p-2.5 bg-[#290a52] text-white shadow-lg shadow-[#290a52]/40'
+                  ? 'px-5 py-2 gap-2 bg-[#290a52] text-white border border-[#290a52]'
+                  : 'p-2 text-[#290a52] border border-[#290a52]/40 bg-transparent'
               }`}
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   <span
                     className={`overflow-hidden whitespace-nowrap transition-all duration-500 ease-out ${
-                      canSubmit ? 'max-w-[120px] opacity-100 ml-1' : 'max-w-0 opacity-0'
+                      canSubmit ? 'max-w-[100px] opacity-100' : 'max-w-0 opacity-0'
                     }`}
                   >
                     Submit
                   </span>
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </>
               )}
             </button>
