@@ -27,7 +27,7 @@ import * as tus from 'tus-js-client'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks, Plus, Trash2, RotateCcw
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { MessageSquare, CalendarDays, Trophy } from 'lucide-react'
@@ -125,14 +125,29 @@ const PROGRAM_UPGRADE_MAP: Record<string, string> = {
   tfba: 'tffm',
 }
 
-const CATEGORIES = [
-  { label: 'All', value: 'all', emoji: '' },
+type CommunityCategory = { label: string; value: string; emoji: string }
+
+const DEFAULT_CATEGORIES: CommunityCategory[] = [
   { label: 'Discussion', value: 'discussion', emoji: '💬' },
   { label: 'Wins', value: 'wins', emoji: '🏆' },
   { label: 'Updates', value: 'updates', emoji: '📣' },
   { label: 'Gems', value: 'gems', emoji: '💎' },
   { label: 'Recordings', value: 'recordings', emoji: '🎥' },
 ]
+
+const categoriesKey = (program: string) => `truheirs:communityCategories:${program}`
+
+const loadCategories = (program: string): CommunityCategory[] => {
+  try {
+    const raw = localStorage.getItem(categoriesKey(program))
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length) return parsed
+    }
+  } catch {}
+  return DEFAULT_CATEGORIES
+}
+
 
 const MAX_VIDEO_UPLOAD_MS = 3 * 60 * 1000
 
@@ -183,6 +198,18 @@ export default function WorkspaceCommunity() {
   const [memberCount, setMemberCount] = useState(0)
   const [onlineCount, setOnlineCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [categories, setCategories] = useState<CommunityCategory[]>(() => loadCategories(program))
+  const allCategories = [{ label: 'All', value: 'all', emoji: '' }, ...categories]
+
+  useEffect(() => {
+    setCategories(loadCategories(program))
+  }, [program])
+
+  const saveCategories = (next: CommunityCategory[]) => {
+    setCategories(next)
+    try { localStorage.setItem(categoriesKey(program), JSON.stringify(next)) } catch {}
+  }
+
   const [communityPhoto, setCommunityPhoto] = useState<string | null>(null)
   const [communityName, setCommunityName] = useState('')
   const [communityDesc, setCommunityDesc] = useState('')
@@ -1208,7 +1235,7 @@ export default function WorkspaceCommunity() {
     toast({ title: newPinned ? 'Post pinned' : 'Post unpinned' })
   }
 
-  const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
+  const categoryLabel = categories.find(c => c.value === postCategory)
 
   // Mobile post composer dialog state
   const [mobilePostOpen, setMobilePostOpen] = useState(false)
@@ -1546,7 +1573,7 @@ export default function WorkspaceCommunity() {
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                        {categories.map(c => (
                           <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -1659,11 +1686,11 @@ export default function WorkspaceCommunity() {
                         <Select value={postCategory} onValueChange={setPostCategory}>
                           <SelectTrigger className="h-8 w-10 text-xs border-0 bg-muted/50 px-2 [&>svg]:hidden justify-center" title="Category">
                             <SelectValue>
-                              {CATEGORIES.find(c => c.value === postCategory)?.emoji || '💬'}
+                              {categories.find(c => c.value === postCategory)?.emoji || '💬'}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                            {categories.map(c => (
                               <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                             ))}
                           </SelectContent>
@@ -1711,7 +1738,7 @@ export default function WorkspaceCommunity() {
 
             {/* Category Filters */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {CATEGORIES.map(cat => (
+              {allCategories.map(cat => (
                 <button
                   key={cat.value}
                   onClick={() => setActiveCategory(cat.value)}
@@ -1851,7 +1878,7 @@ export default function WorkspaceCommunity() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                                    {categories.map(c => (
                                       <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                                     ))}
                                   </SelectContent>
@@ -2217,7 +2244,7 @@ export default function WorkspaceCommunity() {
       
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Community Settings</DialogTitle>
           </DialogHeader>
@@ -2257,6 +2284,52 @@ export default function WorkspaceCommunity() {
                 </SelectContent>
               </Select>
             </div>
+            {(isAdmin || isOwner) && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label>Post Categories</Label>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => saveCategories(DEFAULT_CATEGORIES)}>
+                    <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                  </Button>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {categories.map((c, i) => (
+                    <div key={c.value} className="flex items-center gap-2">
+                      <Input
+                        value={c.emoji}
+                        onChange={e => saveCategories(categories.map((x, xi) => xi === i ? { ...x, emoji: e.target.value } : x))}
+                        className="h-8 w-12 text-center px-1"
+                        placeholder="🙂"
+                      />
+                      <Input
+                        value={c.label}
+                        onChange={e => saveCategories(categories.map((x, xi) => xi === i ? { ...x, label: e.target.value } : x))}
+                        className="h-8 flex-1"
+                        placeholder="Category name"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => saveCategories(categories.filter((_, xi) => xi !== i))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => saveCategories([...categories, { label: 'New Category', value: `cat-${Date.now()}`, emoji: '🏷️' }])}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Category
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Renaming keeps existing posts in that category. Category changes save instantly.</p>
+              </div>
+            )}
+
             <Button className="w-full" onClick={handleSaveCommunitySettings}>
               Save Settings
             </Button>

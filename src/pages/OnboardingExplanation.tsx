@@ -61,49 +61,47 @@ export default function OnboardingExplanation() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-background via-background to-primary/5 flex items-start md:items-center justify-center p-4 pt-6 md:pt-4 overflow-y-auto">
-      <Card className="w-full max-w-2xl shadow-soft mb-6">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-3">
-            <img
-              src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"
-              alt="TruHeirs Logo"
-              className="w-16 h-16 object-contain"
-            />
-          </div>
-          <CardTitle className="text-2xl font-bold">Welcome to TruHeirs</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-2 sm:p-4">
+      <Card className="w-full max-w-3xl shadow-soft max-h-full flex flex-col">
+        <CardHeader className="text-center py-3 space-y-1">
+          <img
+            src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"
+            alt="TruHeirs Logo"
+            className="w-10 h-10 object-contain mx-auto"
+          />
+          <CardTitle className="text-lg sm:text-xl font-bold">Welcome to TruHeirs</CardTitle>
+          <p className="text-xs text-muted-foreground">
             Here's what to expect during your onboarding process
           </p>
-          <div className="flex items-center justify-center gap-2 mt-3 px-4 py-2 rounded-lg bg-muted/50 border mx-auto w-fit">
-            <Lock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              Your information is encrypted and never shared with third parties
-            </span>
-          </div>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          {steps.map((step, index) => (
-            <div
-              key={index}
-              className={`flex gap-4 p-4 rounded-lg ${step.bg} border border-transparent`}
-            >
-              <div className={`shrink-0 mt-0.5 ${step.color}`}>
-                <step.icon className="h-6 w-6" />
+        <CardContent className="pt-0 pb-3 px-3 sm:px-6 flex-1 min-h-0 flex flex-col gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-h-0 overflow-hidden">
+            {steps.map((step, index) => (
+              <div
+                key={index}
+                className={`flex gap-2 p-2 rounded-lg ${step.bg} border border-transparent`}
+              >
+                <div className={`shrink-0 mt-0.5 ${step.color}`}>
+                  <step.icon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className={`font-semibold text-xs ${step.color}`}>{step.title}</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-4">
+                    {step.description}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className={`font-semibold text-sm ${step.color}`}>{step.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+            <Lock className="h-3 w-3" />
+            Your information is encrypted and never shared with third parties
+          </div>
 
           <Button
             onClick={handleContinue}
-            className="w-full mt-6 gap-2"
-            size="lg"
+            className="w-full gap-2 shrink-0"
             style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
@@ -116,3 +114,4 @@ export default function OnboardingExplanation() {
     </div>
   )
 }
+
