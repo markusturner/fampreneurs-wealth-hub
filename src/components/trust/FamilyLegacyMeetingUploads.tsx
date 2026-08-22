@@ -215,8 +215,8 @@ export function FamilyLegacyMeetingUploads({
 
     try {
       for (const file of Array.from(files)) {
-        if (file.size > 500 * 1024 * 1024) {
-          throw new Error(`"${file.name}" is larger than 500MB. Please upload a smaller file.`)
+        if (file.size > 50 * 1024 * 1024) {
+          throw new Error(`"${file.name}" is larger than 50MB. Please upload a smaller file or split it up.`)
         }
         const filePath = `${user.id}/${meetingType}/${category}/${Date.now()}_${sanitizeFileName(file.name)}`
 
