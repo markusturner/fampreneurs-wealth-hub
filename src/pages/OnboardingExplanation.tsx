@@ -75,18 +75,18 @@ export default function OnboardingExplanation() {
           </p>
         </CardHeader>
         <CardContent className="pt-0 pb-3 px-3 sm:px-6 flex-1 min-h-0 flex flex-col gap-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
             {steps.map((step, index) => (
               <div
                 key={index}
-                className={`flex gap-2 p-2 rounded-lg ${step.bg} border border-transparent`}
+                className={`flex items-center gap-2.5 p-1.5 rounded-lg ${step.bg} border border-transparent`}
               >
-                <div className={`shrink-0 mt-0.5 ${step.color}`}>
+                <div className={`shrink-0 ${step.color}`}>
                   <step.icon className="h-4 w-4" />
                 </div>
-                <div className="min-w-0">
-                  <h3 className={`font-semibold text-xs ${step.color}`}>{step.title}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className={`font-semibold text-xs ${step.color} leading-tight`}>{step.title}</h3>
+                  <p className="text-[11px] text-muted-foreground leading-snug line-clamp-1">
                     {step.description}
                   </p>
                 </div>
