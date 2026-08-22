@@ -2295,6 +2295,34 @@ export default function WorkspaceCommunity() {
                 <div className="mt-2 space-y-2">
                   {categories.map((c, i) => (
                     <div key={c.value} className="flex items-center gap-2">
+                      <div className="flex flex-col">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-6"
+                          disabled={i === 0}
+                          onClick={() => {
+                            const next = [...categories]
+                            ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
+                            saveCategories(next)
+                          }}
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-6"
+                          disabled={i === categories.length - 1}
+                          onClick={() => {
+                            const next = [...categories]
+                            ;[next[i + 1], next[i]] = [next[i], next[i + 1]]
+                            saveCategories(next)
+                          }}
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                       <Input
                         value={c.emoji}
                         onChange={e => saveCategories(categories.map((x, xi) => xi === i ? { ...x, emoji: e.target.value } : x))}
