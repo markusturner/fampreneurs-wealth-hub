@@ -1223,7 +1223,7 @@ export default function WorkspaceCommunity() {
     toast({ title: newPinned ? 'Post pinned' : 'Post unpinned' })
   }
 
-  const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
+  const categoryLabel = categories.find(c => c.value === postCategory)
 
   // Mobile post composer dialog state
   const [mobilePostOpen, setMobilePostOpen] = useState(false)
@@ -1561,7 +1561,7 @@ export default function WorkspaceCommunity() {
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                        {categories.map(c => (
                           <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -1674,11 +1674,11 @@ export default function WorkspaceCommunity() {
                         <Select value={postCategory} onValueChange={setPostCategory}>
                           <SelectTrigger className="h-8 w-10 text-xs border-0 bg-muted/50 px-2 [&>svg]:hidden justify-center" title="Category">
                             <SelectValue>
-                              {CATEGORIES.find(c => c.value === postCategory)?.emoji || '💬'}
+                              {categories.find(c => c.value === postCategory)?.emoji || '💬'}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                            {categories.map(c => (
                               <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                             ))}
                           </SelectContent>
@@ -1726,7 +1726,7 @@ export default function WorkspaceCommunity() {
 
             {/* Category Filters */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {CATEGORIES.map(cat => (
+              {allCategories.map(cat => (
                 <button
                   key={cat.value}
                   onClick={() => setActiveCategory(cat.value)}
@@ -1866,7 +1866,7 @@ export default function WorkspaceCommunity() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                                    {categories.map(c => (
                                       <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
                                     ))}
                                   </SelectContent>
