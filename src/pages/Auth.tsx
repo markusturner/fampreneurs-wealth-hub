@@ -157,8 +157,10 @@ export default function Auth() {
               type="submit"
               disabled={isLoading}
               aria-label="Sign in"
-              className={`group inline-flex items-center justify-center rounded-full text-secondary hover:text-foreground transition-all duration-500 ease-out disabled:opacity-50 ${
-                canSubmit ? 'px-6 py-2.5 gap-2 bg-secondary/10' : 'p-2.5'
+              className={`group inline-flex items-center justify-center rounded-full font-semibold text-sm transition-all duration-500 ease-out disabled:opacity-50 ${
+                canSubmit
+                  ? 'px-6 py-2.5 gap-2 bg-[#290a52] text-white shadow-lg shadow-[#290a52]/40'
+                  : 'p-2.5 bg-[#290a52] text-white shadow-lg shadow-[#290a52]/40'
               }`}
             >
               {isLoading ? (
@@ -166,7 +168,7 @@ export default function Auth() {
               ) : (
                 <>
                   <span
-                    className={`overflow-hidden whitespace-nowrap transition-all duration-500 ease-out font-semibold text-sm ${
+                    className={`overflow-hidden whitespace-nowrap transition-all duration-500 ease-out ${
                       canSubmit ? 'max-w-[120px] opacity-100 ml-1' : 'max-w-0 opacity-0'
                     }`}
                   >
