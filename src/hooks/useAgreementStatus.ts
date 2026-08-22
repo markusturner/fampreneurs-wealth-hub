@@ -62,7 +62,7 @@ export function useAgreementStatus() {
           ? supabase
               .from('user_2fa_settings')
               .select('id')
-              .eq('email', user.email)
+              .ilike('email', user.email)
               .eq('method', 'email')
               .eq('enabled', true)
               .not('verified_at', 'is', null)
