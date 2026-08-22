@@ -214,11 +214,17 @@ export function FamilyLegacyMeetingUploads({
 
     try {
       for (const file of Array.from(files)) {
-        const filePath = `${user.id}/${meetingType}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
+        if (file.size > 500 * 1024 * 1024) {
+          throw new Error(`"${file.name}" is larger than 500MB. Please upload a smaller file.`)
+        }
+        const filePath = `${user.id}/${meetingType}/${category}/${Date.now()}_${sanitizeFileName(file.name)}`
 
         const { error: storageError } = await supabase.storage
           .from("legacy-meeting-uploads")
-          .upload(filePath, file)
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type || "application/octet-stream",
+          })
         if (storageError) throw storageError
 
         const { error: dbError } = await supabase
