@@ -160,7 +160,7 @@ export default function Auth() {
               className={`group inline-flex items-center justify-center rounded-full font-medium text-sm transition-all duration-500 ease-out disabled:opacity-40 ${
                 canSubmit
                   ? 'px-5 py-2 gap-2 bg-[#290a52] text-white border border-[#290a52]'
-                  : 'p-2 text-[#290a52] border border-[#290a52]/40 bg-transparent'
+                  : 'p-2 text-[#ffb500] border border-[#ffb500]/50 bg-[#ffb500]/5'
               }`}
             >
               {isLoading ? (
