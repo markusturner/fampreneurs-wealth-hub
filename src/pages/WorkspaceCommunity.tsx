@@ -198,6 +198,18 @@ export default function WorkspaceCommunity() {
   const [memberCount, setMemberCount] = useState(0)
   const [onlineCount, setOnlineCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [categories, setCategories] = useState<CommunityCategory[]>(() => loadCategories(program))
+  const allCategories = [{ label: 'All', value: 'all', emoji: '' }, ...categories]
+
+  useEffect(() => {
+    setCategories(loadCategories(program))
+  }, [program])
+
+  const saveCategories = (next: CommunityCategory[]) => {
+    setCategories(next)
+    try { localStorage.setItem(categoriesKey(program), JSON.stringify(next)) } catch {}
+  }
+
   const [communityPhoto, setCommunityPhoto] = useState<string | null>(null)
   const [communityName, setCommunityName] = useState('')
   const [communityDesc, setCommunityDesc] = useState('')
