@@ -156,11 +156,24 @@ export default function Auth() {
               type="submit"
               disabled={isLoading}
               aria-label="Sign in"
-              className="group inline-flex items-center justify-center text-secondary hover:text-foreground transition disabled:opacity-50"
+              className={`group inline-flex items-center justify-center rounded-full text-secondary hover:text-foreground transition-all duration-500 ease-out disabled:opacity-50 ${
+                canSubmit ? 'px-6 py-2.5 gap-2 bg-secondary/10' : 'p-2.5'
+              }`}
             >
-              {isLoading
-                ? <Loader2 className="h-5 w-5 animate-spin" />
-                : <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <span
+                    className={`overflow-hidden whitespace-nowrap transition-all duration-500 ease-out font-semibold text-sm ${
+                      canSubmit ? 'max-w-[120px] opacity-100 ml-1' : 'max-w-0 opacity-0'
+                    }`}
+                  >
+                    Submit
+                  </span>
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </button>
           </div>
 
