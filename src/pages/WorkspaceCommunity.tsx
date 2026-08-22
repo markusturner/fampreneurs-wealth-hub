@@ -125,14 +125,29 @@ const PROGRAM_UPGRADE_MAP: Record<string, string> = {
   tfba: 'tffm',
 }
 
-const CATEGORIES = [
-  { label: 'All', value: 'all', emoji: '' },
+type CommunityCategory = { label: string; value: string; emoji: string }
+
+const DEFAULT_CATEGORIES: CommunityCategory[] = [
   { label: 'Discussion', value: 'discussion', emoji: '💬' },
   { label: 'Wins', value: 'wins', emoji: '🏆' },
   { label: 'Updates', value: 'updates', emoji: '📣' },
   { label: 'Gems', value: 'gems', emoji: '💎' },
   { label: 'Recordings', value: 'recordings', emoji: '🎥' },
 ]
+
+const categoriesKey = (program: string) => `truheirs:communityCategories:${program}`
+
+const loadCategories = (program: string): CommunityCategory[] => {
+  try {
+    const raw = localStorage.getItem(categoriesKey(program))
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length) return parsed
+    }
+  } catch {}
+  return DEFAULT_CATEGORIES
+}
+
 
 const MAX_VIDEO_UPLOAD_MS = 3 * 60 * 1000
 
