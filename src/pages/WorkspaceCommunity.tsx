@@ -2244,7 +2244,7 @@ export default function WorkspaceCommunity() {
       
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Community Settings</DialogTitle>
           </DialogHeader>
