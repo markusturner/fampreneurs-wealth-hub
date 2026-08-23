@@ -136,11 +136,9 @@ const handler = async (req: Request): Promise<Response> => {
       if (!emailResponse.ok) {
         const errorData = await emailResponse.text();
         console.error('Resend error:', errorData);
-        await supabase.from('verification_codes').delete().eq('email', email).eq('code', verificationCode);
-        throw new Error('Failed to send verification email');
+        await supabase.from('verification_codes').delete().ilike('email', email).eq('code', verificationCode);
+        throw new Error('We could not send your verification email. Please try again or contact support.');
       }
-    } else {
-      console.log(`[DEV] Email Verification Code for ${email}: ${verificationCode}`);
     }
 
     return new Response(
