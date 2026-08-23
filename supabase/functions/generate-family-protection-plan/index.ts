@@ -145,13 +145,20 @@ ${JSON.stringify(form_data, null, 2)}`;
     }
 
     // Save submission and surface persistence failures instead of showing a false success.
-    const { error: submissionError } = await supabaseClient.from("trust_submissions").insert({
+    const submission = {
       user_id: user.id,
       trust_type: "family_protection_plan",
       form_data,
       generated_document: documentUrl,
       status: "completed",
-    } as any);
+    } as const;
+
+    let { error: submissionError } = await supabaseClient.from("trust_submissions").insert(submission as any);
+    if (submissionError) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const retry = await supabaseClient.from("trust_submissions").insert(submission as any);
+      submissionError = retry.error;
+    }
 
     if (submissionError) {
       console.error("[FAMILY-PROTECTION-PLAN] SAVE ERROR:", submissionError);

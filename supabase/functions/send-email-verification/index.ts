@@ -40,7 +40,27 @@ const handler = async (req: Request): Promise<Response> => {
     crypto.getRandomValues(random);
     const verificationCode = (100000 + (random[0] % 900000)).toString();
 
-    // Store verification code temporarily (expires in 10 minutes)
+    // Prevent repeated requests from replacing a code before the email arrives.
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { data: recentCode, error: recentCodeError } = await supabase
+      .from('verification_codes')
+      .select('id')
+      .ilike('email', email)
+      .eq('method', 'email')
+      .eq('verified', false)
+      .gte('created_at', oneMinuteAgo)
+      .limit(1)
+      .maybeSingle();
+
+    if (recentCodeError) throw new Error('Could not check your recent verification request. Please try again.');
+    if (recentCode) {
+      return new Response(
+        JSON.stringify({ error: 'A code was just sent. Please wait one minute before requesting another.' }),
+        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Store verification code temporarily (expires in 15 minutes)
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     
     // Clear any stale codes for this email so only the newest one is valid
