@@ -95,7 +95,13 @@ const handler = async (req: Request): Promise<Response> => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'noreply@thefampreneurs.com';
 
-    if (resendApiKey) {
+    if (!resendApiKey) {
+      // Never report success when no email can actually be sent.
+      await supabase.from('verification_codes').delete().ilike('email', email).eq('code', verificationCode);
+      throw new Error('Email delivery is not configured. Please contact support.');
+    }
+
+    {
       const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -130,11 +136,9 @@ const handler = async (req: Request): Promise<Response> => {
       if (!emailResponse.ok) {
         const errorData = await emailResponse.text();
         console.error('Resend error:', errorData);
-        await supabase.from('verification_codes').delete().eq('email', email).eq('code', verificationCode);
-        throw new Error('Failed to send verification email');
+        await supabase.from('verification_codes').delete().ilike('email', email).eq('code', verificationCode);
+        throw new Error('We could not send your verification email. Please try again or contact support.');
       }
-    } else {
-      console.log(`[DEV] Email Verification Code for ${email}: ${verificationCode}`);
     }
 
     return new Response(
