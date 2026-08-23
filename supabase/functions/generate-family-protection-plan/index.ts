@@ -96,14 +96,17 @@ ${JSON.stringify(form_data, null, 2)}`;
     });
 
     let aiRes = await requestPlan();
-    if (aiRes.status === 429 || aiRes.status >= 500) {
-      await new Promise(resolve => setTimeout(resolve, 750));
+    for (let attempt = 0; attempt < 2 && (aiRes.status === 429 || aiRes.status >= 500); attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
       aiRes = await requestPlan();
     }
 
     if (!aiRes.ok) {
       const errText = await aiRes.text();
-      throw new Error(`AI gateway error: ${aiRes.status} ${errText}`);
+      console.error("[FAMILY-PROTECTION-PLAN] AI ERROR:", aiRes.status, errText);
+      if (aiRes.status === 429) throw new Error("Our writer is busy right now. Please try again in a minute.");
+      if (aiRes.status === 402) throw new Error("AI credits are used up. Please contact support.");
+      throw new Error("We could not build your plan right now. Please try again.");
     }
 
     const aiData = await aiRes.json();
