@@ -80,20 +80,26 @@ Family answers:
 ${JSON.stringify(form_data, null, 2)}`;
 
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const requestPlan = () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-3.6-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
       }),
     });
+
+    let aiRes = await requestPlan();
+    if (aiRes.status === 429 || aiRes.status >= 500) {
+      await new Promise(resolve => setTimeout(resolve, 750));
+      aiRes = await requestPlan();
+    }
 
     if (!aiRes.ok) {
       const errText = await aiRes.text();
@@ -138,14 +144,26 @@ ${JSON.stringify(form_data, null, 2)}`;
       }
     }
 
-    // Save submission
-    await supabaseClient.from("trust_submissions").insert({
+    // Save submission and surface persistence failures instead of showing a false success.
+    const submission = {
       user_id: user.id,
       trust_type: "family_protection_plan",
       form_data,
       generated_document: documentUrl,
       status: "completed",
-    } as any);
+    } as const;
+
+    let { error: submissionError } = await supabaseClient.from("trust_submissions").insert(submission as any);
+    if (submissionError) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const retry = await supabaseClient.from("trust_submissions").insert(submission as any);
+      submissionError = retry.error;
+    }
+
+    if (submissionError) {
+      console.error("[FAMILY-PROTECTION-PLAN] SAVE ERROR:", submissionError);
+      throw new Error("Your plan was created, but could not be saved. Please try again.");
+    }
 
     return new Response(JSON.stringify({ plan_text: planText, document_url: documentUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

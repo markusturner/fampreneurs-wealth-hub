@@ -43,18 +43,28 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const payload: VerifyCodeRequest = await req.json();
-    const email = (payload.email || '').trim().toLowerCase();
+    const requestedEmail = (payload.email || '').trim().toLowerCase();
     const code = (payload.code || '').trim();
     const { method, phoneNumber, secret } = payload;
 
-    if (!email || !code || !method) {
+    if (!requestedEmail || !/^\d{6}$/.test(code) || !method) {
       throw new Error('Email, code, and method are required');
     }
 
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const authHeader = req.headers.get('Authorization');
+    if (!supabaseUrl || !supabaseKey || !authHeader) {
+      throw new Error('You must be signed in to verify your information');
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    const email = userData.user?.email?.trim().toLowerCase() || '';
+    if (userError || !email || requestedEmail !== email) {
+      throw new Error('We could not confirm this email belongs to your account');
+    }
 
     let isValid = false;
 
@@ -78,11 +88,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     } else {
       // Verify SMS or email code
-      const { data: verificationRecord } = await supabase
+      const databaseMethod = method === 'phone' ? 'sms' : method;
+      const { data: verificationRecord, error: lookupError } = await supabase
         .from('verification_codes')
         .select('*')
-        .eq('email', email)
-        .eq('method', method)
+        .ilike('email', email)
+        .eq('method', databaseMethod)
         .eq('code', code)
         .eq('verified', false)
         .gte('expires_at', new Date().toISOString())
@@ -90,17 +101,21 @@ const handler = async (req: Request): Promise<Response> => {
         .limit(1)
         .maybeSingle();
 
+      if (lookupError) throw new Error('We could not check your code. Please try again.');
+
       if (verificationRecord) {
         isValid = true;
         
         // Mark code as verified
-        await supabase
+        const { error: consumeError } = await supabase
           .from('verification_codes')
           .update({ verified: true })
           .eq('id', verificationRecord.id);
 
+        if (consumeError) throw new Error('We could not finish verification. Please try again.');
+
         // Store the 2FA setup in user profile or settings
-        await supabase
+        const { error: settingsError } = await supabase
           .from('user_2fa_settings')
           .upsert({
             email,
@@ -109,6 +124,8 @@ const handler = async (req: Request): Promise<Response> => {
             enabled: true,
             verified_at: new Date().toISOString()
           }, { onConflict: 'email' });
+
+        if (settingsError) throw new Error('Your code was correct, but verification could not be saved. Please try again.');
       }
     }
 

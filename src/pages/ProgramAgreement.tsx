@@ -938,14 +938,17 @@ export default function ProgramAgreement() {
     if (!user?.email) return
     setSendingCode(true)
     try {
-      const { error } = await supabase.functions.invoke('send-email-verification', {
+      const { data, error } = await supabase.functions.invoke('send-email-verification', {
         body: { email: user.email }
       })
-      if (error) throw error
+      if (error) {
+        const details = await error.context?.json?.().catch(() => null)
+        throw new Error(details?.error || data?.error || error.message)
+      }
       setCodeSent(true)
       toast({ title: 'Code Sent', description: `A verification code has been sent to ${user.email}` })
     } catch (err: any) {
-      toast({ title: 'Error', description: 'Failed to send verification code.', variant: 'destructive' })
+      toast({ title: 'Error', description: err?.message || 'Failed to send verification code.', variant: 'destructive' })
     } finally {
       setSendingCode(false)
     }
@@ -958,7 +961,10 @@ export default function ProgramAgreement() {
       const { data, error } = await supabase.functions.invoke('verify-2fa-code', {
         body: { email: user?.email, code: verificationCode, method: 'email' }
       })
-      if (error) throw error
+      if (error) {
+        const details = await error.context?.json?.().catch(() => null)
+        throw new Error(details?.error || data?.error || error.message)
+      }
       if (data?.success || data?.verified) {
         setCodeVerified(true)
         toast({ title: 'Verified!', description: 'Your identity has been verified. Redirecting...' })
@@ -969,7 +975,7 @@ export default function ProgramAgreement() {
         toast({ title: 'Invalid Code', description: 'Please check your code and try again.', variant: 'destructive' })
       }
     } catch (err: any) {
-      toast({ title: 'Error', description: 'Verification failed. Please try again.', variant: 'destructive' })
+      toast({ title: 'Error', description: err?.message || 'Verification failed. Please try again.', variant: 'destructive' })
     } finally {
       setVerifyingCode(false)
     }

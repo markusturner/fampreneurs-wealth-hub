@@ -32,7 +32,7 @@ const ASSET_OPTIONS = [
 export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   const { toast } = useToast()
   const { user } = useAuth()
-  const storageKey = `family_protection_plan_draft_${user?.id ?? "guest"}`
+  const storageKey = user?.id ? `family_protection_plan_draft_${user.id}` : "family_protection_plan_draft_signed_out"
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [loading, setLoading] = useState(false)
@@ -113,6 +113,10 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   }
 
   const handleGenerate = async () => {
+    if (!user?.id) {
+      toast({ title: "Sign in required", description: "Please sign in before creating and saving your plan.", variant: "destructive" })
+      return
+    }
     if (!form.full_name || !form.family_name || !form.family_mission) {
       toast({ title: "Missing info", description: "Please fill in your name, family name, and mission.", variant: "destructive" })
       return
@@ -122,7 +126,10 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       const { data, error } = await supabase.functions.invoke("generate-family-protection-plan", {
         body: { form_data: form },
       })
-      if (error) throw error
+      if (error) {
+        const details = await error.context?.json?.().catch(() => null)
+        throw new Error(details?.error || error.message || "Failed to generate plan.")
+      }
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
       setSubmittedAt(new Date())
