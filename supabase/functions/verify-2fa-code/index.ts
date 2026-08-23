@@ -103,6 +103,48 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (lookupError) throw new Error('We could not check your code. Please try again.');
 
+      // Double submits: the same code may already be marked verified. Treat that as success.
+      if (!verificationRecord) {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const { data: alreadyVerified } = await supabase
+          .from('verification_codes')
+          .select('id')
+          .ilike('email', email)
+          .eq('method', databaseMethod)
+          .eq('code', code)
+          .eq('verified', true)
+          .gte('created_at', fiveMinutesAgo)
+          .limit(1)
+          .maybeSingle();
+
+        if (alreadyVerified) {
+          return new Response(
+            JSON.stringify({ success: true, message: '2FA setup completed successfully', method }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+          );
+        }
+
+        // Give a clear reason so people know whether to request a new code.
+        const { data: expiredRecord } = await supabase
+          .from('verification_codes')
+          .select('id')
+          .ilike('email', email)
+          .eq('method', databaseMethod)
+          .eq('code', code)
+          .lt('expires_at', new Date().toISOString())
+          .limit(1)
+          .maybeSingle();
+
+        return new Response(
+          JSON.stringify({
+            error: expiredRecord
+              ? 'That code expired. Please request a new code.'
+              : 'That code is not correct. Please check it or request a new code.',
+          }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+        );
+      }
+
       if (verificationRecord) {
         isValid = true;
         
