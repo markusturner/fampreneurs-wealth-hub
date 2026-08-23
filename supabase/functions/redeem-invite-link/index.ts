@@ -411,7 +411,7 @@ serve(async (req) => {
       if (resendKey) {
         const resend = new Resend(resendKey);
         await resend.emails.send({
-          from: "TruHeirs <onboarding@resend.dev>",
+          from: "TruHeirs <noreply@truheirs.app>",
           to: [email],
           subject: "Welcome to TruHeirs — Your login credentials",
           html: `
