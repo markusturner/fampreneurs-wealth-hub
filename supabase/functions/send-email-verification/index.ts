@@ -17,30 +17,44 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body: EmailVerificationRequest = await req.json();
-    const email = (body.email || '').trim().toLowerCase();
+    const requestedEmail = (body.email || '').trim().toLowerCase();
 
-    if (!email) {
-      throw new Error('Email is required');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const authHeader = req.headers.get('Authorization');
+    if (!supabaseUrl || !supabaseKey || !authHeader) {
+      throw new Error('You must be signed in to request a verification code');
     }
 
-    // Generate a 6-digit verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    const email = userData.user?.email?.trim().toLowerCase() || '';
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    if (userError || !email || (requestedEmail && requestedEmail !== email)) {
+      throw new Error('We could not confirm this email belongs to your account');
+    }
+
+    // Use secure randomness for the 6-digit verification code.
+    const random = new Uint32Array(1);
+    crypto.getRandomValues(random);
+    const verificationCode = (100000 + (random[0] % 900000)).toString();
 
     // Store verification code temporarily (expires in 10 minutes)
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     
     // Clear any stale codes for this email so only the newest one is valid
-    await supabase
+    const { error: deleteError } = await supabase
       .from('verification_codes')
       .delete()
-      .eq('email', email)
+      .ilike('email', email)
       .eq('method', 'email')
       .eq('verified', false);
+
+    if (deleteError) {
+      console.error('Failed to clear stale verification codes:', deleteError);
+      throw new Error('Could not prepare a new verification code. Please try again.');
+    }
 
     const { error: insertError } = await supabase
       .from('verification_codes')
@@ -83,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <div style="background: #ffb500; color: #290a52; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 16px 24px; border-radius: 8px; display: inline-block;">
                   ${verificationCode}
                 </div>
-                <p style="color: #666; font-size: 13px; margin-top: 16px;">This code expires in 10 minutes.</p>
+                <p style="color: #666; font-size: 13px; margin-top: 16px;">This code expires in 15 minutes.</p>
               </div>
               <p style="color: #999; font-size: 12px; text-align: center; margin-top: 24px;">
                 If you did not request this code, please ignore this email.
@@ -96,6 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (!emailResponse.ok) {
         const errorData = await emailResponse.text();
         console.error('Resend error:', errorData);
+        await supabase.from('verification_codes').delete().eq('email', email).eq('code', verificationCode);
         throw new Error('Failed to send verification email');
       }
     } else {

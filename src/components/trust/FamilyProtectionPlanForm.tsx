@@ -122,7 +122,10 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       const { data, error } = await supabase.functions.invoke("generate-family-protection-plan", {
         body: { form_data: form },
       })
-      if (error) throw error
+      if (error) {
+        const details = await error.context?.json?.().catch(() => null)
+        throw new Error(details?.error || error.message || "Failed to generate plan.")
+      }
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
       setSubmittedAt(new Date())

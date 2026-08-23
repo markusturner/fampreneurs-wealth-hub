@@ -64,11 +64,14 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
         
       } else if (selectedMethod === 'email') {
         // Send email verification code
-        const { error } = await supabase.functions.invoke('send-email-verification', {
+        const { data, error } = await supabase.functions.invoke('send-email-verification', {
           body: { email }
         })
 
-        if (error) throw error
+        if (error) {
+          const details = await error.context?.json?.().catch(() => null)
+          throw new Error(details?.error || data?.error || error.message)
+        }
 
         toast({
           title: "Verification code sent",
@@ -111,7 +114,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
 
     try {
       // Verify the code with backend
-      const { error } = await supabase.functions.invoke('verify-2fa-code', {
+      const { data, error } = await supabase.functions.invoke('verify-2fa-code', {
         body: {
           email,
           code: verificationCode,
@@ -121,7 +124,10 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
         }
       })
 
-      if (error) throw error
+      if (error || !data?.success) {
+        const details = await error?.context?.json?.().catch(() => null)
+        throw new Error(details?.error || data?.error || error?.message || 'Invalid verification code')
+      }
 
       toast({
         title: "2FA enabled successfully",
