@@ -910,14 +910,34 @@ export default function ProgramAgreement() {
     setIdUploading(true)
     try {
       const filePath = `${user.id}/id-verification/${Date.now()}-${safeName}`
-      const { error } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file, {
-          upsert: true,
-          contentType: file.type || 'application/octet-stream',
-        })
+      let lastError: any = null
 
-      if (error) throw error
+      // Retry the direct browser upload once — transient browser/storage hiccups
+      // (external drives, flaky networks) usually clear on the second attempt.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { error } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type || 'application/octet-stream',
+          })
+        if (!error) { lastError = null; break }
+        lastError = error
+        await new Promise(r => setTimeout(r, 800))
+      }
+
+      // Fallback: send the file through the server so a broken browser storage
+      // client can never block ID verification.
+      if (lastError) {
+        console.warn('Direct ID upload failed, using server fallback:', lastError)
+        const form = new FormData()
+        form.append('file', file, safeName)
+        const { data, error: fnError } = await supabase.functions.invoke('upload-id-document', { body: form })
+        if (fnError || !data?.success) {
+          throw new Error(data?.error || fnError?.message || lastError?.message || 'Failed to upload ID.')
+        }
+      }
+
       setIdUploaded(true)
       setIdFileName(file.name)
       toast({ title: 'ID Uploaded', description: 'Your identification has been uploaded for verification.' })
