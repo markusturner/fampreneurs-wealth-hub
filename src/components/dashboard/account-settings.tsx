@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Upload, User, Mail, Lock, Loader2, Calendar, Clock, Shield } from 'lucide-react'
+import { Upload, User, Mail, Lock, Loader2, Calendar, Clock, Shield, Eye, EyeOff, Copy, ClipboardPaste } from 'lucide-react'
 
 export function AccountSettings() {
   const { user, profile, refreshProfile } = useAuth()
@@ -18,6 +18,7 @@ export function AccountSettings() {
   const [email, setEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [showPasswords, setShowPasswords] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
@@ -418,33 +419,101 @@ export function AccountSettings() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Current Password</Label>
-            <Input
-              id="currentPassword"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-            />
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showPasswords ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(v => !v)}
+                aria-label={showPasswords ? 'Hide passwords' : 'Show passwords'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-            />
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showPasswords ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(v => !v)}
+                aria-label={showPasswords ? 'Hide passwords' : 'Show passwords'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {newPassword && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(newPassword)
+                    toast({ title: 'Copied', description: 'New password copied to clipboard.' })
+                  } catch {
+                    toast({ title: 'Copy failed', description: 'Please copy it manually.', variant: 'destructive' })
+                  }
+                }}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Copy className="h-3 w-3" /> Copy password
+              </button>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showPasswords ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onPaste={(e) => {
+                  const text = e.clipboardData.getData('text')
+                  if (text) {
+                    e.preventDefault()
+                    setConfirmPassword(text)
+                  }
+                }}
+                placeholder="Confirm new password"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(v => !v)}
+                aria-label={showPasswords ? 'Hide passwords' : 'Show passwords'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {newPassword && newPassword !== confirmPassword && (
+              <button
+                type="button"
+                onClick={() => setConfirmPassword(newPassword)}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <ClipboardPaste className="h-3 w-3" /> Paste new password here
+              </button>
+            )}
           </div>
           <Button 
             onClick={handleUpdatePassword} 
