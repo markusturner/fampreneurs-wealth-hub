@@ -56,20 +56,39 @@ export default function ProfilePhotoUploadPage() {
         }
       }
 
-      const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
-        .upload(filePath, selectedFile, { cacheControl: '3600', upsert: true })
+      let publicUrl: string | null = null
+      let lastError: unknown = null
 
-      if (uploadError) throw uploadError
+      for (let attempt = 0; attempt < 2 && !publicUrl; attempt++) {
+        const { error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(filePath, selectedFile, { cacheControl: '3600', upsert: true })
 
-      const { data: { publicUrl } } = supabase.storage.from('profile-photos').getPublicUrl(filePath)
+        if (!uploadError) {
+          publicUrl = supabase.storage.from('profile-photos').getPublicUrl(filePath).data.publicUrl
+        } else {
+          lastError = uploadError
+        }
+      }
+
+      // Fallback: secure server-side upload if the direct upload keeps failing
+      if (!publicUrl) {
+        console.warn('Direct upload failed, using server fallback:', lastError)
+        const formData = new FormData()
+        formData.append('file', selectedFile)
+        const { data: fnData, error: fnError } = await supabase.functions.invoke('upload-profile-photo', {
+          body: formData,
+        })
+        if (fnError || !fnData?.publicUrl) throw (fnError || new Error('Upload failed'))
+        publicUrl = fnData.publicUrl as string
+      }
 
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl, profile_photo_uploaded: true })
         .eq('user_id', user.id)
 
-      if (updateError) throw updateError
+      if (updateError) console.warn('Profile update warning:', updateError)
 
       await refreshProfile()
 
