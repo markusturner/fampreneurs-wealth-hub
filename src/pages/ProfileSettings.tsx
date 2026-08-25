@@ -60,7 +60,7 @@ export function ProfileSettings() {
           </TabsTrigger>
           <TabsTrigger value="affiliate" className="flex items-center gap-1 md:gap-2 text-sm">
             <Settings className="h-4 w-4 shrink-0" />
-            {isMobile ? "Affiliate" : "Affiliate Program"}
+            Referral
           </TabsTrigger>
           {isAdminOrOwner && (
             <TabsTrigger value="affiliate-manager" className="flex items-center gap-1 md:gap-2 text-sm">

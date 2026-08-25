@@ -1,55 +1,19 @@
-import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Copy, Link, RefreshCw } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Copy, Handshake } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+const INTRO_MESSAGE = `Hey [Name], I want to introduce you to [Coach Name]. I just started building out my family trust with them and I'm loving it. [Coach Name], I got you added here so [Name] can ask you anything directly. No pressure, no pitch, just wanted you two connected.`
+
 export function AffiliateProgram() {
-  const { user } = useAuth()
   const { toast } = useToast()
-  const [customCode, setCustomCode] = useState('')
-  const [affiliateLink, setAffiliateLink] = useState('')
 
-  const AFFILIATE_LINK = 'https://truheirs.app/apply'
-
-  // Generate default affiliate link using user ID
-  const generateDefaultLink = () => {
-    if (user?.id) {
-      const defaultCode = user.id.slice(0, 8)
-      return `${AFFILIATE_LINK}?ref=${defaultCode}`
-    }
-    return ''
-  }
-
-  // Generate custom affiliate link
-  const generateCustomLink = () => {
-    if (customCode.trim()) {
-      const sanitizedCode = customCode.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
-      return `${AFFILIATE_LINK}?ref=${sanitizedCode}`
-    }
-    return generateDefaultLink()
-  }
-
-  const handleGenerateLink = () => {
-    const link = customCode ? generateCustomLink() : generateDefaultLink()
-    setAffiliateLink(link)
+  const copyMessage = () => {
+    navigator.clipboard.writeText(INTRO_MESSAGE)
     toast({
-      title: "Affiliate link generated",
-      description: "Your affiliate link is ready to share!",
+      title: 'Message copied',
+      description: 'Paste it into your group text.',
     })
-  }
-
-  const copyToClipboard = () => {
-    if (affiliateLink) {
-      navigator.clipboard.writeText(affiliateLink)
-      toast({
-        title: "Link copied",
-        description: "Affiliate link copied to clipboard!",
-      })
-    }
   }
 
   return (
@@ -57,44 +21,15 @@ export function AffiliateProgram() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link className="h-5 w-5" />
-            Affiliate Program
+            <Handshake className="h-5 w-5" />
+            Family Cosign
           </CardTitle>
-          <CardDescription>
-            Create your custom affiliate link to share with friends and family. When they click it, they'll be taken to book a call to learn more about our programs.
-          </CardDescription>
+          <CardDescription>Share the legacy, get rewarded.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="custom-code">Custom Affiliate Code (optional)</Label>
-            <Input
-              id="custom-code"
-              placeholder="Enter custom code (e.g., 'myname', 'coach123')"
-              value={customCode}
-              onChange={(e) => setCustomCode(e.target.value)}
-              maxLength={20}
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave empty to use your default code. Only letters and numbers allowed.
-            </p>
-          </div>
-
-          <Button onClick={handleGenerateLink} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Generate Affiliate Link
-          </Button>
-
-          {affiliateLink && (
-            <div className="space-y-2">
-              <Label>Your Affiliate Link</Label>
-              <div className="flex gap-2">
-                <Input value={affiliateLink} readOnly className="flex-1" />
-                <Button variant="outline" size="icon" onClick={copyToClipboard}>
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Know a family who needs this? Send us a quick intro. No pitch, no pressure, just connect them with us and we'll take it from there.
+          </p>
         </CardContent>
       </Card>
 
@@ -104,11 +39,45 @@ export function AffiliateProgram() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>• Share your affiliate link with friends and family</p>
-            <p>• When someone clicks your link, they'll be taken to book a discovery call</p>
-            <p>• When they sign up through your referral, you earn a commission</p>
-            <p>• Customize your link to make it more memorable</p>
+            <p>• Think of a family member or friend who may want this</p>
+            <p>• Add them and us into a group text</p>
+            <p>• Send the intro message below</p>
+            <p>• We take it from there and book the call on your behalf</p>
+            <p>• When they join and close, you earn 10% commission</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Intro Message Template</CardTitle>
+          <CardDescription>Copy this into your group text.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed">
+            {INTRO_MESSAGE}
+          </div>
+          <Button
+            onClick={copyMessage}
+            className="w-full"
+            style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Message
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Commission</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            All cosigns earn a fixed <span className="font-semibold text-foreground">10% commission</span> on any closed deal.
+          </p>
         </CardContent>
       </Card>
     </div>
