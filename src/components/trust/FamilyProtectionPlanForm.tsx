@@ -69,13 +69,15 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
   })
 
-  // Restore saved draft
+  // Restore saved draft, then fall back to the last saved submission
   useEffect(() => {
+    let active = true
+    let hadDraft = false
     try {
       const saved = localStorage.getItem(storageKey)
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (parsed?.form) setForm(prev => ({ ...prev, ...parsed.form }))
+        if (parsed?.form) { hadDraft = true; setForm(prev => ({ ...prev, ...parsed.form })) }
         if (parsed?.planText) setPlanText(parsed.planText)
         if (parsed?.documentUrl) setDocumentUrl(parsed.documentUrl)
         if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
@@ -83,8 +85,31 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     } catch (e) {
       console.error("Failed to restore draft", e)
     }
-    setRestored(true)
-  }, [storageKey])
+
+    const loadSaved = async () => {
+      if (!user?.id) { if (active) setRestored(true); return }
+      const { data } = await supabase
+        .from("trust_submissions")
+        .select("form_data, generated_document, created_at")
+        .eq("user_id", user.id)
+        .eq("trust_type", "family_protection_plan")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (!active) { return }
+      if (data) {
+        if (!hadDraft && (data as any).form_data) {
+          setForm(prev => ({ ...prev, ...((data as any).form_data as any) }))
+        }
+        if ((data as any).generated_document) setDocumentUrl((data as any).generated_document)
+        if ((data as any).created_at) setSubmittedAt(new Date((data as any).created_at))
+      }
+      setRestored(true)
+    }
+    loadSaved()
+    return () => { active = false }
+  }, [storageKey, user?.id])
+
 
   // Autosave draft
   useEffect(() => {
