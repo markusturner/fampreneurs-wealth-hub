@@ -9,6 +9,7 @@ import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { fetchLatestSubmission, saveTrustSubmission } from "@/lib/trust-submissions"
 
 interface TableRow {
   [key: string]: string
