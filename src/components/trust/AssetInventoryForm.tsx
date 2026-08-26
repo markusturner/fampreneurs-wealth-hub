@@ -237,28 +237,49 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     businessInterests: setBusinessInterests,
   }
 
-  // Restore saved draft
+  // Restore saved draft (local first, otherwise the last submitted version)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed?.data) {
-          Object.entries(setters).forEach(([key, setter]) => {
-            const rows = parsed.data[key]
-            if (Array.isArray(rows) && rows.length) setter(rows)
-          })
-          if (parsed.data.estateDocStatus) setEstateDocStatus(prev => ({ ...prev, ...parsed.data.estateDocStatus }))
-        }
-        if (parsed?.submitterName) setSubmitterName(parsed.submitterName)
-        if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
-      }
-    } catch (e) {
-      console.error("Failed to restore asset inventory draft", e)
+    let active = true
+    const applyData = (data: any) => {
+      Object.entries(setters).forEach(([key, setter]) => {
+        const rows = data?.[key]
+        if (Array.isArray(rows) && rows.length) setter(rows)
+      })
+      if (data?.estateDocStatus) setEstateDocStatus(prev => ({ ...prev, ...data.estateDocStatus }))
     }
-    setRestored(true)
+
+    const run = async () => {
+      let hasLocal = false
+      try {
+        const saved = localStorage.getItem(storageKey)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (parsed?.data) {
+            hasLocal = true
+            applyData(parsed.data)
+          }
+          if (parsed?.submitterName) setSubmitterName(parsed.submitterName)
+          if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
+        }
+      } catch (e) {
+        console.error("Failed to restore asset inventory draft", e)
+      }
+
+      if (user?.id) {
+        const record = await fetchLatestSubmission(user.id, "asset_inventory")
+        if (active && record) {
+          setHasPrevious(true)
+          if (!hasLocal && record.form_data) applyData(record.form_data)
+          if (!hasLocal && record.submitter_name) setSubmitterName(record.submitter_name)
+        }
+      }
+      if (active) setRestored(true)
+    }
+
+    run()
+    return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey])
+  }, [storageKey, user?.id])
 
   // Autosave draft
   useEffect(() => {
