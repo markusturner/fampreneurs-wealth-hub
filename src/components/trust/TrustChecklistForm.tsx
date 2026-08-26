@@ -92,20 +92,20 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
         boardMembers,
         assetsToTransfer,
       }
-      const { error } = await supabase
-        .from("trust_submissions")
-        .insert({ user_id: user.id, trust_type: "trust_checklist", form_data: formData } as any)
-      if (error) throw error
-      toast({ title: "Trust Checklist submitted", description: "Your checklist has been recorded." })
+      const { updated } = await saveTrustSubmission({
+        userId: user.id,
+        trustType: "trust_checklist",
+        formData,
+      })
+      setHasPrevious(true)
+      toast({
+        title: updated ? "Trust Checklist updated" : "Trust Checklist submitted",
+        description: updated ? "Your changes have been saved." : "Your checklist has been recorded.",
+      })
       onSubmitted()
     } catch (err: any) {
-      if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "You have already submitted your trust checklist.", variant: "destructive" })
-        onSubmitted()
-      } else {
-        console.error("Error submitting trust checklist:", err)
-        toast({ title: "Error", description: "Failed to submit checklist.", variant: "destructive" })
-      }
+      console.error("Error submitting trust checklist:", err)
+      toast({ title: "Error", description: "Failed to save checklist.", variant: "destructive" })
     } finally {
       setSubmitting(false)
     }
