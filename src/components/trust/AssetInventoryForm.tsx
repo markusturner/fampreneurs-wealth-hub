@@ -163,6 +163,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
   const [submitterName, setSubmitterName] = useState("")
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
+  const [hasPrevious, setHasPrevious] = useState(false)
   const storageKey = `asset-inventory-draft-${user?.id ?? "anon"}`
 
   const [beneficiaries, setBeneficiaries] = useState<TableRow[]>(createEmptyRows(4, keys(COLS.beneficiaries)))
