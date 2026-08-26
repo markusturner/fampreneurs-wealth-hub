@@ -25,7 +25,7 @@ export default function TrustDesignBooking() {
       await supabase
         .from('profiles')
         .update({ trust_design_booked: true })
-        .eq('id', user.id)
+        .eq('user_id', user.id)
       localStorage.setItem(`trust_design_booking_${user.id}`, 'true')
       setTimeout(() => navigate('/workspace-community', { replace: true }), 1500)
     }
