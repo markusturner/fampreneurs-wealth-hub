@@ -9,6 +9,7 @@ import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { fetchLatestSubmission, saveTrustSubmission } from "@/lib/trust-submissions"
 
 interface TableRow {
   [key: string]: string
@@ -163,6 +164,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
   const [submitterName, setSubmitterName] = useState("")
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
+  const [hasPrevious, setHasPrevious] = useState(false)
   const storageKey = `asset-inventory-draft-${user?.id ?? "anon"}`
 
   const [beneficiaries, setBeneficiaries] = useState<TableRow[]>(createEmptyRows(4, keys(COLS.beneficiaries)))
@@ -236,28 +238,49 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     businessInterests: setBusinessInterests,
   }
 
-  // Restore saved draft
+  // Restore saved draft (local first, otherwise the last submitted version)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed?.data) {
-          Object.entries(setters).forEach(([key, setter]) => {
-            const rows = parsed.data[key]
-            if (Array.isArray(rows) && rows.length) setter(rows)
-          })
-          if (parsed.data.estateDocStatus) setEstateDocStatus(prev => ({ ...prev, ...parsed.data.estateDocStatus }))
-        }
-        if (parsed?.submitterName) setSubmitterName(parsed.submitterName)
-        if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
-      }
-    } catch (e) {
-      console.error("Failed to restore asset inventory draft", e)
+    let active = true
+    const applyData = (data: any) => {
+      Object.entries(setters).forEach(([key, setter]) => {
+        const rows = data?.[key]
+        if (Array.isArray(rows) && rows.length) setter(rows)
+      })
+      if (data?.estateDocStatus) setEstateDocStatus(prev => ({ ...prev, ...data.estateDocStatus }))
     }
-    setRestored(true)
+
+    const run = async () => {
+      let hasLocal = false
+      try {
+        const saved = localStorage.getItem(storageKey)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (parsed?.data) {
+            hasLocal = true
+            applyData(parsed.data)
+          }
+          if (parsed?.submitterName) setSubmitterName(parsed.submitterName)
+          if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
+        }
+      } catch (e) {
+        console.error("Failed to restore asset inventory draft", e)
+      }
+
+      if (user?.id) {
+        const record = await fetchLatestSubmission(user.id, "asset_inventory")
+        if (active && record) {
+          setHasPrevious(true)
+          if (!hasLocal && record.form_data) applyData(record.form_data)
+          if (!hasLocal && record.submitter_name) setSubmitterName(record.submitter_name)
+        }
+      }
+      if (active) setRestored(true)
+    }
+
+    run()
+    return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey])
+  }, [storageKey, user?.id])
 
   // Autosave draft
   useEffect(() => {
@@ -304,24 +327,22 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
     setSubmitting(true)
     try {
-      const { data, error } = await supabase
-        .from("trust_submissions")
-        .insert({ user_id: user.id, trust_type: "asset_inventory", form_data: formData, submitter_name: submitterName.trim() } as any)
-        .select("id")
-        .single()
-      if (error) throw error
-      toast({ title: "Asset Inventory submitted", description: "Opening your document preview." })
+      const { id, updated } = await saveTrustSubmission({
+        userId: user.id,
+        trustType: "asset_inventory",
+        formData,
+        submitterName: submitterName.trim(),
+      })
+      setHasPrevious(true)
+      toast({
+        title: updated ? "Asset Inventory updated" : "Asset Inventory submitted",
+        description: "Opening your document preview.",
+      })
       onSubmitted()
-      navigate(data?.id ? `/asset-inventory-preview/${data.id}` : "/asset-inventory-preview")
+      navigate(id ? `/asset-inventory-preview/${id}` : "/asset-inventory-preview")
     } catch (err: any) {
-      if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "Opening your saved document." })
-        onSubmitted()
-        navigate("/asset-inventory-preview")
-      } else {
-        console.error("Error submitting asset inventory:", err)
-        toast({ title: "Error", description: "Failed to submit asset inventory.", variant: "destructive" })
-      }
+      console.error("Error submitting asset inventory:", err)
+      toast({ title: "Error", description: "Failed to save asset inventory.", variant: "destructive" })
     } finally {
       setSubmitting(false)
     }
@@ -368,6 +389,11 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
 
   return (
     <div className="space-y-6">
+      {hasPrevious && (
+        <div className="rounded-lg border border-[#ffb500]/40 bg-[#ffb500]/10 p-3 text-sm text-[#290a52]">
+          You already submitted this sheet. Your answers are loaded below — edit anything and save to update it.
+        </div>
+      )}
       {savedAt && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
@@ -443,7 +469,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
         <div className="flex flex-wrap justify-end gap-2">
           <Button onClick={handleSubmit} disabled={submitting || !submitterName.trim()} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Submit & Preview Document
+            {hasPrevious ? "Save Changes & Preview" : "Submit & Preview Document"}
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { Loader2, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { fetchLatestSubmission, saveTrustSubmission } from "@/lib/trust-submissions"
 
 const CHECKLIST_ITEMS = [
   "Business/Private Family Trust Name",
@@ -45,6 +46,32 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
   const [missionStatement, setMissionStatement] = useState("")
   const [boardMembers, setBoardMembers] = useState("")
   const [assetsToTransfer, setAssetsToTransfer] = useState("")
+  const [hasPrevious, setHasPrevious] = useState(false)
+
+  // Load a previous submission so it can be edited and re-saved
+  useEffect(() => {
+    if (!user?.id) return
+    let active = true
+    fetchLatestSubmission(user.id, "trust_checklist").then(record => {
+      if (!active || !record?.form_data) return
+      const d = record.form_data
+      setHasPrevious(true)
+      if (d.checkedItems) setCheckedItems(prev => ({ ...prev, ...d.checkedItems }))
+      if (d.notes) setNotes(prev => ({ ...prev, ...d.notes }))
+      setTrustName(d.trustName ?? "")
+      setRegisteredAgent(d.registeredAgent ?? "")
+      setMissionStatement(d.missionStatement ?? "")
+      setGrantorName(d.grantorName ?? "")
+      setTrusteeName(d.trusteeName ?? "")
+      setSuccessorTrustee(d.successorTrustee ?? "")
+      setBeneficiariesDuringLife(d.beneficiariesDuringLife ?? "")
+      setBeneficiariesAfterPassing(d.beneficiariesAfterPassing ?? "")
+      setManagementInstructions(d.managementInstructions ?? "")
+      setBoardMembers(d.boardMembers ?? "")
+      setAssetsToTransfer(d.assetsToTransfer ?? "")
+    })
+    return () => { active = false }
+  }, [user?.id])
 
   const handleSubmit = async () => {
     if (!user?.id) return
@@ -65,20 +92,20 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
         boardMembers,
         assetsToTransfer,
       }
-      const { error } = await supabase
-        .from("trust_submissions")
-        .insert({ user_id: user.id, trust_type: "trust_checklist", form_data: formData } as any)
-      if (error) throw error
-      toast({ title: "Trust Checklist submitted", description: "Your checklist has been recorded." })
+      const { updated } = await saveTrustSubmission({
+        userId: user.id,
+        trustType: "trust_checklist",
+        formData,
+      })
+      setHasPrevious(true)
+      toast({
+        title: updated ? "Trust Checklist updated" : "Trust Checklist submitted",
+        description: updated ? "Your changes have been saved." : "Your checklist has been recorded.",
+      })
       onSubmitted()
     } catch (err: any) {
-      if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "You have already submitted your trust checklist.", variant: "destructive" })
-        onSubmitted()
-      } else {
-        console.error("Error submitting trust checklist:", err)
-        toast({ title: "Error", description: "Failed to submit checklist.", variant: "destructive" })
-      }
+      console.error("Error submitting trust checklist:", err)
+      toast({ title: "Error", description: "Failed to save checklist.", variant: "destructive" })
     } finally {
       setSubmitting(false)
     }
@@ -91,6 +118,11 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
           Use this checklist to ensure you have all the necessary components in place for establishing your trust. 
           Complete each item and provide the relevant details below.
         </p>
+        {hasPrevious && (
+          <p className="text-sm mt-2 font-medium text-[#290a52]">
+            We loaded your previous answers. Make any changes and save to update your submission.
+          </p>
+        )}
       </div>
 
       {/* Checklist */}
@@ -207,7 +239,7 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
       <div className="flex justify-end pt-4">
         <Button onClick={handleSubmit} disabled={submitting} className="gap-2 bg-[#ffb500] text-[#290a52] hover:bg-[#2eb2ff] hover:text-white">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-          Submit Trust Checklist
+          {hasPrevious ? "Save Changes" : "Submit Trust Checklist"}
         </Button>
       </div>
     </div>
