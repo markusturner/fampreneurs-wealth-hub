@@ -147,7 +147,7 @@ ${JSON.stringify(form_data, null, 2)}`;
       }
     }
 
-    // Save submission and surface persistence failures instead of showing a false success.
+    // Save submission (update the existing one instead of creating duplicates).
     const submission = {
       user_id: user.id,
       trust_type: "family_protection_plan",
@@ -156,17 +156,37 @@ ${JSON.stringify(form_data, null, 2)}`;
       status: "completed",
     } as const;
 
-    let { error: submissionError } = await supabaseClient.from("trust_submissions").insert(submission as any);
-    if (submissionError) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const retry = await supabaseClient.from("trust_submissions").insert(submission as any);
-      submissionError = retry.error;
+    const { data: existing } = await supabaseClient
+      .from("trust_submissions")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("trust_type", "family_protection_plan")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let submissionError: any = null;
+    if (existing?.id) {
+      const res = await supabaseClient
+        .from("trust_submissions")
+        .update({ form_data, generated_document: documentUrl, status: "completed" } as any)
+        .eq("id", existing.id);
+      submissionError = res.error;
+    } else {
+      let { error } = await supabaseClient.from("trust_submissions").insert(submission as any);
+      if (error) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const retry = await supabaseClient.from("trust_submissions").insert(submission as any);
+        error = retry.error;
+      }
+      submissionError = error;
     }
 
     if (submissionError) {
       console.error("[FAMILY-PROTECTION-PLAN] SAVE ERROR:", submissionError);
       throw new Error("Your plan was created, but could not be saved. Please try again.");
     }
+
 
     return new Response(JSON.stringify({ plan_text: planText, document_url: documentUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
