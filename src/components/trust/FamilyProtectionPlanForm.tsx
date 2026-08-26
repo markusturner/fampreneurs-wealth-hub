@@ -300,8 +300,26 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
           </div>
         </div>
 
-        <div className="text-center">
-          <Button variant="outline" onClick={() => { setPlanText(null); setDocumentUrl(null); setSubmittedAt(null) }}>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button onClick={() => setPlanText(null)} className="gap-2">
+            Edit my answers
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setPlanText(null)
+              setDocumentUrl(null)
+              setSubmittedAt(null)
+              setForm({
+                full_name: "", family_name: "", state: "", marital_status: "single", kids_count: "",
+                top_worry: "", owns_home: "no", owns_business: "no", net_worth_range: "under_250k",
+                top_goals: "", family_mission: "", assets: [], asset_purposes: "", foreign_assets: "no",
+                foreign_assets_detail: "", has_heirs: "yes", heirs_alternative_notes: "", trustee_name: "",
+                successor_trustee: "", trust_protector: "", knows_roles: "no", trusted_people: "",
+                growth_assets: "unsure", growth_assets_detail: "", special_notes: "",
+              })
+            }}
+          >
             Start over
           </Button>
         </div>
