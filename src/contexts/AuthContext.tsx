@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context-v3
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react' // auth-context-v3
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { initPushNotifications } from '@/lib/push-notifications'
+import { clearRequestCache } from '@/lib/request-cache'
 
 interface Profile {
   id: string
@@ -58,7 +59,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
   
 
-  const fetchProfile = async (userId: string) => {
+  // Guards against the same profile being re-fetched on every auth event
+  // (INITIAL_SESSION, TOKEN_REFRESHED, etc.) during a page load.
+  const lastProfileFetch = useRef<{ userId: string; at: number } | null>(null)
+
+  const fetchProfile = async (userId: string, force = false) => {
+    const last = lastProfileFetch.current
+    if (!force && last && last.userId === userId && Date.now() - last.at < 30_000) {
+      return
+    }
+    lastProfileFetch.current = { userId, at: Date.now() }
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -83,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfile(user.id)
+      await fetchProfile(user.id, true)
     }
   }
 
@@ -110,6 +120,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }, 0)
         } else {
           setProfile(null)
+          lastProfileFetch.current = null
+          clearRequestCache()
         }
         
         setLoading(false)

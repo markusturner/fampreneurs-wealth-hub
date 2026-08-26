@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cachedRequest, clearRequestCache } from '@/lib/request-cache';
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -18,23 +19,30 @@ export const useSubscription = () => {
     isLite: false,
   });
 
-  const checkSubscription = async () => {
+  const checkSubscription = async (force = false) => {
     try {
       setSubscriptionStatus(prev => ({ ...prev, loading: true }));
 
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
+      const userId = session.session?.user?.id;
+      if (!userId) {
         setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (force) clearRequestCache(`subscription:${userId}`);
 
-      if (error) {
-        console.error('Subscription check error:', error);
-        setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
-        return;
-      }
+      // Shared across every component using this hook, so the Stripe check
+      // runs once instead of once per mounted component.
+      const data = await cachedRequest<any>(
+        `subscription:${userId}`,
+        async () => {
+          const { data, error } = await supabase.functions.invoke('check-subscription');
+          if (error) throw error;
+          return data;
+        },
+        5 * 60 * 1000,
+      );
 
       setSubscriptionStatus({
         subscribed: data.subscribed || false,
@@ -82,7 +90,7 @@ export const useSubscription = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        setTimeout(() => checkSubscription(), 0);
+        setTimeout(() => checkSubscription(true), 0);
       } else if (event === 'SIGNED_OUT') {
         setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
       }
