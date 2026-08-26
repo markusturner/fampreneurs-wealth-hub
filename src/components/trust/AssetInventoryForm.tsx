@@ -389,6 +389,11 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
 
   return (
     <div className="space-y-6">
+      {hasPrevious && (
+        <div className="rounded-lg border border-[#ffb500]/40 bg-[#ffb500]/10 p-3 text-sm text-[#290a52]">
+          You already submitted this sheet. Your answers are loaded below — edit anything and save to update it.
+        </div>
+      )}
       {savedAt && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
