@@ -118,6 +118,11 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
           Use this checklist to ensure you have all the necessary components in place for establishing your trust. 
           Complete each item and provide the relevant details below.
         </p>
+        {hasPrevious && (
+          <p className="text-sm mt-2 font-medium text-[#290a52]">
+            We loaded your previous answers. Make any changes and save to update your submission.
+          </p>
+        )}
       </div>
 
       {/* Checklist */}
