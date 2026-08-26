@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { cachedRequest } from '@/lib/request-cache'
 
 export interface UserRole {
   isFamilyOfficeOnly: boolean
@@ -16,6 +17,8 @@ export function useUserRole(): UserRole {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
+
     const checkUserRole = async () => {
       if (!user?.id) {
         setIsLoading(false)
@@ -23,27 +26,32 @@ export function useUserRole(): UserRole {
       }
 
       try {
-        // Check if user is family office only
-        const { data: familyOfficeOnly, error } = await supabase.rpc('is_family_office_only_user', {
-          p_user_id: user.id
-        })
+        const familyOfficeOnly = await cachedRequest(
+          `family-office-only:${user.id}`,
+          async () => {
+            const { data, error } = await supabase.rpc('is_family_office_only_user', {
+              p_user_id: user.id,
+            })
+            if (error) throw error
+            return !!data
+          },
+          10 * 60 * 1000,
+        )
 
-        if (!error) {
-          setIsFamilyOfficeOnly(familyOfficeOnly || false)
-        }
-
-        // Check if user is an invited family member via membership_type on profile
-        // These users should not see Trust Creation button
-        const isMember = profile?.membership_type === 'family_member'
-        setIsFamilyMember(isMember)
+        if (cancelled) return
+        setIsFamilyOfficeOnly(familyOfficeOnly)
+        setIsFamilyMember(profile?.membership_type === 'family_member')
       } catch (error) {
         console.error('Error checking user role:', error)
       } finally {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       }
     }
 
     checkUserRole()
+    return () => {
+      cancelled = true
+    }
   }, [user?.id, profile?.membership_type])
 
   return {
