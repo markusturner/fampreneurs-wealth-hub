@@ -46,6 +46,32 @@ export function TrustChecklistForm({ onSubmitted }: { onSubmitted: () => void })
   const [missionStatement, setMissionStatement] = useState("")
   const [boardMembers, setBoardMembers] = useState("")
   const [assetsToTransfer, setAssetsToTransfer] = useState("")
+  const [hasPrevious, setHasPrevious] = useState(false)
+
+  // Load a previous submission so it can be edited and re-saved
+  useEffect(() => {
+    if (!user?.id) return
+    let active = true
+    fetchLatestSubmission(user.id, "trust_checklist").then(record => {
+      if (!active || !record?.form_data) return
+      const d = record.form_data
+      setHasPrevious(true)
+      if (d.checkedItems) setCheckedItems(prev => ({ ...prev, ...d.checkedItems }))
+      if (d.notes) setNotes(prev => ({ ...prev, ...d.notes }))
+      setTrustName(d.trustName ?? "")
+      setRegisteredAgent(d.registeredAgent ?? "")
+      setMissionStatement(d.missionStatement ?? "")
+      setGrantorName(d.grantorName ?? "")
+      setTrusteeName(d.trusteeName ?? "")
+      setSuccessorTrustee(d.successorTrustee ?? "")
+      setBeneficiariesDuringLife(d.beneficiariesDuringLife ?? "")
+      setBeneficiariesAfterPassing(d.beneficiariesAfterPassing ?? "")
+      setManagementInstructions(d.managementInstructions ?? "")
+      setBoardMembers(d.boardMembers ?? "")
+      setAssetsToTransfer(d.assetsToTransfer ?? "")
+    })
+    return () => { active = false }
+  }, [user?.id])
 
   const handleSubmit = async () => {
     if (!user?.id) return
