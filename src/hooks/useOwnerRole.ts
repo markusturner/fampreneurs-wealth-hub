@@ -1,56 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { cachedRequest, clearRequestCache } from "@/lib/request-cache";
 
 export const useOwnerRole = (userId: string | null) => {
   const [isOwner, setIsOwner] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!!userId);
+
+  const checkOwnerRole = useCallback(
+    async (force = false) => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        if (force) clearRequestCache(`owner-role:${userId}`);
+        const owner = await cachedRequest(
+          `owner-role:${userId}`,
+          async () => {
+            const { data, error } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", userId)
+              .eq("role", "owner")
+              .maybeSingle();
+            if (error) throw error;
+            return !!data;
+          },
+          10 * 60 * 1000,
+        );
+        setIsOwner(owner);
+      } catch (error) {
+        console.error("Error checking owner role:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [userId],
+  );
 
   useEffect(() => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    }
-
     checkOwnerRole();
-  }, [userId]);
-
-  const checkOwnerRole = async () => {
-    if (!userId) return;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "owner")
-        .maybeSingle();
-
-      if (error) throw error;
-
-      setIsOwner(!!data);
-    } catch (error) {
-      console.error("Error checking owner role:", error);
-      // Retry once on network failure
-      try {
-        const { data } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .eq("role", "owner")
-          .maybeSingle();
-        setIsOwner(!!data);
-      } catch {
-        // Keep previous state on repeated failure
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [checkOwnerRole]);
 
   return {
     isOwner,
     isLoading,
-    refetch: checkOwnerRole,
+    refetch: () => checkOwnerRole(true),
   };
 };
