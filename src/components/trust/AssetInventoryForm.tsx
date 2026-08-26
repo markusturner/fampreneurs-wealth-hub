@@ -464,7 +464,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
         <div className="flex flex-wrap justify-end gap-2">
           <Button onClick={handleSubmit} disabled={submitting || !submitterName.trim()} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Submit & Preview Document
+            {hasPrevious ? "Save Changes & Preview" : "Submit & Preview Document"}
           </Button>
         </div>
       </div>
