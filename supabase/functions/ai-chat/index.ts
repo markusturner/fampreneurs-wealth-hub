@@ -405,6 +405,11 @@ serve(async (req) => {
       persona: z.enum(['rachel', 'asset_protection', 'business_structure', 'trust_writer']).optional().default('rachel'),
       instructions: z.string().optional().default(''),
       conversation_id: z.string().uuid().optional(),
+      attachments: z.array(z.object({
+        name: z.string().max(255),
+        mimeType: z.string().max(120),
+        dataUrl: z.string().max(15_000_000),
+      })).max(5).optional(),
     });
     
     const body = await req.json();
