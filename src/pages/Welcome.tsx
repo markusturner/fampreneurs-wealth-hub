@@ -213,7 +213,7 @@ export default function Welcome() {
     setRachelAnswer('')
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message, persona: 'rachel', instructions: '' }
+        body: { message, persona: 'rachel', instructions: '', attachments: preset ? [] : attachments }
       })
       if (error) throw error
       setRachelAnswer(data?.response || 'Rachel could not answer right now. Please try again.')
