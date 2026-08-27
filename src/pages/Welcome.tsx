@@ -203,7 +203,8 @@ export default function Welcome() {
     : (profile?.program_name || 'TruHeirs Member')
 
   const askRachel = async (preset?: string) => {
-    const message = (preset ?? rachelQuestion).trim()
+    const typed = (preset ?? rachelQuestion).trim()
+    const message = typed || (attachments.length > 0 ? 'Please review the attached file(s).' : '')
     if (preset) setRachelQuestion(preset)
     if (!message || rachelLoading) return
     setAnswerAtBottom(false)
