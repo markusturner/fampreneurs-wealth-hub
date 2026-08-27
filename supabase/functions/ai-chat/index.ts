@@ -405,6 +405,11 @@ serve(async (req) => {
       persona: z.enum(['rachel', 'asset_protection', 'business_structure', 'trust_writer']).optional().default('rachel'),
       instructions: z.string().optional().default(''),
       conversation_id: z.string().uuid().optional(),
+      attachments: z.array(z.object({
+        name: z.string().max(255),
+        mimeType: z.string().max(120),
+        dataUrl: z.string().max(15_000_000),
+      })).max(5).optional(),
     });
     
     const body = await req.json();
@@ -417,7 +422,19 @@ serve(async (req) => {
       );
     }
     
-    const { message, persona, instructions, conversation_id } = validation.data;
+    const { message, persona, instructions, conversation_id, attachments } = validation.data;
+
+    // Build the user message content (multimodal when files are attached)
+    const userContent: unknown = (attachments && attachments.length > 0)
+      ? [
+          { type: 'text', text: message },
+          ...attachments.map((a) =>
+            a.mimeType.startsWith('image/')
+              ? { type: 'image_url', image_url: { url: a.dataUrl } }
+              : { type: 'file', file: { filename: a.name, file_data: a.dataUrl } }
+          ),
+        ]
+      : message;
     
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
@@ -459,7 +476,7 @@ serve(async (req) => {
         messages: [
           { role: 'system', content: `${systemPrompt}${factGuard}` },
           ...previousMessages,
-          { role: 'user', content: message }
+          { role: 'user', content: userContent }
         ],
         max_tokens: 1500,
         temperature: 0.7,

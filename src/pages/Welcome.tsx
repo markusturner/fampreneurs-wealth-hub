@@ -6,7 +6,8 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3 } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3, Paperclip, Mic, Square, X } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
 import { StartHereChecklist } from '@/components/dashboard/start-here-checklist'
@@ -77,7 +78,77 @@ export default function Welcome() {
   const [answerAtBottom, setAnswerAtBottom] = useState(false)
   const [answerScrollable, setAnswerScrollable] = useState(false)
   const answerRef = useRef<HTMLDivElement | null>(null)
-  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
+  const { toast } = useToast()
+  const [attachments, setAttachments] = useState<{ name: string; mimeType: string; dataUrl: string }[]>([])
+  const [recording, setRecording] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0 || attachments.length > 0
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const picked = Array.from(files).slice(0, 5 - attachments.length)
+    for (const file of picked) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: 'File too large', description: `${file.name} is over 10MB.`, variant: 'destructive' })
+        continue
+      }
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(reader.error)
+        reader.readAsDataURL(file)
+      })
+      setAttachments(prev => [...prev, { name: file.name, mimeType: file.type || 'application/octet-stream', dataUrl }])
+    }
+  }
+
+  const transcribe = async (blob: Blob) => {
+    setTranscribing(true)
+    try {
+      const form = new FormData()
+      form.append('file', blob, 'recording')
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form })
+      if (error) throw error
+      const text = (data?.text || '').trim()
+      if (!text) throw new Error('empty')
+      setRachelQuestion(prev => (prev ? `${prev} ${text}` : text))
+    } catch {
+      toast({ title: 'Could not hear that', description: 'Please try recording again.', variant: 'destructive' })
+    } finally {
+      setTranscribing(false)
+    }
+  }
+
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop()
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      chunksRef.current = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        setRecording(false)
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        if (blob.size < 1024) {
+          toast({ title: 'That recording was empty', description: 'Hold the mic a bit longer.', variant: 'destructive' })
+          return
+        }
+        await transcribe(blob)
+      }
+      recorder.start()
+      recorderRef.current = recorder
+      setRecording(true)
+    } catch {
+      toast({ title: 'Microphone blocked', description: 'Allow mic access to use dictation.', variant: 'destructive' })
+    }
+  }
 
   // Invited users who entered with a temporary link must create their login first
   useEffect(() => {
@@ -132,7 +203,8 @@ export default function Welcome() {
     : (profile?.program_name || 'TruHeirs Member')
 
   const askRachel = async (preset?: string) => {
-    const message = (preset ?? rachelQuestion).trim()
+    const typed = (preset ?? rachelQuestion).trim()
+    const message = typed || (attachments.length > 0 ? 'Please review the attached file(s).' : '')
     if (preset) setRachelQuestion(preset)
     if (!message || rachelLoading) return
     setAnswerAtBottom(false)
@@ -141,7 +213,7 @@ export default function Welcome() {
     setRachelAnswer('')
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message, persona: 'rachel', instructions: '' }
+        body: { message, persona: 'rachel', instructions: '', attachments: preset ? [] : attachments }
       })
       if (error) throw error
       setRachelAnswer(data?.response || 'Rachel could not answer right now. Please try again.')
@@ -401,18 +473,62 @@ export default function Welcome() {
                   askRachel()
                 }
               }}
-              placeholder="Ask Rachel anything..."
+              placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Rachel anything...'}
               className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
             />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,application/pdf,.txt,.csv"
+              className="hidden"
+              onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
+            />
+            <button
+              type="button"
+              aria-label="Attach a photo or file"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => fileInputRef.current?.click()}
+              className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors"
+            >
+              <Paperclip className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label={recording ? 'Stop recording' : 'Speak your question'}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={toggleRecording}
+              disabled={transcribing}
+              className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition-colors ${recording ? 'bg-destructive/15 text-destructive animate-pulse' : 'text-muted-foreground hover:text-secondary'}`}
+            >
+              {transcribing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : recording ? <Square className="h-3 w-3" /> : <Mic className="h-3.5 w-3.5" />}
+            </button>
             <Button
               size="icon"
               className="h-7 w-7 rounded-full"
               onClick={() => askRachel()}
-              disabled={!rachelQuestion.trim() || rachelLoading}
+              disabled={(!rachelQuestion.trim() && attachments.length === 0) || rachelLoading}
             >
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
+
+          {attachments.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {attachments.map((a, i) => (
+                <span key={`${a.name}-${i}`} className="flex items-center gap-1.5 rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground">
+                  {a.mimeType.startsWith('image/')
+                    ? <img src={a.dataUrl} alt={a.name} className="h-4 w-4 rounded object-cover" />
+                    : <FileText className="h-3 w-3" />}
+                  <span className="max-w-[140px] truncate">{a.name}</span>
+                  <button type="button" aria-label={`Remove ${a.name}`} onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))}>
+                    <X className="h-3 w-3 hover:text-destructive" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
 
           {searchActive && !rachelAnswer && !rachelLoading && (
             <div className="mt-3 flex flex-wrap gap-2">
