@@ -473,18 +473,62 @@ export default function Welcome() {
                   askRachel()
                 }
               }}
-              placeholder="Ask Rachel anything..."
+              placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Rachel anything...'}
               className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
             />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,application/pdf,.txt,.csv"
+              className="hidden"
+              onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
+            />
+            <button
+              type="button"
+              aria-label="Attach a photo or file"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => fileInputRef.current?.click()}
+              className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors"
+            >
+              <Paperclip className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label={recording ? 'Stop recording' : 'Speak your question'}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={toggleRecording}
+              disabled={transcribing}
+              className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition-colors ${recording ? 'bg-destructive/15 text-destructive animate-pulse' : 'text-muted-foreground hover:text-secondary'}`}
+            >
+              {transcribing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : recording ? <Square className="h-3 w-3" /> : <Mic className="h-3.5 w-3.5" />}
+            </button>
             <Button
               size="icon"
               className="h-7 w-7 rounded-full"
               onClick={() => askRachel()}
-              disabled={!rachelQuestion.trim() || rachelLoading}
+              disabled={(!rachelQuestion.trim() && attachments.length === 0) || rachelLoading}
             >
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
+
+          {attachments.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {attachments.map((a, i) => (
+                <span key={`${a.name}-${i}`} className="flex items-center gap-1.5 rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground">
+                  {a.mimeType.startsWith('image/')
+                    ? <img src={a.dataUrl} alt={a.name} className="h-4 w-4 rounded object-cover" />
+                    : <FileText className="h-3 w-3" />}
+                  <span className="max-w-[140px] truncate">{a.name}</span>
+                  <button type="button" aria-label={`Remove ${a.name}`} onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))}>
+                    <X className="h-3 w-3 hover:text-destructive" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
 
           {searchActive && !rachelAnswer && !rachelLoading && (
             <div className="mt-3 flex flex-wrap gap-2">
