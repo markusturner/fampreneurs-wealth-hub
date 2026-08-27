@@ -78,7 +78,77 @@ export default function Welcome() {
   const [answerAtBottom, setAnswerAtBottom] = useState(false)
   const [answerScrollable, setAnswerScrollable] = useState(false)
   const answerRef = useRef<HTMLDivElement | null>(null)
-  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
+  const { toast } = useToast()
+  const [attachments, setAttachments] = useState<{ name: string; mimeType: string; dataUrl: string }[]>([])
+  const [recording, setRecording] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0 || attachments.length > 0
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const picked = Array.from(files).slice(0, 5 - attachments.length)
+    for (const file of picked) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: 'File too large', description: `${file.name} is over 10MB.`, variant: 'destructive' })
+        continue
+      }
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(reader.error)
+        reader.readAsDataURL(file)
+      })
+      setAttachments(prev => [...prev, { name: file.name, mimeType: file.type || 'application/octet-stream', dataUrl }])
+    }
+  }
+
+  const transcribe = async (blob: Blob) => {
+    setTranscribing(true)
+    try {
+      const form = new FormData()
+      form.append('file', blob, 'recording')
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form })
+      if (error) throw error
+      const text = (data?.text || '').trim()
+      if (!text) throw new Error('empty')
+      setRachelQuestion(prev => (prev ? `${prev} ${text}` : text))
+    } catch {
+      toast({ title: 'Could not hear that', description: 'Please try recording again.', variant: 'destructive' })
+    } finally {
+      setTranscribing(false)
+    }
+  }
+
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop()
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      chunksRef.current = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        setRecording(false)
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        if (blob.size < 1024) {
+          toast({ title: 'That recording was empty', description: 'Hold the mic a bit longer.', variant: 'destructive' })
+          return
+        }
+        await transcribe(blob)
+      }
+      recorder.start()
+      recorderRef.current = recorder
+      setRecording(true)
+    } catch {
+      toast({ title: 'Microphone blocked', description: 'Allow mic access to use dictation.', variant: 'destructive' })
+    }
+  }
 
   // Invited users who entered with a temporary link must create their login first
   useEffect(() => {
