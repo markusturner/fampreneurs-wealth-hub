@@ -422,7 +422,19 @@ serve(async (req) => {
       );
     }
     
-    const { message, persona, instructions, conversation_id } = validation.data;
+    const { message, persona, instructions, conversation_id, attachments } = validation.data;
+
+    // Build the user message content (multimodal when files are attached)
+    const userContent: unknown = (attachments && attachments.length > 0)
+      ? [
+          { type: 'text', text: message },
+          ...attachments.map((a) =>
+            a.mimeType.startsWith('image/')
+              ? { type: 'image_url', image_url: { url: a.dataUrl } }
+              : { type: 'file', file: { filename: a.name, file_data: a.dataUrl } }
+          ),
+        ]
+      : message;
     
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
