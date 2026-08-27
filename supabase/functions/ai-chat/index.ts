@@ -476,7 +476,7 @@ serve(async (req) => {
         messages: [
           { role: 'system', content: `${systemPrompt}${factGuard}` },
           ...previousMessages,
-          { role: 'user', content: message }
+          { role: 'user', content: userContent }
         ],
         max_tokens: 1500,
         temperature: 0.7,
