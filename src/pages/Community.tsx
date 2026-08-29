@@ -21,7 +21,7 @@ import {
   Shield,
   Target,
   AlertTriangle,
-  BrainCircuit,
+  
   CreditCard,
   Home,
   Briefcase,
@@ -71,7 +71,7 @@ import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
-import { MessagesContentAI } from '@/components/community/MessagesContentAI'
+
 
 interface Investment {
   id: string
@@ -306,10 +306,6 @@ export default function Community() {
                 <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">Documents</span>
               </TabsTrigger>
-              <TabsTrigger value="messages">
-                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden md:inline">AI Experts</span>
-              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -326,14 +322,8 @@ export default function Community() {
             <TransactionMonitoring />
           </TabsContent>
 
-
-
           <TabsContent value="documents" className="space-y-6 animate-fade-in">
             <DocumentsContent />
-          </TabsContent>
-
-          <TabsContent value="messages" className="space-y-6 animate-fade-in" data-value="messages">
-            <MessagesContentAI />
           </TabsContent>
         </Tabs>
       </div>
