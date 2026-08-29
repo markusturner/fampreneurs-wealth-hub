@@ -21,7 +21,7 @@ import {
   Shield,
   Target,
   AlertTriangle,
-  BrainCircuit,
+  
   CreditCard,
   Home,
   Briefcase,
@@ -71,7 +71,7 @@ import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
-import { MessagesContentAI } from '@/components/community/MessagesContentAI'
+
 
 interface Investment {
   id: string
