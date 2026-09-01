@@ -445,10 +445,32 @@ serve(async (req) => {
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
     
+    // Document review mode when the user attaches files
+    if (attachments && attachments.length > 0) {
+      systemPrompt += `
+
+## Document Review Mode (files are attached)
+The user uploaded ${attachments.length} file(s): ${attachments.map((a) => a.name).join(', ')}.
+Read every attached document/image completely before answering. For images or scans, read the visible text (OCR) carefully.
+
+Answer in this structure:
+1. **What this document is** — type (operating agreement, trust, deed, LLC filing, insurance policy, statement, ID, etc.), parties, entity/trust name, state, and date.
+2. **Key terms extracted** — members/managers/ownership %, capital contributions, voting, distributions, transfer restrictions, successor/trustee provisions, dissolution, amendment clause, signature status. Use a short bulleted list or table.
+3. **Issues & gaps** — anything missing, vague, outdated, internally inconsistent, or misaligned with the family's trust/estate plan (e.g., LLC not owned by the trust, no successor manager, no transfer-on-death or spendthrift language, wrong entity name, unsigned).
+4. **Recommended revisions** — for each issue, quote or paraphrase the current clause, then give **suggested replacement language** the user can hand to their attorney. Write real draft clause text, not just advice.
+5. **Next steps in TruHeirs** — link the right pages (e.g. [Trust Creation](/trust-creation), [Documents](/documents), [Succession Planning](/succession-planning)) and note if an attorney review call is the right move.
+
+Rules:
+- Never invent facts that are not in the document. If something can't be read, say so and ask for a clearer copy or page.
+- Always add one line: "This is educational drafting support, not legal advice — have your attorney finalize it."
+`;
+    }
+
     // Also append any client-side instructions (backward compat)
     if (instructions) {
       systemPrompt += `\n\n## Additional Instructions:\n${instructions}`;
     }
+
 
     // Fetch chat history for the active conversation only, with legacy fallback.
     let historyQuery = supabase
