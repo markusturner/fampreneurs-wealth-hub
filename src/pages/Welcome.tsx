@@ -79,7 +79,7 @@ export default function Welcome() {
   const [answerScrollable, setAnswerScrollable] = useState(false)
   const answerRef = useRef<HTMLDivElement | null>(null)
   const { toast } = useToast()
-  const [attachments, setAttachments] = useState<{ name: string; mimeType: string; dataUrl: string }[]>([])
+  const [attachments, setAttachments] = useState<{ name: string; mimeType: string; dataUrl?: string; text?: string }[]>([])
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -95,15 +95,46 @@ export default function Welcome() {
         toast({ title: 'File too large', description: `${file.name} is over 10MB.`, variant: 'destructive' })
         continue
       }
-      const dataUrl: string = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(String(reader.result))
-        reader.onerror = () => reject(reader.error)
-        reader.readAsDataURL(file)
-      })
-      setAttachments(prev => [...prev, { name: file.name, mimeType: file.type || 'application/octet-stream', dataUrl }])
+      const mime = file.type || 'application/octet-stream'
+      const name = file.name
+      const lower = name.toLowerCase()
+      const isImage = mime.startsWith('image/')
+      const isPdf = mime === 'application/pdf' || lower.endsWith('.pdf')
+      const isDocx = lower.endsWith('.docx') || mime.includes('officedocument.wordprocessingml')
+      const isPlain = mime.startsWith('text/') || /\.(txt|md|csv|json|rtf)$/.test(lower)
+
+      try {
+        if (isImage || isPdf) {
+          const dataUrl: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result))
+            reader.onerror = () => reject(reader.error)
+            reader.readAsDataURL(file)
+          })
+          setAttachments(prev => [...prev, { name, mimeType: isPdf ? 'application/pdf' : mime, dataUrl }])
+        } else if (isDocx) {
+          const mammoth = await import('mammoth/mammoth.browser')
+          const buffer = await file.arrayBuffer()
+          const result = await (mammoth as any).extractRawText({ arrayBuffer: buffer })
+          const text = String(result?.value || '').trim()
+          if (!text) throw new Error('empty')
+          setAttachments(prev => [...prev, { name, mimeType: 'text/plain', text }])
+        } else if (isPlain) {
+          const text = (await file.text()).trim()
+          setAttachments(prev => [...prev, { name, mimeType: 'text/plain', text }])
+        } else {
+          toast({
+            title: 'Unsupported file',
+            description: `${name}: please upload a PDF, Word (.docx), image, or text file.`,
+            variant: 'destructive',
+          })
+        }
+      } catch {
+        toast({ title: 'Could not read file', description: `${name} could not be opened.`, variant: 'destructive' })
+      }
     }
   }
+
 
   const transcribe = async (blob: Blob) => {
     setTranscribing(true)
