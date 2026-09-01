@@ -408,7 +408,8 @@ serve(async (req) => {
       attachments: z.array(z.object({
         name: z.string().max(255),
         mimeType: z.string().max(120),
-        dataUrl: z.string().max(15_000_000),
+        dataUrl: z.string().max(15_000_000).optional(),
+        text: z.string().max(400_000).optional(),
       })).max(5).optional(),
     });
     
@@ -428,13 +429,18 @@ serve(async (req) => {
     const userContent: unknown = (attachments && attachments.length > 0)
       ? [
           { type: 'text', text: message },
-          ...attachments.map((a) =>
-            a.mimeType.startsWith('image/')
-              ? { type: 'image_url', image_url: { url: a.dataUrl } }
-              : { type: 'file', file: { filename: a.name, file_data: a.dataUrl } }
-          ),
+          ...attachments.map((a) => {
+            if (a.text) {
+              return { type: 'text', text: `\n\n--- Attached document: ${a.name} ---\n${a.text}\n--- end of ${a.name} ---` };
+            }
+            if (a.mimeType.startsWith('image/') && a.dataUrl) {
+              return { type: 'image_url', image_url: { url: a.dataUrl } };
+            }
+            return { type: 'file', file: { filename: a.name, file_data: a.dataUrl } };
+          }),
         ]
       : message;
+
     
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
