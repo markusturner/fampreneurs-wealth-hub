@@ -511,7 +511,7 @@ export default function Welcome() {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,application/pdf,.txt,.csv"
+              accept="image/*,application/pdf,.pdf,.docx,.txt,.md,.csv,.json,.rtf"
               className="hidden"
               onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
             />
