@@ -235,7 +235,7 @@ export default function Welcome() {
 
   const askRachel = async (preset?: string) => {
     const typed = (preset ?? rachelQuestion).trim()
-    const message = typed || (attachments.length > 0 ? 'Please review the attached file(s).' : '')
+    const message = typed || (attachments.length > 0 ? 'Read the attached document(s) fully. Summarize what they are, extract the key terms, flag anything missing, risky, or outdated, and tell me exactly what should be revised and how.' : '')
     if (preset) setRachelQuestion(preset)
     if (!message || rachelLoading) return
     setAnswerAtBottom(false)
