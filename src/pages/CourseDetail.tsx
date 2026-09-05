@@ -799,6 +799,11 @@ export default function CourseDetail() {
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Course</p>
           <h2 className="font-bold text-sm leading-snug" style={{ color: '#290a52' }}>{course?.title}</h2>
+          {totalDurationLabel && (
+            <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
+              <Clock className="h-3 w-3" /> {totalDurationLabel} of video
+            </p>
+          )}
         </div>
         {isAdminOrOwner && (
           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -ml-2" onClick={() => setShowEditCourse(true)}>
