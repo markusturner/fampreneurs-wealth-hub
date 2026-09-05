@@ -1658,6 +1658,12 @@ export default function CourseDetail() {
             <Users className="h-3.5 w-3.5" />
             <span>{totalLessons} lessons published</span>
           </div>
+          {totalDurationLabel && (
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{totalDurationLabel} of video</span>
+            </div>
+          )}
           {course?.level && (
             <div className="flex items-center gap-1.5">
               <BookOpen className="h-3.5 w-3.5" />
@@ -1769,6 +1775,18 @@ export default function CourseDetail() {
                     <p className="text-sm font-semibold" style={{ color: '#290a52' }}>{course?.instructor ?? 'TruHeirs'}</p>
                     <p className="text-xs text-muted-foreground">Course Creator</p>
                   </div>
+                </div>
+                <div className="space-y-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>{totalLessons} lessons published</span>
+                  </div>
+                  {totalDurationLabel && (
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{totalDurationLabel} of video</span>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Rating */}
