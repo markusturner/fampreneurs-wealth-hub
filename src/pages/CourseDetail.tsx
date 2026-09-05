@@ -1776,6 +1776,18 @@ export default function CourseDetail() {
                     <p className="text-xs text-muted-foreground">Course Creator</p>
                   </div>
                 </div>
+                <div className="space-y-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>{totalLessons} lessons published</span>
+                  </div>
+                  {totalDurationLabel && (
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{totalDurationLabel} of video</span>
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Rating */}
               <div className="rounded-xl border border-border p-4 space-y-2">
