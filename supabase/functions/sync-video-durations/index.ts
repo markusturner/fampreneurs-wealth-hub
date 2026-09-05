@@ -33,12 +33,19 @@ async function getYouTubeDuration(videoId: string): Promise<number | null> {
   }
 }
 
-async function getVimeoDuration(videoId: string): Promise<number | null> {
+async function getVimeoDuration(videoId: string, fullUrl: string): Promise<number | null> {
   try {
-    const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}`)
-    if (!res.ok) return null
-    const data = await res.json()
-    return typeof data.duration === 'number' ? Math.round(data.duration) : null
+    // Use the full original URL so unlisted/private videos keep their hash
+    const res = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(fullUrl)}`)
+    if (res.ok) {
+      const data = await res.json()
+      if (typeof data.duration === 'number') return Math.round(data.duration)
+    }
+    // Fallback: parse the video page JSON
+    const page = await fetch(fullUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } })
+    const html = await page.text()
+    const m = html.match(/"duration"\s*:\s*(\d+)/)
+    return m ? parseInt(m[1], 10) : null
   } catch {
     return null
   }
