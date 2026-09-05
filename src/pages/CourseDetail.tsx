@@ -775,6 +775,14 @@ export default function CourseDetail() {
 
   const allLessons = getAllLessons()
   const completedCount = allLessons.filter(l => l.completed).length
+  const totalSeconds = allLessons.reduce((sum, l) => sum + (l.duration_seconds || 0), 0)
+  const totalHours = Math.floor(totalSeconds / 3600)
+  const totalMins = Math.round((totalSeconds % 3600) / 60)
+  const totalDurationLabel = totalSeconds > 0
+    ? totalHours > 0
+      ? `${totalHours}h ${totalMins}m total`
+      : `${totalMins} min total`
+    : null
 
   // ── LEFT SIDEBAR (shared between desktop & mobile module list)
   const ModuleList = () => (
