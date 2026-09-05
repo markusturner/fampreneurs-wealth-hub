@@ -71,7 +71,7 @@ async function getDuration(url: string): Promise<number | null> {
   const yt = parseYouTubeId(url)
   if (yt) return getYouTubeDuration(yt)
   const vm = parseVimeoId(url)
-  if (vm) return getVimeoDuration(vm)
+  if (vm) return getVimeoDuration(vm, url)
   const lm = parseLoomId(url)
   if (lm) return getLoomDuration(lm)
   return null
