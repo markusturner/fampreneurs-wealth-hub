@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink, ChevronLeft, ChevronRight, Copy } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
@@ -265,6 +265,15 @@ export function CommunityEventsSection({ program }: Props) {
     setOpen(true)
   }
 
+  // Duplicate: opens the editor as a NEW event prefilled from this one
+  const requestDuplicate = (ev: EventInstance) => {
+    setEditing(null)
+    setEditScope('all')
+    setScopeInstanceAt(null)
+    setForm({ ...formFrom(ev, ev.instance_at), title: `${ev.title} (copy)` })
+    setOpen(true)
+  }
+
   const requestDelete = (ev: EventInstance) => {
     if (ev.recurrence && ev.recurrence !== 'none') {
       setScopePrompt({ instance: ev, action: 'delete' })
@@ -444,6 +453,7 @@ export function CommunityEventsSection({ program }: Props) {
         canManage={canManage}
         onEdit={requestEdit}
         onDelete={requestDelete}
+        onDuplicate={requestDuplicate}
       />
 
       <Dialog open={!!scopePrompt} onOpenChange={(o) => { if (!o) setScopePrompt(null) }}>
@@ -703,12 +713,13 @@ function Section({
   )
 }
 
-function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
+function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete, onDuplicate }: {
   event: EventInstance | null
   onClose: () => void
   canManage?: boolean
   onEdit?: (e: EventInstance) => void
   onDelete?: (e: EventInstance) => void
+  onDuplicate?: (e: EventInstance) => void
 }) {
   if (!event) return null
   const when = new Date(event.instance_at)
@@ -757,6 +768,9 @@ function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
             <div className="flex flex-wrap gap-2 border-t pt-3">
               <Button size="sm" variant="outline" onClick={() => { onClose(); onEdit?.(event) }}>
                 <Pencil className="h-4 w-4 mr-1.5" /> Edit event
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { onClose(); onDuplicate?.(event) }}>
+                <Copy className="h-4 w-4 mr-1.5" /> Duplicate
               </Button>
               <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => { onClose(); onDelete?.(event) }}>
                 <Trash2 className="h-4 w-4 mr-1.5" /> Delete event
