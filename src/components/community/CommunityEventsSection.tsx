@@ -545,8 +545,42 @@ export function CommunityEventsSection({ program }: Props) {
                     <option value="monthly">{monthlyPatternLabel(form.date, 'monthly')}</option>
                     <option value="monthly_nth">{monthlyPatternLabel(form.date, 'monthly_nth')}</option>
                   </select>
-                  {form.recurrence === 'monthly_nth' && form.date && weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) === 4 && (
-                    <p className="text-xs text-muted-foreground mt-1">Months without a fifth {format(new Date(`${form.date}T12:00:00`), 'EEEE')} are skipped.</p>
+                  {form.recurrence === 'monthly_nth' && (
+                    <div className="mt-2 space-y-2">
+                      <Label>Pick the week and day</Label>
+                      <div className="flex gap-2">
+                        <select
+                          className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          value={form.date ? weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) : 0}
+                          onChange={e => {
+                            const nth = Number(e.target.value)
+                            const weekday = form.date ? new Date(`${form.date}T12:00:00`).getDay() : new Date().getDay()
+                            setForm({ ...form, date: nextNthWeekdayDateStr(nth, weekday, form.date) })
+                          }}
+                        >
+                          {ORDINALS.map((o, i) => (
+                            <option key={o} value={i}>{o.charAt(0).toUpperCase() + o.slice(1)} week</option>
+                          ))}
+                        </select>
+                        <select
+                          className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          value={form.date ? new Date(`${form.date}T12:00:00`).getDay() : new Date().getDay()}
+                          onChange={e => {
+                            const weekday = Number(e.target.value)
+                            const nth = form.date ? weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) : 0
+                            setForm({ ...form, date: nextNthWeekdayDateStr(nth, weekday, form.date) })
+                          }}
+                        >
+                          {WEEKDAY_NAMES.map((w, i) => <option key={w} value={i}>{w}</option>)}
+                        </select>
+                      </div>
+                      {form.date && (
+                        <p className="text-xs text-muted-foreground">
+                          Starts {format(new Date(`${form.date}T12:00:00`), 'EEEE, MMM d, yyyy')}
+                          {weekdayIndexInMonth(new Date(`${form.date}T12:00:00`)) === 4 && ` — months without a fifth ${format(new Date(`${form.date}T12:00:00`), 'EEEE')} are skipped.`}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
