@@ -769,6 +769,9 @@ function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete, onDupl
               <Button size="sm" variant="outline" onClick={() => { onClose(); onEdit?.(event) }}>
                 <Pencil className="h-4 w-4 mr-1.5" /> Edit event
               </Button>
+              <Button size="sm" variant="outline" onClick={() => { onClose(); onDuplicate?.(event) }}>
+                <Copy className="h-4 w-4 mr-1.5" /> Duplicate
+              </Button>
               <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => { onClose(); onDelete?.(event) }}>
                 <Trash2 className="h-4 w-4 mr-1.5" /> Delete event
               </Button>
