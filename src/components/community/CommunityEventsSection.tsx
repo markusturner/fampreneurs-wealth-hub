@@ -90,6 +90,22 @@ function monthlyPatternLabel(dateStr: string, mode: 'monthly' | 'monthly_nth') {
   return `Every ${ORDINALS[weekdayIndexInMonth(d)]} ${format(d, 'EEEE')} of the month`
 }
 
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+// next date matching "nth weekday of the month" on or after `from`
+function nextNthWeekdayDateStr(nth: number, weekday: number, fromStr: string) {
+  const from = fromStr ? new Date(`${fromStr}T12:00:00`) : new Date()
+  const base = isNaN(from.getTime()) ? new Date() : from
+  for (let step = 0; step <= 24; step++) {
+    const probe = new Date(base.getFullYear(), base.getMonth() + step, 1)
+    const hit = nthWeekdayOfMonth(probe.getFullYear(), probe.getMonth(), weekday, nth)
+    if (hit && (step > 0 || hit >= new Date(base.getFullYear(), base.getMonth(), base.getDate()))) {
+      return format(hit, 'yyyy-MM-dd')
+    }
+  }
+  return fromStr
+}
+
 
 interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
 
