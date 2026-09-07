@@ -713,12 +713,13 @@ function Section({
   )
 }
 
-function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
+function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete, onDuplicate }: {
   event: EventInstance | null
   onClose: () => void
   canManage?: boolean
   onEdit?: (e: EventInstance) => void
   onDelete?: (e: EventInstance) => void
+  onDuplicate?: (e: EventInstance) => void
 }) {
   if (!event) return null
   const when = new Date(event.instance_at)
