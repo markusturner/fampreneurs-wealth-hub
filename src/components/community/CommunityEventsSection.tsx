@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink, ChevronLeft, ChevronRight, Copy } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
@@ -262,6 +262,15 @@ export function CommunityEventsSection({ program }: Props) {
     setEditScope('all')
     setScopeInstanceAt(null)
     setForm(formFrom(ev))
+    setOpen(true)
+  }
+
+  // Duplicate: opens the editor as a NEW event prefilled from this one
+  const requestDuplicate = (ev: EventInstance) => {
+    setEditing(null)
+    setEditScope('all')
+    setScopeInstanceAt(null)
+    setForm({ ...formFrom(ev, ev.instance_at), title: `${ev.title} (copy)` })
     setOpen(true)
   }
 
