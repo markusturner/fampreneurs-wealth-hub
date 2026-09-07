@@ -453,6 +453,7 @@ export function CommunityEventsSection({ program }: Props) {
         canManage={canManage}
         onEdit={requestEdit}
         onDelete={requestDelete}
+        onDuplicate={requestDuplicate}
       />
 
       <Dialog open={!!scopePrompt} onOpenChange={(o) => { if (!o) setScopePrompt(null) }}>
