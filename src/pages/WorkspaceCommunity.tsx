@@ -1359,20 +1359,6 @@ export default function WorkspaceCommunity() {
               <AIChat hideLauncher />
             </div>
 
-            {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
-            <div className="hidden md:block">
-              <CommunityViewToggle value={communityView} onChange={setCommunityView} />
-            </div>
-
-            {communityView === 'events' && (
-              <CommunityEventsSection program={program} />
-            )}
-            {communityView === 'leaderboard' && (
-              <CommunityLeaderboardSection program={program} />
-            )}
-
-            {communityView === 'feed' && (
-            <>
             {/* Community name and Rachel search on mobile only */}
             <div className="flex items-center justify-between gap-3 md:hidden">
               <h2 className="min-w-0 truncate text-lg font-bold">{programName}</h2>
@@ -1389,6 +1375,20 @@ export default function WorkspaceCommunity() {
               </Button>
             </div>
 
+            {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
+            <div className="hidden md:block">
+              <CommunityViewToggle value={communityView} onChange={setCommunityView} />
+            </div>
+
+            {communityView === 'events' && (
+              <CommunityEventsSection program={program} />
+            )}
+            {communityView === 'leaderboard' && (
+              <CommunityLeaderboardSection program={program} />
+            )}
+
+            {communityView === 'feed' && (
+            <>
             {/* Mobile: Simple "Write something" bar */}
             <div className="lg:hidden">
               <Card className="border-border/50 cursor-pointer" onClick={() => setMobilePostOpen(true)}>
