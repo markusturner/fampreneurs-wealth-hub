@@ -25,7 +25,7 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import * as tus from 'tus-js-client'
 import { 
-  Image, Video, ThumbsUp, MessageCircle, Send, 
+  Image, Video, ThumbsUp, MessageCircle, Send, Search, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
   Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks, Plus, Trash2, RotateCcw, ChevronUp, ChevronDown
 } from 'lucide-react'
@@ -53,6 +53,7 @@ import {
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
 import { CommentReactions } from '@/components/community/CommentReactions'
+import { AIChat } from '@/components/dashboard/ai-chat'
 
 
 interface Post {
@@ -1354,6 +1355,25 @@ export default function WorkspaceCommunity() {
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
+            <div className="md:hidden">
+              <AIChat hideLauncher />
+            </div>
+
+            {/* Community name and Rachel search on mobile only */}
+            <div className="flex items-center justify-between gap-3 md:hidden">
+              <h2 className="min-w-0 truncate text-lg font-bold">{programName}</h2>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-10 w-10 shrink-0 rounded-full border-ring text-foreground"
+                aria-label="Ask Rachel"
+                title="Ask Rachel"
+                onClick={() => window.dispatchEvent(new Event('ai-chat:open'))}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
 
             {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
             <div className="hidden md:block">
@@ -1369,9 +1389,6 @@ export default function WorkspaceCommunity() {
 
             {communityView === 'feed' && (
             <>
-            {/* Community name header on mobile only */}
-            <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
-
             {/* Mobile: Simple "Write something" bar */}
             <div className="lg:hidden">
               <Card className="border-border/50 cursor-pointer" onClick={() => setMobilePostOpen(true)}>
