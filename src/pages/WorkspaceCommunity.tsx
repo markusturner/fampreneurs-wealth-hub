@@ -1355,6 +1355,9 @@ export default function WorkspaceCommunity() {
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
+            <div className="md:hidden">
+              <AIChat hideLauncher />
+            </div>
 
             {/* Feed / Events / Leaderboard toggle — desktop & tablet only (hidden on mobile) */}
             <div className="hidden md:block">
@@ -1424,10 +1427,7 @@ export default function WorkspaceCommunity() {
                     >
                       {isPosting ? 'POSTING...' : 'POST'}
                     </Button>
-      </div>
-      <div className="md:hidden">
-        <AIChat hideLauncher />
-      </div>
+                  </div>
                 </div>
 
                 {/* Send to all toggle for admins */}
