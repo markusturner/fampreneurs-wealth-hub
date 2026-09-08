@@ -33,7 +33,7 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
-export function AIChat() {
+export function AIChat({ hideLauncher = false }: { hideLauncher?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -128,7 +128,7 @@ export function AIChat() {
 
   return (
     <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-24' : 'bottom-8'}`}>
-      {!isOpen && (
+      {!isOpen && !hideLauncher && (
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
