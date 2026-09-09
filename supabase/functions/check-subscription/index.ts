@@ -54,14 +54,24 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    const unauthenticated = () => new Response(
+      JSON.stringify({ subscribed: false, programs: [], tier: 'standard', is_lite: false, subscription_end: null }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+    );
 
-    const token = authHeader.replace("Bearer ", "");
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "").trim();
+    if (!token) {
+      logStep("No auth token; returning unsubscribed");
+      return unauthenticated();
+    }
+
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    const user = userData?.user;
+    if (userError || !user?.email) {
+      logStep("No valid session; returning unsubscribed");
+      return unauthenticated();
+    }
     logStep("User authenticated", { userId: user.id });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
