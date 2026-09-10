@@ -174,11 +174,11 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
     const recs: Recommendation[] = []
     const llcCount = parseInt(formData.llcCount) || 0
     
-    // F.L.I.P. Formula Comprehensive Structure Recommendation
+    // Trust Trinity Structure Comprehensive Structure Recommendation
     recs.push({
       type: 'success',
-      title: 'The F.L.I.P. Formula™ - Family Legacy Inheritance Plan',
-      description: 'Based on your responses, here is a comprehensive structure following The F.L.I.P. Formula for optimal family wealth building and tax optimization.',
+      title: 'The Trust Trinity Structure™ - Family Legacy Inheritance Plan',
+      description: 'Based on your responses, here is a comprehensive structure following The Trust Trinity Structure for optimal family wealth building and tax optimization.',
       actionItems: [
         '1. Establish Family Trust as the foundational holding entity',
         '2. Create Tax-Exempt Trust for charitable giving and tax benefits',
