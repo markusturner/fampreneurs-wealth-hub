@@ -328,6 +328,82 @@ One sentence, addressed to the client by their real first name.
 - Ask about family values, goals, and concerns to personalize clauses`
 };
 
+// Builds a live index of every course, module, lesson, lesson resource and SOP
+// so Rachel can tell users exactly where a document or resource lives.
+async function buildClassroomContext(supabase: any): Promise<string> {
+  try {
+    const [coursesRes, modulesRes, lessonsRes, resourcesRes, sopsRes] = await Promise.all([
+      supabase.from('courses').select('id, title, description, status, category').order('order_index', { ascending: true }),
+      supabase.from('course_modules').select('id, course_id, title, order_index').order('order_index', { ascending: true }),
+      supabase.from('course_videos').select('id, course_id, module_id, title, order_index, duration_seconds').order('order_index', { ascending: true }),
+      supabase.from('course_resources').select('id, course_id, lesson_id, title, resource_type, url, file_path').order('order_index', { ascending: true }),
+      supabase.from('sops').select('id, title, description, program_tags, status').order('order_index', { ascending: true }),
+    ]);
+
+    const courses = coursesRes.data || [];
+    const modules = modulesRes.data || [];
+    const lessons = lessonsRes.data || [];
+    const resources = resourcesRes.data || [];
+    const sops = sopsRes.data || [];
+
+    if (courses.length === 0) return '';
+
+    const lines: string[] = [];
+    lines.push('\n\n## Live Classroom Index (courses, lessons, and where every resource/document lives)');
+    lines.push('This is the real, current content of the TruHeirs Classroom. Use it to tell users the EXACT course, module, and lesson where a resource or document lives. Link courses as [Course Title](/classroom/COURSE_ID). Never invent a lesson or resource that is not listed here — if it is not here, say it is not in the Classroom yet and point to [Classroom](/classroom).');
+
+    for (const c of courses) {
+      lines.push(`\n### Course: ${c.title} — /classroom/${c.id}${c.status && c.status !== 'published' ? ` (status: ${c.status})` : ''}`);
+      if (c.description) lines.push(`Summary: ${String(c.description).substring(0, 300)}`);
+
+      const courseModules = modules.filter((m: any) => m.course_id === c.id);
+      const courseLessons = lessons.filter((l: any) => l.course_id === c.id);
+      const groups: Array<{ title: string; items: any[] }> = [
+        ...courseModules.map((m: any) => ({
+          title: `Module: ${m.title}`,
+          items: courseLessons.filter((l: any) => l.module_id === m.id),
+        })),
+        { title: 'Lessons (no module)', items: courseLessons.filter((l: any) => !l.module_id) },
+      ];
+
+      for (const g of groups) {
+        if (g.items.length === 0) continue;
+        lines.push(`- ${g.title}`);
+        for (const l of g.items) {
+          const mins = l.duration_seconds ? ` (${Math.round(l.duration_seconds / 60)} min)` : '';
+          lines.push(`  - Lesson: ${l.title}${mins}`);
+          const lessonResources = resources.filter((r: any) => r.lesson_id === l.id);
+          for (const r of lessonResources) {
+            const where = r.url ? `link: ${r.url}` : r.file_path ? 'downloadable file attached to this lesson' : 'attached resource';
+            lines.push(`    - Resource: ${r.title} [${r.resource_type || 'file'}] — ${where}`);
+          }
+        }
+      }
+
+      const courseLevelResources = resources.filter((r: any) => r.course_id === c.id && !r.lesson_id);
+      for (const r of courseLevelResources) {
+        const where = r.url ? `link: ${r.url}` : 'downloadable file in the course Resources tab';
+        lines.push(`- Course-level Resource: ${r.title} [${r.resource_type || 'file'}] — ${where}`);
+      }
+    }
+
+    if (sops.length > 0) {
+      lines.push('\n### SOPs & Playbooks (found in [Classroom](/classroom) → SOPs & Playbooks)');
+      for (const s of sops) {
+        const tags = Array.isArray(s.program_tags) && s.program_tags.length > 0 ? ` — programs: ${s.program_tags.join(', ')}` : '';
+        lines.push(`- ${s.title} — /sops/${s.id}${tags}`);
+      }
+    }
+
+    lines.push('\nHow users open a resource: go to [Classroom](/classroom) → open the course → open the module → open the lesson → the resource is listed under the video in the **Resources** section, where it can be viewed or downloaded.');
+
+    return lines.join('\n').substring(0, 45000);
+  } catch (e) {
+    console.error('buildClassroomContext failed:', e);
+    return '';
+  }
+}
+
 async function buildSystemPrompt(supabase: any, persona: string): Promise<string> {
   let systemPrompt = BASE_PERSONA_PROMPTS[persona] || BASE_PERSONA_PROMPTS.rachel;
 
