@@ -444,6 +444,11 @@ async function buildSystemPrompt(supabase: any, persona: string): Promise<string
     }
   }
 
+  // Give Rachel the real Classroom index so she knows where lesson resources/documents live
+  if (persona === 'rachel') {
+    systemPrompt += await buildClassroomContext(supabase);
+  }
+
   return systemPrompt;
 }
 
