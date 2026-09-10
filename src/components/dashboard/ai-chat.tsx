@@ -22,14 +22,14 @@ interface Message {
 const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string }[] = [
   { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director' },
   { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding' },
-  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance' },
+  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'Trust Trinity Structure™ guidance' },
   { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses' },
 ]
 
 const PERSONA_GREETINGS: Record<Persona, string> = {
   rachel: "Hello! I'm Rachel, your Family Office AI assistant. How can I help you today?",
   asset_protection: "Welcome! I specialize in asset protection strategies and trust document guidance. What assets would you like to protect?",
-  business_structure: "Hi! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
+  business_structure: "Hi! I'm your Business Structure Builder, powered by The Trust Trinity Structure™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
