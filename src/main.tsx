@@ -44,6 +44,7 @@ import ClientMetrics from "./pages/ClientMetrics";
 import ClientRetention from "./pages/ClientRetention";
 import Surveys from "./pages/Surveys";
 import SurveyPublic from "./pages/SurveyPublic";
+import NotFound from "./pages/NotFound";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -173,7 +174,8 @@ function AppWithNotifications() {
         <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         
-        <Route path="*" element={<div>Page not found</div>} />
+        <Route path="/survey/" element={<SurveyPublic />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <MobileBottomNav />
     </>
