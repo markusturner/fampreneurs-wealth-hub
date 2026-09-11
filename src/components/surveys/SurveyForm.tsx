@@ -15,9 +15,11 @@ interface Props {
   questions: SurveyQuestion[]
   onSubmitted?: () => void
   compact?: boolean
+  /** Public link mode: submit with no account and no identifying info */
+  anonymous?: boolean
 }
 
-export function SurveyForm({ survey, questions, onSubmitted, compact }: Props) {
+export function SurveyForm({ survey, questions, onSubmitted, compact, anonymous }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -28,7 +30,7 @@ export function SurveyForm({ survey, questions, onSubmitted, compact }: Props) {
     setAnswers(prev => ({ ...prev, [id]: value }))
 
   const handleSubmit = async () => {
-    if (!user?.id) return
+    if (!anonymous && !user?.id) return
     const missing = questions.find(q => q.required && !answers[q.id]?.trim())
     if (missing) {
       toast({ title: 'One more thing', description: 'Please answer all required questions.', variant: 'destructive' })
@@ -38,7 +40,7 @@ export function SurveyForm({ survey, questions, onSubmitted, compact }: Props) {
     try {
       const { data: submission, error } = await supabase
         .from('survey_submissions')
-        .insert({ survey_id: survey.id, user_id: user.id })
+        .insert({ survey_id: survey.id, user_id: anonymous ? null : user!.id })
         .select('id')
         .single()
       if (error) throw error
