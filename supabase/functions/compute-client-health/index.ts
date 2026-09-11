@@ -422,6 +422,13 @@ Deno.serve(async (req) => {
 
       const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.display_name || p.email
 
+      // Activity tables key on auth user id (profiles.user_id), not profiles.id
+      const activityIds = Array.from(new Set([
+        (p as any).user_id,
+        ...(((p as any).linked_user_ids as string[] | null) ?? []),
+      ].filter(Boolean))) as string[]
+      const actIds = activityIds.length ? activityIds : [p.id]
+
       const signals: Signal[] = []
       // Default neutral score when no data exists for a dimension (so missing data ≠ failure)
       let attendanceScore = 6
