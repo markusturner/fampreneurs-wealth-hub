@@ -169,10 +169,23 @@ export default function Surveys() {
         <Button variant="ghost" size="icon" onClick={() => navigate('/welcome')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl md:text-2xl font-bold truncate">Surveys</h1>
-          <p className="text-sm text-muted-foreground">Sent to every member each Friday at 9:00am ET</p>
+          <p className="text-sm text-muted-foreground">Share the link — answers are anonymous</p>
         </div>
+        {survey && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const link = `${window.location.origin}/survey/${survey.id}`
+              navigator.clipboard.writeText(link)
+              toast({ title: 'Link copied', description: link })
+            }}
+          >
+            Copy share link
+          </Button>
+        )}
       </div>
 
       {surveys.length > 1 && (
