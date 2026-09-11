@@ -654,7 +654,7 @@ Deno.serve(async (req) => {
         status,
         signals,
         arr_value,
-        last_active_at: lastCommunityAt ?? dms.data?.created_at ?? lastAttended?.joined_at ?? null,
+        last_active_at: lastCommunityAt ?? dms.data?.created_at ?? lastAttendedAt ?? null,
         metrics: {
           last_community_days: lastCommunityDays,
           last_attended_days: lastAttendedDays,
