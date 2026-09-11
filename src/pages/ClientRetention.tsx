@@ -38,6 +38,28 @@ interface ClientScore {
 
 const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v5"
 
+// Rule-based outreach topic per client — what Markus should reach out about
+function outreachTopic(c: ClientScore): string {
+  const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
+  const has = (re: RegExp) => re.test(labels)
+
+  if (has(/fathom|transcript/)) return "No accountability-call attendance on record — personally invite them to this week's call."
+  if (has(/attendance|missed.*call|no.*call/)) return "Missing coaching calls — ask what's blocking them and offer a 1:1 catch-up."
+  if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
+  if (has(/trust|document/)) return "Trust paperwork is stalled — offer to walk through the next document together."
+  if (has(/succession/)) return "Succession plan needs attention — nudge them to finish the next step."
+  if (has(/payment|overdue|invoice/)) return "Payment is overdue — reach out about getting the account current."
+  if (has(/renewal|tenure|contract/)) return "Renewal window is close — book a strategy call to lock in the next term."
+  if (has(/inactive|no activity|quiet|login/)) return "No recent activity — send a personal check-in to see how they're doing."
+
+  switch (c.status) {
+    case "at_risk": return "Gone quiet — send a warm personal check-in and offer a no-pressure 15-min call."
+    case "slipping": return "Engagement dipping — point them to one small win they can get this week."
+    case "stable": return "Doing well — ask for a testimonial or a referral to a family they know."
+    case "expansion_ready": return "Ready for the next tier — invite them to a strategy call about upgrading."
+  }
+}
+
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
@@ -631,6 +653,10 @@ export default function ClientRetention() {
                   <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
                 ) : (
                   <div className="space-y-5">
+                    <section className="rounded-md border border-[#ffb500]/50 bg-amber-50/60 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
+                      <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
+                    </section>
                     <section>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Signals Detected</p>
                       <ul className="space-y-1.5">
@@ -860,7 +886,7 @@ function QueueGroup({
               <span className="font-medium truncate">{c.full_name}</span>
               <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs`}>{c.score}/10</Badge>
             </div>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{c.signals[0]?.label ?? "—"}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
           </button>
         ))}
       </CardContent>
