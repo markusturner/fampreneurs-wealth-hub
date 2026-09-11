@@ -371,7 +371,7 @@ Deno.serve(async (req) => {
     // Active non-Lite clients
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
+      .select('id, user_id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
@@ -422,6 +422,13 @@ Deno.serve(async (req) => {
 
       const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.display_name || p.email
 
+      // Activity tables key on auth user id (profiles.user_id), not profiles.id
+      const activityIds = Array.from(new Set([
+        (p as any).user_id,
+        ...(((p as any).linked_user_ids as string[] | null) ?? []),
+      ].filter(Boolean))) as string[]
+      const actIds = activityIds.length ? activityIds : [p.id]
+
       const signals: Signal[] = []
       // Default neutral score when no data exists for a dimension (so missing data ≠ failure)
       let attendanceScore = 6
@@ -433,12 +440,13 @@ Deno.serve(async (req) => {
       let fathomScore = 6
 
       // -------- Community: posts + DMs + group messages --------
-      const [posts, dms, gms] = await Promise.all([
-        supabase.from('community_posts').select('created_at').eq('user_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('direct_messages').select('created_at').eq('sender_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('group_messages').select('created_at').eq('sender_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      const [posts, comments, dms, gms] = await Promise.all([
+        supabase.from('community_posts').select('created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('community_comments').select('created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('direct_messages').select('created_at').in('sender_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('group_messages').select('created_at').in('sender_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
-      const lastCommunityAt = [posts.data?.created_at, dms.data?.created_at, gms.data?.created_at]
+      const lastCommunityAt = [posts.data?.created_at, comments.data?.created_at, dms.data?.created_at, gms.data?.created_at]
         .filter(Boolean)
         .sort()
         .reverse()[0] ?? null
@@ -452,10 +460,16 @@ Deno.serve(async (req) => {
       else communityScore = 9
 
       // -------- Attendance (TFV has no coaching calls — skip) --------
-      const { data: lastAttended } = await supabase
+      // Manually logged attendance rows have no joined_at — fall back to created_at
+      const { data: attendanceRows } = await supabase
         .from('session_attendance')
-        .select('joined_at').eq('user_id', p.id).order('joined_at', { ascending: false }).limit(1).maybeSingle()
-      const lastAttendedDays = daysSince(lastAttended?.joined_at)
+        .select('joined_at, created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(20)
+      const lastAttendedAt = (attendanceRows ?? [])
+        .map((r: any) => r.joined_at || r.created_at)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] ?? null
+      const lastAttendedDays = daysSince(lastAttendedAt)
       if (programKey === 'tfv') {
         attendanceScore = 8 // neutral-positive; TFV doesn't include coaching calls
       } else if (lastAttendedDays === null) {
@@ -469,14 +483,14 @@ Deno.serve(async (req) => {
       // -------- Trust progress: DB submission + Drive folder presence --------
       const { data: lastTrust } = await supabase
         .from('trust_submissions')
-        .select('updated_at, status').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+        .select('updated_at, status').in('user_id', actIds).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const trustDays = daysSince(lastTrust?.updated_at)
 
       // Ascension eligibility per Customer Feedback Framework:
       //   1) Family Protection Plan complete  2) All 3 trusts drafted (family, business, ministry)  3) Assets moved into trusts
       const [{ data: allTrusts }, { count: assetCount }] = await Promise.all([
-        supabase.from('trust_submissions').select('trust_type, status').eq('user_id', p.id),
-        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).eq('user_id', p.id),
+        supabase.from('trust_submissions').select('trust_type, status').in('user_id', actIds),
+        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).in('user_id', actIds),
       ])
       const trustTypes = new Set((allTrusts ?? []).map((t: any) => (t.trust_type || '').toLowerCase()))
       const hasFamily = [...trustTypes].some((t) => t.includes('family'))
@@ -510,7 +524,7 @@ Deno.serve(async (req) => {
       // -------- Succession --------
       const { data: lastSucc } = await supabase
         .from('succession_progress')
-        .select('updated_at').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+        .select('updated_at').in('user_id', actIds).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const succDays = daysSince(lastSucc?.updated_at)
       if (programKey === 'tffm') {
         if (succDays === null) { successionScore = 4; signals.push({ label: 'No succession plan activity', severity: 'warn' }) }
@@ -640,7 +654,7 @@ Deno.serve(async (req) => {
         status,
         signals,
         arr_value,
-        last_active_at: lastCommunityAt ?? dms.data?.created_at ?? lastAttended?.joined_at ?? null,
+        last_active_at: lastCommunityAt ?? dms.data?.created_at ?? lastAttendedAt ?? null,
         metrics: {
           last_community_days: lastCommunityDays,
           last_attended_days: lastAttendedDays,
