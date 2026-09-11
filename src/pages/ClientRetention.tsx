@@ -653,6 +653,10 @@ export default function ClientRetention() {
                   <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
                 ) : (
                   <div className="space-y-5">
+                    <section className="rounded-md border border-[#ffb500]/50 bg-amber-50/60 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
+                      <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
+                    </section>
                     <section>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Signals Detected</p>
                       <ul className="space-y-1.5">
@@ -882,7 +886,7 @@ function QueueGroup({
               <span className="font-medium truncate">{c.full_name}</span>
               <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs`}>{c.score}/10</Badge>
             </div>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{c.signals[0]?.label ?? "—"}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
           </button>
         ))}
       </CardContent>
