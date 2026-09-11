@@ -638,6 +638,32 @@ Deno.serve(async (req) => {
 
       let score = Math.max(1, Math.min(10, Number(raw.toFixed(1))))
       if (score >= 7 && renewalWindow) score = Math.min(10, score + 1.5)
+
+      // -------- Real-engagement override --------
+      // The weighted score defaults to neutral when a dimension has no data,
+      // which bunched every client into "slipping". Grade on actual recency.
+      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays]
+        .filter((d): d is number => typeof d === 'number')
+      const mostRecent = recencies.length ? Math.min(...recencies) : null
+      const activeDims = recencies.filter((d) => d <= 30).length
+
+      if (mostRecent === null) {
+        if (tenureDays > 21) {
+          score = Math.min(score, 3.2)
+          signals.push({ label: `No recorded activity of any kind in ${tenureDays}d of membership`, severity: 'critical' })
+        }
+      } else if (mostRecent > 60) {
+        score = Math.min(score, 3.5)
+        signals.push({ label: `Last activity of any kind was ${mostRecent}d ago`, severity: 'critical' })
+      } else if (mostRecent > 30) {
+        score = Math.min(score, 5.5)
+      } else if (activeDims >= 2 && mostRecent <= 14) {
+        score = Math.max(score, 7)
+      } else if (activeDims >= 3 && mostRecent <= 7) {
+        score = Math.max(score, 8)
+      }
+      score = Number(Math.max(1, Math.min(10, score)).toFixed(1))
+
       // Framework override: meeting all 3 ascension criteria forces expansion_ready
       let status = classify(score)
       if (ascensionEligible) { status = 'expansion_ready'; score = Math.max(score, 9) }
