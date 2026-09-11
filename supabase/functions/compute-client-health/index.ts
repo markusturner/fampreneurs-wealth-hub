@@ -371,7 +371,7 @@ Deno.serve(async (req) => {
     // Active non-Lite clients
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
+      .select('id, user_id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
