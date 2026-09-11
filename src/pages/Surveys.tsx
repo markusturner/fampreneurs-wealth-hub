@@ -178,7 +178,7 @@ export default function Surveys() {
             variant="outline"
             size="sm"
             onClick={() => {
-              const link = `https://truheirs.app/survey/${survey.id}`
+              const link = `https://truheirs.app/survey/`
               navigator.clipboard.writeText(link)
               toast({ title: 'Link copied', description: link })
             }}
