@@ -43,6 +43,7 @@ import AdminSettings from "./pages/AdminSettings";
 import ClientMetrics from "./pages/ClientMetrics";
 import ClientRetention from "./pages/ClientRetention";
 import Surveys from "./pages/Surveys";
+import SurveyPublic from "./pages/SurveyPublic";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -157,6 +158,8 @@ function AppWithNotifications() {
         <Route path="/client-metrics" element={<WithLayout><ClientMetrics /></WithLayout>} />
         <Route path="/client-retention" element={<WithLayout><ClientRetention /></WithLayout>} />
         <Route path="/surveys" element={<WithLayout><Surveys /></WithLayout>} />
+        <Route path="/survey" element={<SurveyPublic />} />
+        <Route path="/survey/:surveyId" element={<SurveyPublic />} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />

@@ -5373,21 +5373,21 @@ export type Database = {
           id: string
           submitted_at: string
           survey_id: string
-          user_id: string
+          user_id: string | null
           week_of: string
         }
         Insert: {
           id?: string
           submitted_at?: string
           survey_id: string
-          user_id: string
+          user_id?: string | null
           week_of?: string
         }
         Update: {
           id?: string
           submitted_at?: string
           survey_id?: string
-          user_id?: string
+          user_id?: string | null
           week_of?: string
         }
         Relationships: [
