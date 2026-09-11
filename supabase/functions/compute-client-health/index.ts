@@ -440,12 +440,13 @@ Deno.serve(async (req) => {
       let fathomScore = 6
 
       // -------- Community: posts + DMs + group messages --------
-      const [posts, dms, gms] = await Promise.all([
-        supabase.from('community_posts').select('created_at').eq('user_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('direct_messages').select('created_at').eq('sender_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('group_messages').select('created_at').eq('sender_id', p.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      const [posts, comments, dms, gms] = await Promise.all([
+        supabase.from('community_posts').select('created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('community_comments').select('created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('direct_messages').select('created_at').in('sender_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('group_messages').select('created_at').in('sender_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
-      const lastCommunityAt = [posts.data?.created_at, dms.data?.created_at, gms.data?.created_at]
+      const lastCommunityAt = [posts.data?.created_at, comments.data?.created_at, dms.data?.created_at, gms.data?.created_at]
         .filter(Boolean)
         .sort()
         .reverse()[0] ?? null
