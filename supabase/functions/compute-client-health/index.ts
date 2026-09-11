@@ -462,7 +462,7 @@ Deno.serve(async (req) => {
       // -------- Attendance (TFV has no coaching calls — skip) --------
       const { data: lastAttended } = await supabase
         .from('session_attendance')
-        .select('joined_at').eq('user_id', p.id).order('joined_at', { ascending: false }).limit(1).maybeSingle()
+        .select('joined_at').in('user_id', actIds).order('joined_at', { ascending: false }).limit(1).maybeSingle()
       const lastAttendedDays = daysSince(lastAttended?.joined_at)
       if (programKey === 'tfv') {
         attendanceScore = 8 // neutral-positive; TFV doesn't include coaching calls
@@ -477,14 +477,14 @@ Deno.serve(async (req) => {
       // -------- Trust progress: DB submission + Drive folder presence --------
       const { data: lastTrust } = await supabase
         .from('trust_submissions')
-        .select('updated_at, status').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+        .select('updated_at, status').in('user_id', actIds).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const trustDays = daysSince(lastTrust?.updated_at)
 
       // Ascension eligibility per Customer Feedback Framework:
       //   1) Family Protection Plan complete  2) All 3 trusts drafted (family, business, ministry)  3) Assets moved into trusts
       const [{ data: allTrusts }, { count: assetCount }] = await Promise.all([
-        supabase.from('trust_submissions').select('trust_type, status').eq('user_id', p.id),
-        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).eq('user_id', p.id),
+        supabase.from('trust_submissions').select('trust_type, status').in('user_id', actIds),
+        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).in('user_id', actIds),
       ])
       const trustTypes = new Set((allTrusts ?? []).map((t: any) => (t.trust_type || '').toLowerCase()))
       const hasFamily = [...trustTypes].some((t) => t.includes('family'))
@@ -518,7 +518,7 @@ Deno.serve(async (req) => {
       // -------- Succession --------
       const { data: lastSucc } = await supabase
         .from('succession_progress')
-        .select('updated_at').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+        .select('updated_at').in('user_id', actIds).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const succDays = daysSince(lastSucc?.updated_at)
       if (programKey === 'tffm') {
         if (succDays === null) { successionScore = 4; signals.push({ label: 'No succession plan activity', severity: 'warn' }) }
