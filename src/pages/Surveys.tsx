@@ -178,7 +178,7 @@ export default function Surveys() {
             variant="outline"
             size="sm"
             onClick={() => {
-              const link = `${window.location.origin}/survey/${survey.id}`
+              const link = `https://truheirs.app/survey/${survey.id}`
               navigator.clipboard.writeText(link)
               toast({ title: 'Link copied', description: link })
             }}
@@ -336,16 +336,6 @@ export default function Surveys() {
                     onChange={e => setSurveys(prev => prev.map(s => s.id === survey.id ? { ...s, description: e.target.value } : s))}
                     onBlur={e => supabase.from('surveys').update({ description: e.target.value }).eq('id', survey.id)}
                   />
-                </div>
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={survey.is_weekly}
-                    onCheckedChange={async v => {
-                      setSurveys(prev => prev.map(s => s.id === survey.id ? { ...s, is_weekly: v } : s))
-                      await supabase.from('surveys').update({ is_weekly: v }).eq('id', survey.id)
-                    }}
-                  />
-                  <span className="text-sm">Send automatically every Friday at 9:00am ET</span>
                 </div>
               </CardContent>
             </Card>
