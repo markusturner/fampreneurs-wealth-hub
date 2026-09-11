@@ -460,10 +460,16 @@ Deno.serve(async (req) => {
       else communityScore = 9
 
       // -------- Attendance (TFV has no coaching calls — skip) --------
-      const { data: lastAttended } = await supabase
+      // Manually logged attendance rows have no joined_at — fall back to created_at
+      const { data: attendanceRows } = await supabase
         .from('session_attendance')
-        .select('joined_at').in('user_id', actIds).order('joined_at', { ascending: false }).limit(1).maybeSingle()
-      const lastAttendedDays = daysSince(lastAttended?.joined_at)
+        .select('joined_at, created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(20)
+      const lastAttendedAt = (attendanceRows ?? [])
+        .map((r: any) => r.joined_at || r.created_at)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] ?? null
+      const lastAttendedDays = daysSince(lastAttendedAt)
       if (programKey === 'tfv') {
         attendanceScore = 8 // neutral-positive; TFV doesn't include coaching calls
       } else if (lastAttendedDays === null) {
