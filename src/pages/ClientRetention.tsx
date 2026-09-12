@@ -127,14 +127,13 @@ export default function ClientRetention() {
       const parsed = JSON.parse(raw)
       const list: ClientScore[] = parsed?.clients ?? []
       if (!Array.isArray(list) || list.length === 0) return null
-      const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
-      return { list, selectedId: firstAtRisk?.user_id ?? null }
+      return { list }
     } catch { return null }
   })()
 
   const [loading, setLoading] = useState(!cached)
   const [clients, setClients] = useState<ClientScore[]>(cached?.list ?? [])
-  const [selectedId, setSelectedId] = useState<string | null>(cached?.selectedId ?? null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [trend, setTrend] = useState<{ day: string; avg: number }[]>([])
   const [draft, setDraft] = useState<string>("")
   const [drafting, setDrafting] = useState(false)
@@ -375,11 +374,7 @@ export default function ClientRetention() {
     })
 
     setClients(merged)
-    setSelectedId((prev) => {
-      if (prev && merged.some((c) => c.user_id === prev)) return prev
-      const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
-      return firstAtRisk?.user_id ?? null
-    })
+    setSelectedId((prev) => (prev && merged.some((c) => c.user_id === prev) ? prev : null))
     return merged
   }
 
@@ -571,7 +566,9 @@ export default function ClientRetention() {
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
-        loadHealth(hadCache)
+        // Cached data renders instantly — only run the expensive recompute when there is no cache.
+        // Fresh data still arrives via the 60s silent refresh below.
+        if (!hadCache) loadHealth(false)
       })
     })
     loadTrend()
