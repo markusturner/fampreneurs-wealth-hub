@@ -1263,7 +1263,6 @@ export default function ClientRetention() {
                 )}
               </CardContent>
             </Card>
-          </div>
         </div>
       </div>
         </>
