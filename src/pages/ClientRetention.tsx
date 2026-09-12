@@ -162,6 +162,9 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
+  const [viewMode, setViewMode] = useState<"board" | "table">("board")
+  const isMobile = useIsMobile()
+  const effectiveView = isMobile ? "table" : viewMode
 
   useEffect(() => {
     if (!user) return
