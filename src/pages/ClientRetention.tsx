@@ -1237,7 +1237,7 @@ function QueueGroup({
               )}
             </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
-            {upsellInfo(c) && (
+            {c.status === "expansion_ready" && upsellInfo(c) && (
               <p className="text-[10px] font-medium text-purple-700 mt-0.5">
                 Opportunity cost: ${upsellInfo(c)!.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)!.target})
               </p>
