@@ -101,6 +101,10 @@ export default function ClientRetention() {
   const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
   useEffect(() => { notesMapRef.current = notesMap }, [notesMap])
+  type CallRec = { id: string; title: string; coach: string | null; date: string }
+  const [attendanceMap, setAttendanceMap] = useState<Record<string, CallRec[]>>({})
+  const attendanceMapRef = useRef(attendanceMap)
+  useEffect(() => { attendanceMapRef.current = attendanceMap }, [attendanceMap])
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
@@ -207,6 +211,10 @@ export default function ClientRetention() {
         }
       })
       let nextScore = Math.min(10, Math.max(1, Number((c.score + scoreDelta).toFixed(1))))
+      // A strong positive note is first-hand evidence — it should lift them out of the low buckets
+      const strongPositives = (Object.keys(boosts) as (keyof typeof boosts)[]).filter((k) => boosts[k] >= 9).length
+      if (strongPositives >= 2) nextScore = Math.max(nextScore, 7.2)
+      else if (strongPositives === 1) nextScore = Math.max(nextScore, 6.6)
       let nextStatus: Status = entry.status_override ?? c.status
       if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
       else if (!entry.status_override) {
@@ -225,19 +233,102 @@ export default function ClientRetention() {
     })
   }
 
-  const applyClients = (list: ClientScore[], overrideMap?: Record<string, NotesEntry>) => {
+  const CALL_SIGNATURE = "🎧"
+
+  // Attendance log is the source of truth for coaching calls — fold it into signals + score
+  const mergeAttendance = (list: ClientScore[], map: Record<string, CallRec[]>): ClientScore[] => {
+    const now = Date.now()
+    return list.map((c) => {
+      const ids = [c.user_id, ...((c.linked_users ?? []).map((l) => l.user_id))]
+      const calls = ids.flatMap((id) => map[id] ?? [])
+        .sort((a, b) => (a.date < b.date ? 1 : -1))
+      if (calls.length === 0) return c
+      const last = calls[0]
+      const days = Math.floor((now - new Date(last.date).getTime()) / 86400000)
+      const count90 = calls.filter((k) => (now - new Date(k.date).getTime()) / 86400000 <= 90).length
+
+      // Drop stale "no attendance / missed calls" signals — the log proves otherwise
+      const trimmed = c.signals.filter((s) => {
+        const l = s.label.toLowerCase()
+        if (s.severity === "info") return true
+        return !(l.includes("coaching call") || l.includes("attendance") || l.includes("missed session"))
+      })
+
+      const attendanceScore = days <= 14 ? 9 : days <= 30 ? 7 : days <= 60 ? 5 : 3
+      const delta = Math.max(0, attendanceScore - 5) * 0.20
+      const score = Math.min(10, Math.max(1, Number((c.score + delta).toFixed(1))))
+      const label = days <= 60
+        ? `${CALL_SIGNATURE} Attended ${count90} call${count90 === 1 ? "" : "s"} in last 90d — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
+        : `${CALL_SIGNATURE} Last coaching call ${days}d ago — ${last.title}`
+      return {
+        ...c,
+        score,
+        signals: [{ label, severity: days <= 60 ? "info" : "warn" }, ...trimmed],
+      }
+    })
+  }
+
+  const applyClients = (list: ClientScore[], overrideMap?: Record<string, NotesEntry>, attMap?: Record<string, CallRec[]>) => {
     // Always strip prior note-derived signals so notes don't accumulate or persist after deletion
     const cleaned = list.map((c) => ({
       ...c,
-      signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
+      signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith(CALL_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
     }))
-    const merged = mergeNotes(cleaned, overrideMap ?? notesMapRef.current)
+    const withCalls = mergeAttendance(cleaned, attMap ?? attendanceMapRef.current)
+    const noteMap = overrideMap ?? notesMapRef.current
+    const merged = mergeNotes(withCalls, noteMap).map((c) => {
+      // Keep the category in sync with the adjusted score unless it's manually overridden
+      if (noteMap[c.user_id]?.status_override) return c
+      const status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
+      return { ...c, status }
+    })
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
       const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
       return firstAtRisk?.user_id ?? null
     })
+  }
+
+  const loadAttendance = async () => {
+    const since = new Date()
+    since.setDate(since.getDate() - 365)
+    const { data } = await supabase
+      .from("session_attendance")
+      .select("id, user_id, session_id, manual_session_title, manual_coach_name, manual_session_date, joined_at, created_at, attended, deleted_at")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1000)
+
+    const rows = (data ?? []).filter((r: any) => r.attended !== false)
+    const sessionIds = Array.from(new Set(rows.map((r: any) => r.session_id).filter(Boolean)))
+    let sessions: Record<string, { title: string; date: string | null; coach: string | null }> = {}
+    if (sessionIds.length) {
+      const { data: srows } = await supabase
+        .from("group_coaching_sessions")
+        .select("id, title, session_date, coach_name")
+        .in("id", sessionIds as string[])
+      ;(srows ?? []).forEach((s: any) => { sessions[s.id] = { title: s.title, date: s.session_date, coach: s.coach_name } })
+    }
+
+    const map: Record<string, CallRec[]> = {}
+    rows.forEach((r: any) => {
+      const s = r.session_id ? sessions[r.session_id] : null
+      const date = r.manual_session_date || s?.date || r.joined_at || r.created_at
+      if (!date) return
+      const rec: CallRec = {
+        id: r.id,
+        title: r.manual_session_title || s?.title || "Coaching call",
+        coach: r.manual_coach_name || s?.coach || null,
+        date: new Date(date).toISOString(),
+      }
+      if (!map[r.user_id]) map[r.user_id] = []
+      map[r.user_id].push(rec)
+    })
+    Object.values(map).forEach((arr) => arr.sort((a, b) => (a.date < b.date ? 1 : -1)))
+    setAttendanceMap(map)
+    attendanceMapRef.current = map
+    return map
   }
 
   const loadNotes = async () => {
@@ -319,7 +410,7 @@ export default function ClientRetention() {
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
     // Load notes first so initial render of cached/fresh data is merged
-    loadNotes().then(() => {
+    Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
         loadHealth(hadCache)
       })
@@ -328,7 +419,7 @@ export default function ClientRetention() {
     loadAutopilot()
 
     // Auto-refresh every 60s so signals stay fresh without manual reload
-    const interval = setInterval(() => { loadHealth(true) }, 60000)
+    const interval = setInterval(() => { loadAttendance().then((m) => loadHealth(true)) }, 60000)
 
     // Realtime: re-compute when community activity or trust progress changes
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -669,6 +760,35 @@ export default function ClientRetention() {
                         ))}
                       </ul>
                     </section>
+
+                    {(() => {
+                      const ids = [selected.user_id, ...((selected.linked_users ?? []).map((l) => l.user_id))]
+                      const calls = ids.flatMap((id) => attendanceMap[id] ?? []).sort((a, b) => (a.date < b.date ? 1 : -1))
+                      return (
+                        <section>
+                          <div className="flex items-center justify-between mb-2 gap-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                              <ClipboardList className="h-3.5 w-3.5" /> Calls Attended ({calls.length})
+                            </p>
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/client-retention?tab=attendance")}>
+                              Attendance log
+                            </Button>
+                          </div>
+                          {calls.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No calls logged for this client yet.</p>
+                          ) : (
+                            <ul className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                              {calls.slice(0, 25).map((k) => (
+                                <li key={k.id} className="flex items-center justify-between gap-3 rounded-md border bg-white px-2.5 py-1.5 text-sm">
+                                  <span className="truncate">{k.title}{k.coach ? ` — ${k.coach}` : ""}</span>
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">{new Date(k.date).toLocaleDateString()}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </section>
+                      )
+                    })()}
 
                     <section className="rounded-lg border border-[#ffb500]/40 bg-amber-50/40 p-3">
                       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">

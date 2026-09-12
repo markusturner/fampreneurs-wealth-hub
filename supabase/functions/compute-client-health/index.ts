@@ -463,7 +463,7 @@ Deno.serve(async (req) => {
       // Manually logged attendance rows have no joined_at — fall back to created_at
       const { data: attendanceRows } = await supabase
         .from('session_attendance')
-        .select('joined_at, created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(20)
+        .select('joined_at, created_at').is('deleted_at', null).in('user_id', actIds).order('created_at', { ascending: false }).limit(20)
       const lastAttendedAt = (attendanceRows ?? [])
         .map((r: any) => r.joined_at || r.created_at)
         .filter(Boolean)
