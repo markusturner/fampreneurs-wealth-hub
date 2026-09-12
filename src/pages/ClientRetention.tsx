@@ -579,6 +579,16 @@ export default function ClientRetention() {
   }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
+  const detailRef = useRef<HTMLDivElement | null>(null)
+
+  // Zoom the trend chart to the actual range so real movement is visible
+  const trendDomain = useMemo<[number, number]>(() => {
+    if (!trend.length) return [1, 10]
+    const vals = trend.map((t) => t.avg)
+    const lo = Math.max(0, Math.floor((Math.min(...vals) - 0.5) * 2) / 2)
+    const hi = Math.min(10, Math.ceil((Math.max(...vals) + 0.5) * 2) / 2)
+    return [lo, hi]
+  }, [trend])
 
   // Auto-fill status selector when selection changes (notes are append-only, draft starts empty)
   useEffect(() => {
@@ -587,6 +597,14 @@ export default function ClientRetention() {
     setNoteDraft("")
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
+
+  // On mobile the detail panel sits below the queue — scroll to it on select
+  useEffect(() => {
+    if (!selectedId) return
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
+    }
+  }, [selectedId])
 
   const saveNote = async () => {
     if (!selected) return
