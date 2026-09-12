@@ -630,7 +630,6 @@ export default function ClientRetention() {
   }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
-  const detailRef = useRef<HTMLDivElement | null>(null)
 
   // Zoom the trend chart to the actual range so real movement is visible
   const trendDomain = useMemo<[number, number]>(() => {
