@@ -907,7 +907,7 @@ export default function ClientRetention() {
                                     <div className="mt-0.5">
                                       {scoreMoved || statusMoved ? (
                                         <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Rating {h.prev_score ?? "—"}/10 → {h.new_score ?? "—"}/10</>}
+                                          {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
                                           {scoreMoved && statusMoved && " · "}
                                           {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
                                         </span>
