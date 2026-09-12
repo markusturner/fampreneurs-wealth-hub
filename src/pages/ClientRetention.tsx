@@ -105,6 +105,17 @@ export default function ClientRetention() {
   const [attendanceMap, setAttendanceMap] = useState<Record<string, CallRec[]>>({})
   const attendanceMapRef = useRef(attendanceMap)
   useEffect(() => { attendanceMapRef.current = attendanceMap }, [attendanceMap])
+  type HistoryRec = {
+    id: string
+    user_id: string
+    prev_score: number | null
+    new_score: number | null
+    prev_status: string | null
+    new_status: string | null
+    reason: string | null
+    created_at: string
+  }
+  const [historyMap, setHistoryMap] = useState<Record<string, HistoryRec[]>>({})
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
