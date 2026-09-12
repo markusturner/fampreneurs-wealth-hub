@@ -299,6 +299,7 @@ export default function ClientRetention() {
       const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
       return firstAtRisk?.user_id ?? null
     })
+    return merged
   }
 
   const loadAttendance = async () => {
