@@ -150,7 +150,8 @@ export default function ClientRetention() {
       boosts.trust = Math.max(boosts.trust, 8); drop.trust = true; addedSignals.push({ label: "✅ Note: trust work in progress", severity: "info" })
     }
     if (funded) { boosts.trust = Math.max(boosts.trust, 9); addedSignals.push({ label: "✅ Note: assets funded into trust", severity: "info" }) }
-    if (trustsComplete && funded) forceExpansion = true
+    // Finished the trusts = the result we sell — that alone earns Expansion Ready
+    if (trustsComplete) forceExpansion = true
 
     // Testimonial / results = strongest proof the client is winning
     const testimonial = has(/\b(testimonial|case study|success story|gave (a )?review|left (a )?review|video review|shared (their|his|her) story)\b/)
@@ -161,6 +162,8 @@ export default function ClientRetention() {
     const gotResults = has(/\b(got results|big results|win|won|closed|saved (them )?\$?|protected (their|his|her) (assets|home|property)|milestone)\b/)
     if (gotResults) { boosts.fathom = Math.max(boosts.fathom, 9); addedSignals.push({ label: "✅ Note: real results achieved", severity: "info" }) }
     if (testimonial && (trustsComplete || funded)) forceExpansion = true
+    // Testimonial but trusts not finished = solid, not expansion — hold them at Stable
+    const capStable = (testimonial || gotResults) && !trustsComplete && !funded
 
     // Attendance
     if (has(/\b(attended|showed up|made it|on the call|joined (the )?call|hopped on)\b/)) {
@@ -186,7 +189,7 @@ export default function ClientRetention() {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion }
+    return { boosts, addedSignals, drop, forceExpansion, capStable }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
@@ -208,7 +211,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
@@ -240,8 +243,11 @@ export default function ClientRetention() {
       if (boosts.trust >= 10) nextScore = Math.max(nextScore, 8.8)
       if (boosts.fathom >= 10) nextScore = Math.max(nextScore, 8.8)
       if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
+      // Great feedback but trusts unfinished — strong Stable, not Expansion
+      if (capStable && !forceExpansion) nextScore = Math.min(Math.max(nextScore, 7.8), 8.2)
       let nextStatus: Status = entry.status_override ?? c.status
       if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
+      else if (capStable && !entry.status_override) { nextStatus = "stable" }
       else if (!entry.status_override) {
         if (nextScore >= 8.5) nextStatus = "expansion_ready"
         else if (nextScore >= 6.5) nextStatus = "stable"
@@ -280,10 +286,12 @@ export default function ClientRetention() {
       })
 
       const attendanceScore = days <= 14 ? 9 : days <= 30 ? 7 : days <= 60 ? 5 : 3
-      const delta = Math.max(0, attendanceScore - 5) * 0.20
+      // Showing up repeatedly counts: every logged call in the last 90 days adds a little
+      const volumeBonus = Math.min(1, Math.max(0, count90 - 1) * 0.25)
+      const delta = Math.max(0, attendanceScore - 5) * 0.20 + volumeBonus
       const score = Math.min(10, Math.max(1, Number((c.score + delta).toFixed(1))))
       const label = days <= 60
-        ? `${CALL_SIGNATURE} Attended ${count90} call${count90 === 1 ? "" : "s"} in last 90d — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
+        ? `${CALL_SIGNATURE} Attended ${calls.length} call${calls.length === 1 ? "" : "s"} total (${count90} in last 90d) — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
         : `${CALL_SIGNATURE} Last coaching call ${days}d ago — ${last.title}`
       return {
         ...c,
