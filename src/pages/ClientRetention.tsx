@@ -476,6 +476,7 @@ export default function ClientRetention() {
     })
     loadTrend()
     loadAutopilot()
+    loadHistory()
 
     // Auto-refresh every 60s so signals stay fresh without manual reload
     const interval = setInterval(() => { loadAttendance().then((m) => loadHealth(true)) }, 60000)
