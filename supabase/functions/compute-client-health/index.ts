@@ -676,6 +676,7 @@ Deno.serve(async (req) => {
         full_name: fullName,
         email: p.email,
         program: programKey,
+        program_name: p.program_name ?? null,
         score,
         status,
         signals,

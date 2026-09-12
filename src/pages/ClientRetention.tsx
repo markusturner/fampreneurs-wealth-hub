@@ -27,6 +27,7 @@ interface ClientScore {
   full_name: string
   email: string
   program: string | null
+  program_name?: string | null
   score: number
   status: Status
   signals: { label: string; severity?: string }[]
@@ -36,6 +37,23 @@ interface ClientScore {
   draft?: string
   trust_done?: boolean
   referral_ask?: boolean
+}
+
+// Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
+const PROGRAM_VALUE: Record<string, number> = { fbu: 900, tfv: 5000, tfba: 9000, tffm: 22000 }
+
+function upsellInfo(c: ClientScore): { target: string; price: number; cost: number } | null {
+  const name = (c.program_name || "").toLowerCase()
+  const key = (c.program || "").toLowerCase()
+  if (key === "fbu") return { target: "TFV", price: 5000, cost: Math.max(0, 5000 - (PROGRAM_VALUE.fbu ?? 0)) }
+  if (key === "tfv") return { target: "PEA", price: 9000, cost: Math.max(0, 9000 - (PROGRAM_VALUE.tfv ?? 0)) }
+  if (key === "tfba") return { target: "TSS", price: 22000, cost: Math.max(0, 22000 - (PROGRAM_VALUE.tfba ?? 0)) }
+  if (key === "tffm") {
+    // Succession Society members can still ascend to the Family Fortune Mastermind
+    if (name.includes("mastermind")) return null
+    return { target: "TFFM", price: 40000, cost: Math.max(0, 40000 - (PROGRAM_VALUE.tffm ?? 0)) }
+  }
+  return null
 }
 
 // Expansion Ready is reserved for clients who actually finished their trusts.
@@ -847,12 +865,18 @@ export default function ClientRetention() {
         </CardContent></Card>
         {(["at_risk","slipping","stable","expansion_ready"] as Status[]).map((s) => {
           const arr = stats.buckets[s].reduce((sum, c) => sum + c.arr_value, 0)
+          const opp = s === "expansion_ready"
+            ? stats.buckets[s].reduce((sum, c) => sum + (upsellInfo(c)?.cost ?? 0), 0)
+            : clients.reduce((sum, c) => sum + (upsellInfo(c)?.cost ?? 0), 0)
           return (
             <Card key={s} className={`${STATUS_META[s].bg} ring-1 ${STATUS_META[s].ring}`}>
               <CardContent className="py-3 sm:py-4 px-3 sm:px-6">
                 <p className={`text-[10px] sm:text-xs font-medium ${STATUS_META[s].color}`}>{STATUS_META[s].label}</p>
                 <p className="text-xl sm:text-2xl font-bold">{stats.buckets[s].length}</p>
                 <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">${arr.toLocaleString()} ARR</p>
+                {s === "expansion_ready" && opp > 0 && (
+                  <p className="text-[10px] sm:text-xs font-medium text-purple-700 mt-0.5 truncate">+${opp.toLocaleString()} upsell opp.</p>
+                )}
               </CardContent>
             </Card>
           )
@@ -928,9 +952,15 @@ export default function ClientRetention() {
                   </div>
                   {selected && (
                     <div className="flex flex-wrap gap-1.5 shrink-0">
+                      {selected.program && (
+                        <Badge className="bg-[#290a52]/10 text-[#290a52] border-none">{programShortLabel(selected.program)}</Badge>
+                      )}
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
                       </Badge>
+                      {upsellInfo(selected) && (
+                        <Badge className="bg-purple-100 text-purple-700 border-none">Upsell → {upsellInfo(selected)!.target}</Badge>
+                      )}
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
@@ -971,6 +1001,15 @@ export default function ClientRetention() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
                       <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
                     </section>
+                    {upsellInfo(selected) && (
+                      <section className="rounded-md border border-purple-200 bg-purple-50/70 p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-purple-700 mb-1">Upsell Opportunity</p>
+                        <p className="text-sm text-purple-900">
+                          {selected.full_name.split(" ")[0]} is in {programShortLabel(selected.program)} — upsell to {upsellInfo(selected)!.target} (${upsellInfo(selected)!.price.toLocaleString()}).
+                          Every month they stay put costs you <strong>${upsellInfo(selected)!.cost.toLocaleString()}</strong> in missed upgrade revenue.
+                        </p>
+                      </section>
+                    )}
                     <section>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Signals Detected</p>
                       <ul className="space-y-1.5">
@@ -1186,10 +1225,23 @@ function QueueGroup({
               <span className="font-medium truncate min-w-0">{c.full_name}</span>
               <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs shrink-0`}>{c.score}/10</Badge>
             </div>
-            {c.referral_ask && (
-              <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
-            )}
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              {c.program && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#290a52]/10 text-[#290a52]">{programShortLabel(c.program)}</span>
+              )}
+              {c.status === "expansion_ready" && upsellInfo(c) && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
+              )}
+              {c.referral_ask && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
+            {upsellInfo(c) && (
+              <p className="text-[10px] font-medium text-purple-700 mt-0.5">
+                Opportunity cost: ${upsellInfo(c)!.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)!.target})
+              </p>
+            )}
           </button>
         ))}
       </CardContent>
