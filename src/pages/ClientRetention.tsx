@@ -62,7 +62,9 @@ function outreachTopic(c: ClientScore): string {
     if (has(/no accountability|no coaching call|no attendance|missed.*call/)) return "No accountability-call attendance on record — personally invite them to this week's call."
     if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
   }
+  if (c.referral_ask) return "Doing great but the trust isn't finished — ask them for a referral while you nudge the paperwork."
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
+
   if (has(/trust|document/)) return "Trust paperwork is stalled — offer to walk through the next document together."
   if (has(/succession/)) return "Succession plan needs attention — nudge them to finish the next step."
   if (has(/payment|overdue|invoice/)) return "Payment is overdue — reach out about getting the account current."
