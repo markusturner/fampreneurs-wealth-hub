@@ -59,8 +59,11 @@ function upsellInfo(c: ClientScore): { target: string; price: number; cost: numb
 // Expansion Ready is reserved for clients who actually finished their trusts.
 function hasTrustDone(c: ClientScore): boolean {
   const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
-  if (/all 3 trusts completed|assets funded into trust/.test(labels)) return true
-  return /\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)
+  if (/all 3 trusts completed|assets funded into trust|trust completed/.test(labels)) return true
+  if (/\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)) return true
+  // singular phrasing from notes: "finished his trust", "trust is done"
+  if (/\b(finished|completed|signed|wrapped up)\b[^|.]{0,30}\b(his|her|their|the)?\s*trusts?\b/.test(labels)) return true
+  return /\btrusts?\b[^|.]{0,20}\b(is|are|was|were)?\s*(complete|completed|finished|done|signed)\b/.test(labels)
 }
 
 
@@ -180,7 +183,10 @@ export default function ClientRetention() {
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
                            has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
-                           has(/completed\s+(their|the)?\s*3\s+trusts?/)
+                           has(/completed\s+(their|the)?\s*3\s+trusts?/) ||
+                           // singular phrasing: "finished his trust", "trust is done", "completed her trust"
+                           has(/\b(finished|completed|complete|done with|signed|wrapped up)\b[^|.]{0,30}\b(his|her|their|the|its)?\s*trusts?\b/) ||
+                           has(/\btrusts?\b[^|.]{0,20}\b(is|are|was|were|all)?\s*(complete|completed|finished|done|signed)\b/)
     const funded = has(/\b(funded|funding|moved\s+(assets|house|property)|assets?\s+(moved|funded|titled))\b/) ||
                    has(/\bdone\s+for\s+you\b/)
     if (trustsComplete) { boosts.trust = 10; drop.trust = true; addedSignals.push({ label: "✅ Note: all 3 trusts completed", severity: "info" }) }
