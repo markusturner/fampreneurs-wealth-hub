@@ -38,25 +38,42 @@ export function SurveyForm({ survey, questions, onSubmitted, compact, anonymous 
     }
     setSubmitting(true)
     try {
-      const { data: submission, error } = await supabase
-        .from('survey_submissions')
-        .insert({ survey_id: survey.id, user_id: anonymous ? null : user!.id })
-        .select('id')
-        .single()
-      if (error) throw error
+      if (anonymous) {
+        // Anonymous submit goes through a security-definer RPC — anon role
+        // cannot SELECT the inserted row, so .insert().select() would fail.
+        const payload = questions
+          .filter(q => answers[q.id])
+          .map(q => ({
+            question_id: q.id,
+            answer_text: q.question_type === 'scale' ? null : answers[q.id],
+            answer_number: q.question_type === 'scale' ? Number(answers[q.id]) : null,
+          }))
+        const { error } = await supabase.rpc('submit_anonymous_survey', {
+          p_survey_id: survey.id,
+          p_answers: payload,
+        })
+        if (error) throw error
+      } else {
+        const { data: submission, error } = await supabase
+          .from('survey_submissions')
+          .insert({ survey_id: survey.id, user_id: user!.id })
+          .select('id')
+          .single()
+        if (error) throw error
 
-      const rows = questions
-        .filter(q => answers[q.id])
-        .map(q => ({
-          submission_id: submission.id,
-          question_id: q.id,
-          answer_text: q.question_type === 'scale' ? null : answers[q.id],
-          answer_number: q.question_type === 'scale' ? Number(answers[q.id]) : null,
-        }))
+        const rows = questions
+          .filter(q => answers[q.id])
+          .map(q => ({
+            submission_id: submission.id,
+            question_id: q.id,
+            answer_text: q.question_type === 'scale' ? null : answers[q.id],
+            answer_number: q.question_type === 'scale' ? Number(answers[q.id]) : null,
+          }))
 
-      if (rows.length) {
-        const { error: aErr } = await supabase.from('survey_answers').insert(rows)
-        if (aErr) throw aErr
+        if (rows.length) {
+          const { error: aErr } = await supabase.from('survey_answers').insert(rows)
+          if (aErr) throw aErr
+        }
       }
 
       setDone(true)
