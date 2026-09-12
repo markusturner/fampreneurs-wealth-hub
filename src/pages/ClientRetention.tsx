@@ -406,7 +406,7 @@ export default function ClientRetention() {
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
     // Load notes first so initial render of cached/fresh data is merged
-    loadNotes().then(() => {
+    Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
         loadHealth(hadCache)
       })
