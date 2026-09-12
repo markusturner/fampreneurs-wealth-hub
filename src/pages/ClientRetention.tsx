@@ -579,6 +579,16 @@ export default function ClientRetention() {
   }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
+  const detailRef = useRef<HTMLDivElement | null>(null)
+
+  // Zoom the trend chart to the actual range so real movement is visible
+  const trendDomain = useMemo<[number, number]>(() => {
+    if (!trend.length) return [1, 10]
+    const vals = trend.map((t) => t.avg)
+    const lo = Math.max(0, Math.floor((Math.min(...vals) - 0.5) * 2) / 2)
+    const hi = Math.min(10, Math.ceil((Math.max(...vals) + 0.5) * 2) / 2)
+    return [lo, hi]
+  }, [trend])
 
   // Auto-fill status selector when selection changes (notes are append-only, draft starts empty)
   useEffect(() => {
@@ -587,6 +597,14 @@ export default function ClientRetention() {
     setNoteDraft("")
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
+
+  // On mobile the detail panel sits below the queue — scroll to it on select
+  useEffect(() => {
+    if (!selectedId) return
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
+    }
+  }, [selectedId])
 
   const saveNote = async () => {
     if (!selected) return
@@ -710,6 +728,19 @@ export default function ClientRetention() {
     }
   }
 
+  // Auto-write the save-play message as soon as a client is selected
+  const autoDraftedFor = useRef<string | null>(null)
+  useEffect(() => {
+    if (!selected || !selectedId) return
+    if (autoDraftedFor.current === selectedId) return
+    if (selected.draft && selected.draft.trim()) { autoDraftedFor.current = selectedId; return }
+    autoDraftedFor.current = selectedId
+    handleDraft()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, selected?.status])
+
+
+
   const handleSend = async () => {
     if (!selected || !draft.trim()) return
     if (!selected.email) {
@@ -804,14 +835,49 @@ export default function ClientRetention() {
         })}
       </div>
 
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
-          <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
-        </TabsList>
+      <div className="w-full">
+        {/* MOVEMENT */}
+        <div className="grid lg:grid-cols-2 gap-4 mb-5">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Health Score Trend (6 weeks)</CardTitle></CardHeader>
+            <CardContent style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trend}>
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis domain={trendDomain} allowDecimals tick={{ fontSize: 11 }} />
+                  <RTooltip />
+                  <Line type="monotone" dataKey="avg" stroke="#ffb500" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Status Distribution</CardTitle></CardHeader>
+            <CardContent style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[{
+                  name: "Now",
+                  "At Risk": stats.buckets.at_risk.length,
+                  "Slipping": stats.buckets.slipping.length,
+                  "Stable": stats.buckets.stable.length,
+                  "Expansion": stats.buckets.expansion_ready.length,
+                }]}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <RTooltip />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
+                  <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
+                  <Bar dataKey="Stable" stackId="a" fill="#10b981" />
+                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* TODAY */}
-        <TabsContent value="today" className="mt-4">
+        <div className="mt-4">
           <div className="grid lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
 
             {/* Left queue */}
@@ -823,7 +889,7 @@ export default function ClientRetention() {
             </div>
 
             {/* Right detail */}
-            <Card>
+            <Card ref={detailRef} className="scroll-mt-4">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0">
@@ -1035,7 +1101,7 @@ export default function ClientRetention() {
                       <Textarea
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
-                        placeholder="Click 'Draft message' to generate an outreach in your voice."
+                        placeholder={drafting ? "Writing your message…" : "Message will be written automatically."}
                         className="min-h-[160px] text-sm"
                       />
                       <div className="mt-3 flex justify-end">
@@ -1054,52 +1120,8 @@ export default function ClientRetention() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* MOVEMENT */}
-        <TabsContent value="movement" className="mt-4">
-          <div className="grid lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader><CardTitle className="text-base">Health Score Trend (6 weeks)</CardTitle></CardHeader>
-              <CardContent style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trend}>
-                    <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                    <YAxis domain={[1, 10]} tick={{ fontSize: 11 }} />
-                    <RTooltip />
-                    <Line type="monotone" dataKey="avg" stroke="#ffb500" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base">Status Distribution</CardTitle></CardHeader>
-              <CardContent style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[{
-                    name: "Now",
-                    "At Risk": stats.buckets.at_risk.length,
-                    "Slipping": stats.buckets.slipping.length,
-                    "Stable": stats.buckets.stable.length,
-                    "Expansion": stats.buckets.expansion_ready.length,
-                  }]}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <RTooltip />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
-                    <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
-                    <Bar dataKey="Stable" stackId="a" fill="#10b981" />
-                    <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-
-      </Tabs>
+        </div>
+      </div>
         </>
       )}
     </div>
