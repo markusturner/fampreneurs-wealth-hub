@@ -617,7 +617,10 @@ export default function ClientRetention() {
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      applyClients(clients, nextMap)
+      const before = clients.find((c) => c.user_id === selected.user_id)
+      const updated = applyClients(clients, nextMap)
+      const after = updated.find((c) => c.user_id === selected.user_id)
+      await logChange(selected.user_id, before, after, "Note removed")
       toast.success("Note removed")
     } catch (e: any) {
       toast.error("Couldn't delete note: " + (e?.message ?? e))
