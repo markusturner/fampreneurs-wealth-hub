@@ -1001,7 +1001,7 @@ export default function ClientRetention() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
                       <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
                     </section>
-                    {upsellInfo(selected) && (
+                    {selected.status === "expansion_ready" && upsellInfo(selected) && (
                       <section className="rounded-md border border-purple-200 bg-purple-50/70 p-3">
                         <p className="text-xs font-semibold uppercase tracking-wide text-purple-700 mb-1">Upsell Opportunity</p>
                         <p className="text-sm text-purple-900">
