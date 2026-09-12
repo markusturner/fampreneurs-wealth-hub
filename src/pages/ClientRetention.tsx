@@ -39,6 +39,23 @@ interface ClientScore {
   referral_ask?: boolean
 }
 
+// Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
+const PROGRAM_VALUE: Record<string, number> = { fbu: 900, tfv: 5000, tfba: 9000, tffm: 22000 }
+
+function upsellInfo(c: ClientScore): { target: string; price: number; cost: number } | null {
+  const name = (c.program_name || "").toLowerCase()
+  const key = (c.program || "").toLowerCase()
+  if (key === "fbu") return { target: "TFV", price: 5000, cost: Math.max(0, 5000 - (PROGRAM_VALUE.fbu ?? 0)) }
+  if (key === "tfv") return { target: "PEA", price: 9000, cost: Math.max(0, 9000 - (PROGRAM_VALUE.tfv ?? 0)) }
+  if (key === "tfba") return { target: "TSS", price: 22000, cost: Math.max(0, 22000 - (PROGRAM_VALUE.tfba ?? 0)) }
+  if (key === "tffm") {
+    // Succession Society members can still ascend to the Family Fortune Mastermind
+    if (name.includes("mastermind")) return null
+    return { target: "TFFM", price: 40000, cost: Math.max(0, 40000 - (PROGRAM_VALUE.tffm ?? 0)) }
+  }
+  return null
+}
+
 // Expansion Ready is reserved for clients who actually finished their trusts.
 function hasTrustDone(c: ClientScore): boolean {
   const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
