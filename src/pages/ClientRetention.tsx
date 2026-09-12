@@ -946,9 +946,15 @@ export default function ClientRetention() {
                   </div>
                   {selected && (
                     <div className="flex flex-wrap gap-1.5 shrink-0">
+                      {selected.program && (
+                        <Badge className="bg-[#290a52]/10 text-[#290a52] border-none">{programShortLabel(selected.program)}</Badge>
+                      )}
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
                       </Badge>
+                      {upsellInfo(selected) && (
+                        <Badge className="bg-purple-100 text-purple-700 border-none">Upsell → {upsellInfo(selected)!.target}</Badge>
+                      )}
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
@@ -989,6 +995,15 @@ export default function ClientRetention() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
                       <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
                     </section>
+                    {upsellInfo(selected) && (
+                      <section className="rounded-md border border-purple-200 bg-purple-50/70 p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-purple-700 mb-1">Upsell Opportunity</p>
+                        <p className="text-sm text-purple-900">
+                          {selected.full_name.split(" ")[0]} is in {programShortLabel(selected.program)} — upsell to {upsellInfo(selected)!.target} (${upsellInfo(selected)!.price.toLocaleString()}).
+                          Every month they stay put costs you <strong>${upsellInfo(selected)!.cost.toLocaleString()}</strong> in missed upgrade revenue.
+                        </p>
+                      </section>
+                    )}
                     <section>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Signals Detected</p>
                       <ul className="space-y-1.5">
