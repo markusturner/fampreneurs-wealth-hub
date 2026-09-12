@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
@@ -629,7 +630,6 @@ export default function ClientRetention() {
   }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
-  const detailRef = useRef<HTMLDivElement | null>(null)
 
   // Zoom the trend chart to the actual range so real movement is visible
   const trendDomain = useMemo<[number, number]>(() => {
@@ -647,14 +647,6 @@ export default function ClientRetention() {
     setNoteDraft("")
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
-
-  // On mobile the detail panel sits below the queue — scroll to it on select
-  useEffect(() => {
-    if (!selectedId) return
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
-    }
-  }, [selectedId])
 
   const saveNote = async () => {
     if (!selected) return
@@ -1010,14 +1002,15 @@ export default function ClientRetention() {
             </Card>
           )}
 
-          {/* Detail — opens when a client is clicked */}
-          <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden mt-4">
-              <CardHeader className="pb-3">
+          {/* Detail — pops up when a client is clicked */}
+          <Dialog open={!!selected} onOpenChange={(o) => { if (!o) setSelectedId(null) }}>
+            <DialogContent className="sm:max-w-2xl max-w-[calc(100vw-24px)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 gap-0">
+              <DialogHeader className="px-6 pt-6 pb-3 text-left">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base break-words">
-                      {selected ? selected.full_name : "Select a client"}
-                    </CardTitle>
+                    <DialogTitle className="text-base break-words">
+                      {selected?.full_name}
+                    </DialogTitle>
                     {selected && (
                       <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
@@ -1041,7 +1034,7 @@ export default function ClientRetention() {
                     </div>
                   )}
                 </div>
-              </CardHeader>
+              </DialogHeader>
 
 
 
@@ -1066,10 +1059,8 @@ export default function ClientRetention() {
               )}
 
 
-              <CardContent>
-                {!selected ? (
-                  <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
-                ) : (
+              <div className="px-6 pb-6">
+                {selected && (
                   <div className="space-y-5">
                     <section className="rounded-md border border-[#ffb500]/50 bg-amber-50/60 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
@@ -1261,8 +1252,9 @@ export default function ClientRetention() {
                     </section>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
         </>
