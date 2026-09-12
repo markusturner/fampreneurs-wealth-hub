@@ -1017,9 +1017,9 @@ export default function ClientRetention() {
               <DialogHeader className="px-6 pt-6 pb-3 text-left">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base break-words">
-                      {selected ? selected.full_name : "Select a client"}
-                    </CardTitle>
+                    <DialogTitle className="text-base break-words">
+                      {selected?.full_name}
+                    </DialogTitle>
                     {selected && (
                       <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
