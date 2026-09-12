@@ -577,9 +577,22 @@ export default function ClientRetention() {
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      applyClients(clients, nextMap)
+      const before = clients.find((c) => c.user_id === selected.user_id)
+      const updated = applyClients(clients, nextMap)
+      const after = updated.find((c) => c.user_id === selected.user_id)
+      const reason = text
+        ? `Note added: "${text.slice(0, 140)}"${statusChanged ? ` + status set to ${nextStatus ?? "auto"}` : ""}`
+        : `Status set to ${nextStatus ?? "auto (from signals)"}`
+      await logChange(selected.user_id, before, after, reason)
       setNoteDraft("")
-      toast.success(newEntry ? "Note added" : "Status updated")
+      const moved = before && after && (before.score !== after.score || before.status !== after.status)
+      toast.success(
+        moved
+          ? `Saved — score ${before!.score} → ${after!.score}`
+          : newEntry
+            ? "Note added (score unchanged)"
+            : "Status updated"
+      )
     } catch (e: any) {
       toast.error("Couldn't save note: " + (e?.message ?? e))
     } finally {
