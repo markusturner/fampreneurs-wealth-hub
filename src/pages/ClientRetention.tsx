@@ -243,8 +243,11 @@ export default function ClientRetention() {
       if (boosts.trust >= 10) nextScore = Math.max(nextScore, 8.8)
       if (boosts.fathom >= 10) nextScore = Math.max(nextScore, 8.8)
       if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
+      // Great feedback but trusts unfinished — strong Stable, not Expansion
+      if (capStable && !forceExpansion) nextScore = Math.min(Math.max(nextScore, 7.8), 8.2)
       let nextStatus: Status = entry.status_override ?? c.status
       if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
+      else if (capStable && !entry.status_override) { nextStatus = "stable" }
       else if (!entry.status_override) {
         if (nextScore >= 8.5) nextStatus = "expansion_ready"
         else if (nextScore >= 6.5) nextStatus = "stable"
