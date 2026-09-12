@@ -1204,10 +1204,23 @@ function QueueGroup({
               <span className="font-medium truncate min-w-0">{c.full_name}</span>
               <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs shrink-0`}>{c.score}/10</Badge>
             </div>
-            {c.referral_ask && (
-              <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
-            )}
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              {c.program && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#290a52]/10 text-[#290a52]">{programShortLabel(c.program)}</span>
+              )}
+              {c.status === "expansion_ready" && upsellInfo(c) && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
+              )}
+              {c.referral_ask && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
+            {upsellInfo(c) && (
+              <p className="text-[10px] font-medium text-purple-700 mt-0.5">
+                Opportunity cost: ${upsellInfo(c)!.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)!.target})
+              </p>
+            )}
           </button>
         ))}
       </CardContent>
