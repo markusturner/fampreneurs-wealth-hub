@@ -937,18 +937,81 @@ export default function ClientRetention() {
 
         {/* TODAY */}
         <div className="mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h2 className="text-base font-semibold">Client Queue</h2>
+            <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-white p-0.5">
+              <button
+                onClick={() => setViewMode("board")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${effectiveView === "board" ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Board
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${effectiveView === "table" ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
+              >
+                <TableIcon className="h-3.5 w-3.5" /> Table
+              </button>
+            </div>
+          </div>
 
-            {/* Left queue */}
-            <div className="space-y-4 min-w-0">
+          {effectiveView === "board" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Ready for Expansion / Referral" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
             </div>
+          ) : (
+            <Card className="min-w-0 overflow-hidden">
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Program</TableHead>
+                      <TableHead className="text-right">Score</TableHead>
+                      <TableHead className="hidden md:table-cell">Focus</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading && clients.length === 0 && (
+                      <TableRow><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>
+                    )}
+                    {(["at_risk","slipping","stable","expansion_ready"] as Status[]).flatMap((s) => stats.buckets[s]).map((c) => (
+                      <TableRow
+                        key={c.user_id}
+                        onClick={() => setSelectedId(c.user_id)}
+                        className={`cursor-pointer ${selectedId === c.user_id ? "bg-amber-50" : ""}`}
+                      >
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="truncate max-w-[180px]">{c.full_name}</span>
+                            {c.status === "expansion_ready" && upsellInfo(c) && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
+                            )}
+                            {c.referral_ask && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs`}>{STATUS_META[c.status].label}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">{c.program ? programShortLabel(c.program) : "—"}</TableCell>
+                        <TableCell className="text-right font-semibold">{c.score}/10</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-[280px] truncate">{outreachTopic(c)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Right detail */}
-            <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden">
+          {/* Detail — opens when a client is clicked */}
+          <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden mt-4">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
