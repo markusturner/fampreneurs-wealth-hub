@@ -1011,9 +1011,10 @@ export default function ClientRetention() {
             </Card>
           )}
 
-          {/* Detail — opens when a client is clicked */}
-          <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden mt-4">
-              <CardHeader className="pb-3">
+          {/* Detail — pops up when a client is clicked */}
+          <Dialog open={!!selected} onOpenChange={(o) => { if (!o) setSelectedId(null) }}>
+            <DialogContent className="sm:max-w-2xl max-w-[calc(100vw-24px)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 gap-0">
+              <DialogHeader className="px-6 pt-6 pb-3 text-left">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <CardTitle className="text-base break-words">
