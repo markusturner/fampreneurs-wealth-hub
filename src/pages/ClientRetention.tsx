@@ -866,6 +866,48 @@ export default function ClientRetention() {
                       )
                     })()}
 
+                    {(() => {
+                      const hist = historyMap[selected.user_id] ?? []
+                      const label = (s: string | null) =>
+                        s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : "—"
+                      return (
+                        <section>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                            Change History ({hist.length})
+                          </p>
+                          {hist.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No changes recorded yet — add a note or set a status to start the log.</p>
+                          ) : (
+                            <ul className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                              {hist.map((h) => {
+                                const scoreMoved = h.prev_score !== h.new_score
+                                const statusMoved = h.prev_status !== h.new_status
+                                return (
+                                  <li key={h.id} className="rounded-md border bg-white px-2.5 py-2 text-sm">
+                                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                      {new Date(h.created_at).toLocaleString()}
+                                    </div>
+                                    <div className="mt-0.5">
+                                      {scoreMoved || statusMoved ? (
+                                        <span className="font-medium text-[#290a52]">
+                                          {scoreMoved && <>Score {h.prev_score ?? "—"} → {h.new_score ?? "—"}</>}
+                                          {scoreMoved && statusMoved && " · "}
+                                          {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground">No change to score or category</span>
+                                      )}
+                                    </div>
+                                    {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          )}
+                        </section>
+                      )
+                    })()}
+
                     <section className="rounded-lg border border-[#ffb500]/40 bg-amber-50/40 p-3">
                       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                         <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] flex items-center gap-1.5">
