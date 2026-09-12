@@ -419,7 +419,7 @@ export default function ClientRetention() {
     loadAutopilot()
 
     // Auto-refresh every 60s so signals stay fresh without manual reload
-    const interval = setInterval(() => { loadHealth(true) }, 60000)
+    const interval = setInterval(() => { loadAttendance().then((m) => loadHealth(true)) }, 60000)
 
     // Realtime: re-compute when community activity or trust progress changes
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
