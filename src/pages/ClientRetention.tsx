@@ -889,7 +889,7 @@ export default function ClientRetention() {
             </div>
 
             {/* Right detail */}
-            <Card>
+            <Card ref={detailRef} className="scroll-mt-4">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0">
@@ -1101,7 +1101,7 @@ export default function ClientRetention() {
                       <Textarea
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
-                        placeholder="Click 'Draft message' to generate an outreach in your voice."
+                        placeholder={drafting ? "Writing your message…" : "Message will be written automatically."}
                         className="min-h-[160px] text-sm"
                       />
                       <div className="mt-3 flex justify-end">
