@@ -271,7 +271,7 @@ export default function ClientRetention() {
     const now = Date.now()
     return list.map((c) => {
       const ids = [c.user_id, ...((c.linked_users ?? []).map((l) => l.user_id))]
-      const calls = ids.flatMap((id) => map[id] ?? [])
+      const calls = Array.from(new Map(ids.flatMap((id) => map[id] ?? []).map((k) => [k.id, k])).values())
         .sort((a, b) => (a.date < b.date ? 1 : -1))
       if (calls.length === 0) return c
       const last = calls[0]
