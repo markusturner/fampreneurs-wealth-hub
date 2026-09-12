@@ -59,8 +59,11 @@ function upsellInfo(c: ClientScore): { target: string; price: number; cost: numb
 // Expansion Ready is reserved for clients who actually finished their trusts.
 function hasTrustDone(c: ClientScore): boolean {
   const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
-  if (/all 3 trusts completed|assets funded into trust/.test(labels)) return true
-  return /\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)
+  if (/all 3 trusts completed|assets funded into trust|trust completed/.test(labels)) return true
+  if (/\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)) return true
+  // singular phrasing from notes: "finished his trust", "trust is done"
+  if (/\b(finished|completed|signed|wrapped up)\b[^|.]{0,30}\b(his|her|their|the)?\s*trusts?\b/.test(labels)) return true
+  return /\btrusts?\b[^|.]{0,20}\b(is|are|was|were)?\s*(complete|completed|finished|done|signed)\b/.test(labels)
 }
 
 
