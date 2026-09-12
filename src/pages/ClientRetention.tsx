@@ -330,11 +330,20 @@ export default function ClientRetention() {
     const withCalls = mergeAttendance(cleaned, attMap ?? attendanceMapRef.current)
     const noteMap = overrideMap ?? notesMapRef.current
     const merged = mergeNotes(withCalls, noteMap).map((c) => {
+      const trustDone = hasTrustDone(c)
       // Keep the category in sync with the adjusted score unless it's manually overridden
-      if (noteMap[c.user_id]?.status_override) return c
-      const status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
-      return { ...c, status }
+      if (noteMap[c.user_id]?.status_override) {
+        return { ...c, trust_done: trustDone, referral_ask: !trustDone && c.status === "stable" && c.score >= 7.5 }
+      }
+      let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
+      // Only clients who finished their trusts belong in Expansion Ready.
+      // Everyone else doing great becomes a referral ask instead.
+      let referral = false
+      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = true }
+      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = true
+      return { ...c, status, trust_done: trustDone, referral_ask: referral }
     })
+
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
