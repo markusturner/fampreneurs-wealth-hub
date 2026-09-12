@@ -180,7 +180,10 @@ export default function ClientRetention() {
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
                            has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
-                           has(/completed\s+(their|the)?\s*3\s+trusts?/)
+                           has(/completed\s+(their|the)?\s*3\s+trusts?/) ||
+                           // singular phrasing: "finished his trust", "trust is done", "completed her trust"
+                           has(/\b(finished|completed|complete|done with|signed|wrapped up)\b[^|.]{0,30}\b(his|her|their|the|its)?\s*trusts?\b/) ||
+                           has(/\btrusts?\b[^|.]{0,20}\b(is|are|was|were|all)?\s*(complete|completed|finished|done|signed)\b/)
     const funded = has(/\b(funded|funding|moved\s+(assets|house|property)|assets?\s+(moved|funded|titled))\b/) ||
                    has(/\bdone\s+for\s+you\b/)
     if (trustsComplete) { boosts.trust = 10; drop.trust = true; addedSignals.push({ label: "✅ Note: all 3 trusts completed", severity: "info" }) }
