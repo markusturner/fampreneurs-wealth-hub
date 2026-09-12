@@ -761,6 +761,35 @@ export default function ClientRetention() {
                       </ul>
                     </section>
 
+                    {(() => {
+                      const ids = [selected.user_id, ...((selected.linked_users ?? []).map((l) => l.user_id))]
+                      const calls = ids.flatMap((id) => attendanceMap[id] ?? []).sort((a, b) => (a.date < b.date ? 1 : -1))
+                      return (
+                        <section>
+                          <div className="flex items-center justify-between mb-2 gap-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                              <ClipboardList className="h-3.5 w-3.5" /> Calls Attended ({calls.length})
+                            </p>
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/client-retention?tab=attendance")}>
+                              Attendance log
+                            </Button>
+                          </div>
+                          {calls.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No calls logged for this client yet.</p>
+                          ) : (
+                            <ul className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                              {calls.slice(0, 25).map((k) => (
+                                <li key={k.id} className="flex items-center justify-between gap-3 rounded-md border bg-white px-2.5 py-1.5 text-sm">
+                                  <span className="truncate">{k.title}{k.coach ? ` — ${k.coach}` : ""}</span>
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">{new Date(k.date).toLocaleDateString()}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </section>
+                      )
+                    })()}
+
                     <section className="rounded-lg border border-[#ffb500]/40 bg-amber-50/40 p-3">
                       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                         <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] flex items-center gap-1.5">
