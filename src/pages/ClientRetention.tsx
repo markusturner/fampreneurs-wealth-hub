@@ -1090,6 +1090,7 @@ export default function ClientRetention() {
             </Card>
           </div>
         </div>
+      </div>
         </>
       )}
     </div>
