@@ -346,7 +346,10 @@ export default function ClientRetention() {
       if (!date) return
       const iso = new Date(date).toISOString()
       const title = r.manual_session_title || s?.title || "Coaching call"
-      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}`
+      const coachName = (r.manual_coach_name || s?.coach || "").trim().toLowerCase()
+      // Only an exact repeat (same person, day, call, coach, session) counts once —
+      // different coaches or sessions on the same day are separate attendances
+      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}|${coachName}|${r.session_id ?? ""}`
       if (seen.has(key)) return
       seen.add(key)
       const rec: CallRec = {
