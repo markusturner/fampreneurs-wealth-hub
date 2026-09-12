@@ -150,7 +150,8 @@ export default function ClientRetention() {
       boosts.trust = Math.max(boosts.trust, 8); drop.trust = true; addedSignals.push({ label: "✅ Note: trust work in progress", severity: "info" })
     }
     if (funded) { boosts.trust = Math.max(boosts.trust, 9); addedSignals.push({ label: "✅ Note: assets funded into trust", severity: "info" }) }
-    if (trustsComplete && funded) forceExpansion = true
+    // Finished the trusts = the result we sell — that alone earns Expansion Ready
+    if (trustsComplete) forceExpansion = true
 
     // Testimonial / results = strongest proof the client is winning
     const testimonial = has(/\b(testimonial|case study|success story|gave (a )?review|left (a )?review|video review|shared (their|his|her) story)\b/)
