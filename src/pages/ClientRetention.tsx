@@ -286,10 +286,12 @@ export default function ClientRetention() {
       })
 
       const attendanceScore = days <= 14 ? 9 : days <= 30 ? 7 : days <= 60 ? 5 : 3
-      const delta = Math.max(0, attendanceScore - 5) * 0.20
+      // Showing up repeatedly counts: every logged call in the last 90 days adds a little
+      const volumeBonus = Math.min(1, Math.max(0, count90 - 1) * 0.25)
+      const delta = Math.max(0, attendanceScore - 5) * 0.20 + volumeBonus
       const score = Math.min(10, Math.max(1, Number((c.score + delta).toFixed(1))))
       const label = days <= 60
-        ? `${CALL_SIGNATURE} Attended ${count90} call${count90 === 1 ? "" : "s"} in last 90d — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
+        ? `${CALL_SIGNATURE} Attended ${calls.length} call${calls.length === 1 ? "" : "s"} total (${count90} in last 90d) — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
         : `${CALL_SIGNATURE} Last coaching call ${days}d ago — ${last.title}`
       return {
         ...c,
