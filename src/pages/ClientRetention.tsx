@@ -1054,52 +1054,7 @@ export default function ClientRetention() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* MOVEMENT */}
-        <TabsContent value="movement" className="mt-4">
-          <div className="grid lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader><CardTitle className="text-base">Health Score Trend (6 weeks)</CardTitle></CardHeader>
-              <CardContent style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trend}>
-                    <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                    <YAxis domain={[1, 10]} tick={{ fontSize: 11 }} />
-                    <RTooltip />
-                    <Line type="monotone" dataKey="avg" stroke="#ffb500" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base">Status Distribution</CardTitle></CardHeader>
-              <CardContent style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[{
-                    name: "Now",
-                    "At Risk": stats.buckets.at_risk.length,
-                    "Slipping": stats.buckets.slipping.length,
-                    "Stable": stats.buckets.stable.length,
-                    "Expansion": stats.buckets.expansion_ready.length,
-                  }]}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <RTooltip />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
-                    <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
-                    <Bar dataKey="Stable" stackId="a" fill="#10b981" />
-                    <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-
-      </Tabs>
+        </div>
         </>
       )}
     </div>
