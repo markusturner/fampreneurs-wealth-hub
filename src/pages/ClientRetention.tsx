@@ -649,14 +649,6 @@ export default function ClientRetention() {
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
 
-  // On mobile the detail panel sits below the queue — scroll to it on select
-  useEffect(() => {
-    if (!selectedId) return
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
-    }
-  }, [selectedId])
-
   const saveNote = async () => {
     if (!selected) return
     const text = noteDraft.trim()
