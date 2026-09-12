@@ -804,14 +804,49 @@ export default function ClientRetention() {
         })}
       </div>
 
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
-          <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
-        </TabsList>
+      <div className="w-full">
+        {/* MOVEMENT */}
+        <div className="grid lg:grid-cols-2 gap-4 mb-5">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Health Score Trend (6 weeks)</CardTitle></CardHeader>
+            <CardContent style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trend}>
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis domain={trendDomain} allowDecimals tick={{ fontSize: 11 }} />
+                  <RTooltip />
+                  <Line type="monotone" dataKey="avg" stroke="#ffb500" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Status Distribution</CardTitle></CardHeader>
+            <CardContent style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[{
+                  name: "Now",
+                  "At Risk": stats.buckets.at_risk.length,
+                  "Slipping": stats.buckets.slipping.length,
+                  "Stable": stats.buckets.stable.length,
+                  "Expansion": stats.buckets.expansion_ready.length,
+                }]}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <RTooltip />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
+                  <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
+                  <Bar dataKey="Stable" stackId="a" fill="#10b981" />
+                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* TODAY */}
-        <TabsContent value="today" className="mt-4">
+        <div className="mt-4">
           <div className="grid lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
 
             {/* Left queue */}
