@@ -271,7 +271,13 @@ export default function ClientRetention() {
       signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith(CALL_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
     }))
     const withCalls = mergeAttendance(cleaned, attMap ?? attendanceMapRef.current)
-    const merged = mergeNotes(withCalls, overrideMap ?? notesMapRef.current)
+    const noteMap = overrideMap ?? notesMapRef.current
+    const merged = mergeNotes(withCalls, noteMap).map((c) => {
+      // Keep the category in sync with the adjusted score unless it's manually overridden
+      if (noteMap[c.user_id]?.status_override) return c
+      const status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
+      return { ...c, status }
+    })
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
