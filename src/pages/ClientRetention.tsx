@@ -346,7 +346,10 @@ export default function ClientRetention() {
       if (!date) return
       const iso = new Date(date).toISOString()
       const title = r.manual_session_title || s?.title || "Coaching call"
-      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}`
+      const coachName = (r.manual_coach_name || s?.coach || "").trim().toLowerCase()
+      // Only an exact repeat (same person, day, call, coach, session) counts once —
+      // different coaches or sessions on the same day are separate attendances
+      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}|${coachName}|${r.session_id ?? ""}`
       if (seen.has(key)) return
       seen.add(key)
       const rec: CallRec = {
@@ -904,13 +907,13 @@ export default function ClientRetention() {
                                     <div className="mt-0.5">
                                       {scoreMoved || statusMoved ? (
                                         <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Rating {h.prev_score ?? "—"}/10 → {h.new_score ?? "—"}/10</>}
+                                          {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
                                           {scoreMoved && statusMoved && " · "}
                                           {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
                                         </span>
                                       ) : (
                                         <span className="text-muted-foreground">
-                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"}/10
+                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
                                         </span>
                                       )}
                                     </div>
