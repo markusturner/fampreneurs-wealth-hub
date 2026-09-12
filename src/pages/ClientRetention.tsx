@@ -234,8 +234,12 @@ export default function ClientRetention() {
       let nextScore = Math.min(10, Math.max(1, Number((c.score + scoreDelta).toFixed(1))))
       // A strong positive note is first-hand evidence — it should lift them out of the low buckets
       const strongPositives = (Object.keys(boosts) as (keyof typeof boosts)[]).filter((k) => boosts[k] >= 9).length
-      if (strongPositives >= 2) nextScore = Math.max(nextScore, 7.2)
-      else if (strongPositives === 1) nextScore = Math.max(nextScore, 6.6)
+      if (strongPositives >= 2) nextScore = Math.max(nextScore, 8.0)
+      else if (strongPositives === 1) nextScore = Math.max(nextScore, 7.0)
+      // Results are the whole point — proof of outcome pushes them near the top
+      if (boosts.trust >= 10) nextScore = Math.max(nextScore, 8.8)
+      if (boosts.fathom >= 10) nextScore = Math.max(nextScore, 8.8)
+      if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
       let nextStatus: Status = entry.status_override ?? c.status
       if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
       else if (!entry.status_override) {
