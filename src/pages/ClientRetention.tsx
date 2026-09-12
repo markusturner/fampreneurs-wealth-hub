@@ -189,7 +189,7 @@ export default function ClientRetention() {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion }
+    return { boosts, addedSignals, drop, forceExpansion, capStable }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
