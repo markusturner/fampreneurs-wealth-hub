@@ -152,6 +152,16 @@ export default function ClientRetention() {
     if (funded) { boosts.trust = Math.max(boosts.trust, 9); addedSignals.push({ label: "✅ Note: assets funded into trust", severity: "info" }) }
     if (trustsComplete && funded) forceExpansion = true
 
+    // Testimonial / results = strongest proof the client is winning
+    const testimonial = has(/\b(testimonial|case study|success story|gave (a )?review|left (a )?review|video review|shared (their|his|her) story)\b/)
+    if (testimonial) {
+      boosts.fathom = 10; boosts.community = Math.max(boosts.community, 9); drop.community = true; drop.fathom = true
+      addedSignals.push({ label: "✅ Note: gave a testimonial", severity: "info" })
+    }
+    const gotResults = has(/\b(got results|big results|win|won|closed|saved (them )?\$?|protected (their|his|her) (assets|home|property)|milestone)\b/)
+    if (gotResults) { boosts.fathom = Math.max(boosts.fathom, 9); addedSignals.push({ label: "✅ Note: real results achieved", severity: "info" }) }
+    if (testimonial && (trustsComplete || funded)) forceExpansion = true
+
     // Attendance
     if (has(/\b(attended|showed up|made it|on the call|joined (the )?call|hopped on)\b/)) {
       boosts.attendance = 9; drop.attendance = true; addedSignals.push({ label: "✅ Note: attended recent coaching call", severity: "info" })
