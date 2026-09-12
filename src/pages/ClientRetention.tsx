@@ -1165,11 +1165,11 @@ function QueueGroup({
   title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean;
 }) {
   return (
-    <Card>
+    <Card className="min-w-0 overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">{icon} {title} <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
+        <CardTitle className="text-sm flex items-center gap-2">{icon} <span className="truncate">{title}</span> <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
       </CardHeader>
-      <CardContent className="space-y-1.5 max-h-[300px] overflow-auto">
+      <CardContent className="space-y-1.5 max-h-[300px] overflow-y-auto overflow-x-hidden px-3 sm:px-6">
         {loading && clients.length === 0 && <>
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
@@ -1180,16 +1180,20 @@ function QueueGroup({
           <button
             key={c.user_id}
             onClick={() => onSelect(c.user_id)}
-            className={`w-full text-left p-2.5 rounded-md border text-sm transition-colors ${selectedId === c.user_id ? "border-[#ffb500] bg-amber-50" : "hover:bg-muted/40"}`}
+            className={`w-full min-w-0 block text-left p-2.5 rounded-md border text-sm transition-colors ${selectedId === c.user_id ? "border-[#ffb500] bg-amber-50" : "hover:bg-muted/40"}`}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-medium truncate">{c.full_name}</span>
-              <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs`}>{c.score}/10</Badge>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="font-medium truncate min-w-0">{c.full_name}</span>
+              <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs shrink-0`}>{c.score}/10</Badge>
             </div>
+            {c.referral_ask && (
+              <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+            )}
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
           </button>
         ))}
       </CardContent>
+
     </Card>
   )
 }
