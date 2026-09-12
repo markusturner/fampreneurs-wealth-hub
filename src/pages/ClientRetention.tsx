@@ -324,15 +324,22 @@ export default function ClientRetention() {
     }
 
     const map: Record<string, CallRec[]> = {}
+    // Same person + same day + same call = one attendance, no matter how many rows exist
+    const seen = new Set<string>()
     rows.forEach((r: any) => {
       const s = r.session_id ? sessions[r.session_id] : null
       const date = r.manual_session_date || s?.date || r.joined_at || r.created_at
       if (!date) return
+      const iso = new Date(date).toISOString()
+      const title = r.manual_session_title || s?.title || "Coaching call"
+      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}`
+      if (seen.has(key)) return
+      seen.add(key)
       const rec: CallRec = {
         id: r.id,
-        title: r.manual_session_title || s?.title || "Coaching call",
+        title,
         coach: r.manual_coach_name || s?.coach || null,
-        date: new Date(date).toISOString(),
+        date: iso,
       }
       if (!map[r.user_id]) map[r.user_id] = []
       map[r.user_id].push(rec)
@@ -341,6 +348,46 @@ export default function ClientRetention() {
     setAttendanceMap(map)
     attendanceMapRef.current = map
     return map
+  }
+
+  const loadHistory = async () => {
+    const { data } = await supabase
+      .from("client_retention_history")
+      .select("id, user_id, prev_score, new_score, prev_status, new_status, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(1000)
+    const map: Record<string, HistoryRec[]> = {}
+    ;(data ?? []).forEach((r: any) => {
+      if (!map[r.user_id]) map[r.user_id] = []
+      map[r.user_id].push(r as HistoryRec)
+    })
+    setHistoryMap(map)
+  }
+
+  // Record what a note/status change actually did to the score + category
+  const logChange = async (
+    userId: string,
+    before: ClientScore | undefined,
+    after: ClientScore | undefined,
+    reason: string,
+  ) => {
+    if (!before && !after) return
+    const row = {
+      user_id: userId,
+      prev_score: before?.score ?? null,
+      new_score: after?.score ?? null,
+      prev_status: before?.status ?? null,
+      new_status: after?.status ?? null,
+      reason,
+      changed_by: user?.id ?? null,
+    }
+    const { data, error } = await supabase
+      .from("client_retention_history")
+      .insert(row)
+      .select("id, user_id, prev_score, new_score, prev_status, new_status, reason, created_at")
+      .single()
+    if (error || !data) return
+    setHistoryMap((prev) => ({ ...prev, [userId]: [data as HistoryRec, ...(prev[userId] ?? [])] }))
   }
 
   const loadNotes = async () => {
