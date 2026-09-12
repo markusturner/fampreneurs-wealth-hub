@@ -904,12 +904,14 @@ export default function ClientRetention() {
                                     <div className="mt-0.5">
                                       {scoreMoved || statusMoved ? (
                                         <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Score {h.prev_score ?? "—"} → {h.new_score ?? "—"}</>}
+                                          {scoreMoved && <>Rating {h.prev_score ?? "—"}/10 → {h.new_score ?? "—"}/10</>}
                                           {scoreMoved && statusMoved && " · "}
                                           {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
                                         </span>
                                       ) : (
-                                        <span className="text-muted-foreground">No change to score or category</span>
+                                        <span className="text-muted-foreground">
+                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"}/10
+                                        </span>
                                       )}
                                     </div>
                                     {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
