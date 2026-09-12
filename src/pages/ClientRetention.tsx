@@ -939,8 +939,7 @@ export default function ClientRetention() {
                 </div>
               </CardHeader>
 
-                </div>
-              </CardHeader>
+
 
               {selected && selected.linked_users && selected.linked_users.length > 0 && (
                 <div className="px-6 -mt-2 mb-2 flex items-center gap-1.5 flex-wrap">
