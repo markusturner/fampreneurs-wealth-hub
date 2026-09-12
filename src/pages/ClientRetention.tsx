@@ -105,6 +105,17 @@ export default function ClientRetention() {
   const [attendanceMap, setAttendanceMap] = useState<Record<string, CallRec[]>>({})
   const attendanceMapRef = useRef(attendanceMap)
   useEffect(() => { attendanceMapRef.current = attendanceMap }, [attendanceMap])
+  type HistoryRec = {
+    id: string
+    user_id: string
+    prev_score: number | null
+    new_score: number | null
+    prev_status: string | null
+    new_status: string | null
+    reason: string | null
+    created_at: string
+  }
+  const [historyMap, setHistoryMap] = useState<Record<string, HistoryRec[]>>({})
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
@@ -288,6 +299,7 @@ export default function ClientRetention() {
       const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
       return firstAtRisk?.user_id ?? null
     })
+    return merged
   }
 
   const loadAttendance = async () => {
@@ -312,15 +324,22 @@ export default function ClientRetention() {
     }
 
     const map: Record<string, CallRec[]> = {}
+    // Same person + same day + same call = one attendance, no matter how many rows exist
+    const seen = new Set<string>()
     rows.forEach((r: any) => {
       const s = r.session_id ? sessions[r.session_id] : null
       const date = r.manual_session_date || s?.date || r.joined_at || r.created_at
       if (!date) return
+      const iso = new Date(date).toISOString()
+      const title = r.manual_session_title || s?.title || "Coaching call"
+      const key = `${r.user_id}|${iso.slice(0, 10)}|${title.trim().toLowerCase()}`
+      if (seen.has(key)) return
+      seen.add(key)
       const rec: CallRec = {
         id: r.id,
-        title: r.manual_session_title || s?.title || "Coaching call",
+        title,
         coach: r.manual_coach_name || s?.coach || null,
-        date: new Date(date).toISOString(),
+        date: iso,
       }
       if (!map[r.user_id]) map[r.user_id] = []
       map[r.user_id].push(rec)
@@ -329,6 +348,46 @@ export default function ClientRetention() {
     setAttendanceMap(map)
     attendanceMapRef.current = map
     return map
+  }
+
+  const loadHistory = async () => {
+    const { data } = await supabase
+      .from("client_retention_history")
+      .select("id, user_id, prev_score, new_score, prev_status, new_status, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(1000)
+    const map: Record<string, HistoryRec[]> = {}
+    ;(data ?? []).forEach((r: any) => {
+      if (!map[r.user_id]) map[r.user_id] = []
+      map[r.user_id].push(r as HistoryRec)
+    })
+    setHistoryMap(map)
+  }
+
+  // Record what a note/status change actually did to the score + category
+  const logChange = async (
+    userId: string,
+    before: ClientScore | undefined,
+    after: ClientScore | undefined,
+    reason: string,
+  ) => {
+    if (!before && !after) return
+    const row = {
+      user_id: userId,
+      prev_score: before?.score ?? null,
+      new_score: after?.score ?? null,
+      prev_status: before?.status ?? null,
+      new_status: after?.status ?? null,
+      reason,
+      changed_by: user?.id ?? null,
+    }
+    const { data, error } = await supabase
+      .from("client_retention_history")
+      .insert(row)
+      .select("id, user_id, prev_score, new_score, prev_status, new_status, reason, created_at")
+      .single()
+    if (error || !data) return
+    setHistoryMap((prev) => ({ ...prev, [userId]: [data as HistoryRec, ...(prev[userId] ?? [])] }))
   }
 
   const loadNotes = async () => {
@@ -417,6 +476,7 @@ export default function ClientRetention() {
     })
     loadTrend()
     loadAutopilot()
+    loadHistory()
 
     // Auto-refresh every 60s so signals stay fresh without manual reload
     const interval = setInterval(() => { loadAttendance().then((m) => loadHealth(true)) }, 60000)
@@ -517,9 +577,22 @@ export default function ClientRetention() {
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      applyClients(clients, nextMap)
+      const before = clients.find((c) => c.user_id === selected.user_id)
+      const updated = applyClients(clients, nextMap)
+      const after = updated.find((c) => c.user_id === selected.user_id)
+      const reason = text
+        ? `Note added: "${text.slice(0, 140)}"${statusChanged ? ` + status set to ${nextStatus ?? "auto"}` : ""}`
+        : `Status set to ${nextStatus ?? "auto (from signals)"}`
+      await logChange(selected.user_id, before, after, reason)
       setNoteDraft("")
-      toast.success(newEntry ? "Note added" : "Status updated")
+      const moved = before && after && (before.score !== after.score || before.status !== after.status)
+      toast.success(
+        moved
+          ? `Saved — score ${before!.score} → ${after!.score}`
+          : newEntry
+            ? "Note added (score unchanged)"
+            : "Status updated"
+      )
     } catch (e: any) {
       toast.error("Couldn't save note: " + (e?.message ?? e))
     } finally {
@@ -544,7 +617,10 @@ export default function ClientRetention() {
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      applyClients(clients, nextMap)
+      const before = clients.find((c) => c.user_id === selected.user_id)
+      const updated = applyClients(clients, nextMap)
+      const after = updated.find((c) => c.user_id === selected.user_id)
+      await logChange(selected.user_id, before, after, "Note removed")
       toast.success("Note removed")
     } catch (e: any) {
       toast.error("Couldn't delete note: " + (e?.message ?? e))
@@ -784,6 +860,48 @@ export default function ClientRetention() {
                                   <span className="text-xs text-muted-foreground flex-shrink-0">{new Date(k.date).toLocaleDateString()}</span>
                                 </li>
                               ))}
+                            </ul>
+                          )}
+                        </section>
+                      )
+                    })()}
+
+                    {(() => {
+                      const hist = historyMap[selected.user_id] ?? []
+                      const label = (s: string | null) =>
+                        s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : "—"
+                      return (
+                        <section>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                            Change History ({hist.length})
+                          </p>
+                          {hist.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No changes recorded yet — add a note or set a status to start the log.</p>
+                          ) : (
+                            <ul className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                              {hist.map((h) => {
+                                const scoreMoved = h.prev_score !== h.new_score
+                                const statusMoved = h.prev_status !== h.new_status
+                                return (
+                                  <li key={h.id} className="rounded-md border bg-white px-2.5 py-2 text-sm">
+                                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                      {new Date(h.created_at).toLocaleString()}
+                                    </div>
+                                    <div className="mt-0.5">
+                                      {scoreMoved || statusMoved ? (
+                                        <span className="font-medium text-[#290a52]">
+                                          {scoreMoved && <>Score {h.prev_score ?? "—"} → {h.new_score ?? "—"}</>}
+                                          {scoreMoved && statusMoved && " · "}
+                                          {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground">No change to score or category</span>
+                                      )}
+                                    </div>
+                                    {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                  </li>
+                                )
+                              })}
                             </ul>
                           )}
                         </section>
