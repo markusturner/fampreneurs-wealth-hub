@@ -902,10 +902,10 @@ export default function ClientRetention() {
 
         {/* TODAY */}
         <div className="mt-4">
-          <div className="grid lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
 
             {/* Left queue */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
@@ -913,24 +913,32 @@ export default function ClientRetention() {
             </div>
 
             {/* Right detail */}
-            <Card ref={detailRef} className="scroll-mt-4">
+            <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <div className="min-w-0">
-                    <CardTitle className="text-base truncate">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base break-words">
                       {selected ? selected.full_name : "Select a client"}
                     </CardTitle>
                     {selected && (
-                      <p className="text-xs text-muted-foreground mt-0.5 break-all sm:break-normal">
+                      <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
                       </p>
                     )}
                   </div>
                   {selected && (
-                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none shrink-0`}>
-                      {STATUS_META[selected.status].label}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
+                        {STATUS_META[selected.status].label}
+                      </Badge>
+                      {selected.referral_ask && (
+                        <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
+                      )}
+                    </div>
                   )}
+                </div>
+              </CardHeader>
+
                 </div>
               </CardHeader>
 
