@@ -286,6 +286,47 @@ export default function ClientRetention() {
     })
   }
 
+  const loadAttendance = async () => {
+    const since = new Date()
+    since.setDate(since.getDate() - 365)
+    const { data } = await supabase
+      .from("session_attendance")
+      .select("id, user_id, session_id, manual_session_title, manual_coach_name, manual_session_date, joined_at, created_at, attended, deleted_at")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1000)
+
+    const rows = (data ?? []).filter((r: any) => r.attended !== false)
+    const sessionIds = Array.from(new Set(rows.map((r: any) => r.session_id).filter(Boolean)))
+    let sessions: Record<string, { title: string; date: string | null; coach: string | null }> = {}
+    if (sessionIds.length) {
+      const { data: srows } = await supabase
+        .from("group_coaching_sessions")
+        .select("id, title, session_date, coach_name")
+        .in("id", sessionIds as string[])
+      ;(srows ?? []).forEach((s: any) => { sessions[s.id] = { title: s.title, date: s.session_date, coach: s.coach_name } })
+    }
+
+    const map: Record<string, CallRec[]> = {}
+    rows.forEach((r: any) => {
+      const s = r.session_id ? sessions[r.session_id] : null
+      const date = r.manual_session_date || s?.date || r.joined_at || r.created_at
+      if (!date) return
+      const rec: CallRec = {
+        id: r.id,
+        title: r.manual_session_title || s?.title || "Coaching call",
+        coach: r.manual_coach_name || s?.coach || null,
+        date: new Date(date).toISOString(),
+      }
+      if (!map[r.user_id]) map[r.user_id] = []
+      map[r.user_id].push(rec)
+    })
+    Object.values(map).forEach((arr) => arr.sort((a, b) => (a.date < b.date ? 1 : -1)))
+    setAttendanceMap(map)
+    attendanceMapRef.current = map
+    return map
+  }
+
   const loadNotes = async () => {
     const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
       supabase.from("client_retention_notes").select("user_id, status_override"),
