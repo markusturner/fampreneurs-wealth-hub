@@ -1091,49 +1091,6 @@ export default function ClientRetention() {
           </div>
         </TabsContent>
 
-        {/* WINS */}
-        <TabsContent value="wins" className="mt-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-purple-600" /> Ready for Expansion / Referral
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {expansionList.length === 0 && <p className="text-sm text-muted-foreground">No expansion-ready clients yet.</p>}
-                {expansionList.map((c) => (
-                  <button key={c.user_id} onClick={() => setSelectedId(c.user_id)} className="w-full text-left p-3 rounded-lg border hover:bg-purple-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{c.full_name}</span>
-                      <Badge variant="outline" className="text-purple-700 border-purple-300">{c.score}/10</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)} · ${c.arr_value.toLocaleString()} ARR</p>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Heart className="h-4 w-4 text-emerald-600" /> Healthy & Stable
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 max-h-[420px] overflow-auto">
-                {stats.buckets.stable.length === 0 && <p className="text-sm text-muted-foreground">No stable clients tracked.</p>}
-                {stats.buckets.stable.map((c) => (
-                  <button key={c.user_id} onClick={() => setSelectedId(c.user_id)} className="w-full text-left p-3 rounded-lg border hover:bg-emerald-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{c.full_name}</span>
-                      <Badge variant="outline" className="text-emerald-700 border-emerald-300">{c.score}/10</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)}</p>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
       </Tabs>
         </>
