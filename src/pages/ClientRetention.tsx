@@ -800,7 +800,6 @@ export default function ClientRetention() {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
           <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
-          <TabsTrigger value="wins" className="flex-1 sm:flex-none">Wins</TabsTrigger>
         </TabsList>
 
         {/* TODAY */}
