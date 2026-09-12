@@ -566,7 +566,9 @@ export default function ClientRetention() {
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
-        loadHealth(hadCache)
+        // Cached data renders instantly — only run the expensive recompute when there is no cache.
+        // Fresh data still arrives via the 60s silent refresh below.
+        if (!hadCache) loadHealth(false)
       })
     })
     loadTrend()
