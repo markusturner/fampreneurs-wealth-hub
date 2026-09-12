@@ -1261,8 +1261,9 @@ export default function ClientRetention() {
                     </section>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
         </>
