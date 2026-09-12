@@ -152,6 +152,16 @@ export default function ClientRetention() {
     if (funded) { boosts.trust = Math.max(boosts.trust, 9); addedSignals.push({ label: "✅ Note: assets funded into trust", severity: "info" }) }
     if (trustsComplete && funded) forceExpansion = true
 
+    // Testimonial / results = strongest proof the client is winning
+    const testimonial = has(/\b(testimonial|case study|success story|gave (a )?review|left (a )?review|video review|shared (their|his|her) story)\b/)
+    if (testimonial) {
+      boosts.fathom = 10; boosts.community = Math.max(boosts.community, 9); drop.community = true; drop.fathom = true
+      addedSignals.push({ label: "✅ Note: gave a testimonial", severity: "info" })
+    }
+    const gotResults = has(/\b(got results|big results|win|won|closed|saved (them )?\$?|protected (their|his|her) (assets|home|property)|milestone)\b/)
+    if (gotResults) { boosts.fathom = Math.max(boosts.fathom, 9); addedSignals.push({ label: "✅ Note: real results achieved", severity: "info" }) }
+    if (testimonial && (trustsComplete || funded)) forceExpansion = true
+
     // Attendance
     if (has(/\b(attended|showed up|made it|on the call|joined (the )?call|hopped on)\b/)) {
       boosts.attendance = 9; drop.attendance = true; addedSignals.push({ label: "✅ Note: attended recent coaching call", severity: "info" })
@@ -224,8 +234,12 @@ export default function ClientRetention() {
       let nextScore = Math.min(10, Math.max(1, Number((c.score + scoreDelta).toFixed(1))))
       // A strong positive note is first-hand evidence — it should lift them out of the low buckets
       const strongPositives = (Object.keys(boosts) as (keyof typeof boosts)[]).filter((k) => boosts[k] >= 9).length
-      if (strongPositives >= 2) nextScore = Math.max(nextScore, 7.2)
-      else if (strongPositives === 1) nextScore = Math.max(nextScore, 6.6)
+      if (strongPositives >= 2) nextScore = Math.max(nextScore, 8.0)
+      else if (strongPositives === 1) nextScore = Math.max(nextScore, 7.0)
+      // Results are the whole point — proof of outcome pushes them near the top
+      if (boosts.trust >= 10) nextScore = Math.max(nextScore, 8.8)
+      if (boosts.fathom >= 10) nextScore = Math.max(nextScore, 8.8)
+      if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
       let nextStatus: Status = entry.status_override ?? c.status
       if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
       else if (!entry.status_override) {
@@ -890,12 +904,14 @@ export default function ClientRetention() {
                                     <div className="mt-0.5">
                                       {scoreMoved || statusMoved ? (
                                         <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Score {h.prev_score ?? "—"} → {h.new_score ?? "—"}</>}
+                                          {scoreMoved && <>Rating {h.prev_score ?? "—"}/10 → {h.new_score ?? "—"}/10</>}
                                           {scoreMoved && statusMoved && " · "}
                                           {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
                                         </span>
                                       ) : (
-                                        <span className="text-muted-foreground">No change to score or category</span>
+                                        <span className="text-muted-foreground">
+                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"}/10
+                                        </span>
                                       )}
                                     </div>
                                     {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
