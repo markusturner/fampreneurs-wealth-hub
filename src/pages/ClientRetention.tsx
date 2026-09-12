@@ -1068,10 +1068,8 @@ export default function ClientRetention() {
               )}
 
 
-              <CardContent>
-                {!selected ? (
-                  <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
-                ) : (
+              <div className="px-6 pb-6">
+                {selected && (
                   <div className="space-y-5">
                     <section className="rounded-md border border-[#ffb500]/50 bg-amber-50/60 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
