@@ -880,7 +880,7 @@ export default function ClientRetention() {
 
                     {(() => {
                       const ids = [selected.user_id, ...((selected.linked_users ?? []).map((l) => l.user_id))]
-                      const calls = ids.flatMap((id) => attendanceMap[id] ?? []).sort((a, b) => (a.date < b.date ? 1 : -1))
+                      const calls = Array.from(new Map(ids.flatMap((id) => attendanceMap[id] ?? []).map((k) => [k.id, k])).values()).sort((a, b) => (a.date < b.date ? 1 : -1))
                       return (
                         <section>
                           <div className="flex items-center justify-between mb-2 gap-2">
