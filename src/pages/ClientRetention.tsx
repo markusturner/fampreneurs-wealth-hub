@@ -271,7 +271,7 @@ export default function ClientRetention() {
     const now = Date.now()
     return list.map((c) => {
       const ids = [c.user_id, ...((c.linked_users ?? []).map((l) => l.user_id))]
-      const calls = ids.flatMap((id) => map[id] ?? [])
+      const calls = Array.from(new Map(ids.flatMap((id) => map[id] ?? []).map((k) => [k.id, k])).values())
         .sort((a, b) => (a.date < b.date ? 1 : -1))
       if (calls.length === 0) return c
       const last = calls[0]
@@ -368,6 +368,22 @@ export default function ClientRetention() {
       }
       if (!map[r.user_id]) map[r.user_id] = []
       map[r.user_id].push(rec)
+    })
+    // The retention list identifies people by their profile row, while attendance is logged
+    // against their login id — index the same calls under both so nothing goes missing.
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, user_id, linked_user_ids")
+    ;(profs ?? []).forEach((p: any) => {
+      const ids: string[] = [p.user_id, ...(((p.linked_user_ids as string[] | null) ?? []))].filter(Boolean)
+      const merged: CallRec[] = []
+      const seenRec = new Set<string>()
+      ids.forEach((id) => (map[id] ?? []).forEach((rec) => {
+        if (seenRec.has(rec.id)) return
+        seenRec.add(rec.id)
+        merged.push(rec)
+      }))
+      if (merged.length) map[p.id] = merged
     })
     Object.values(map).forEach((arr) => arr.sort((a, b) => (a.date < b.date ? 1 : -1)))
     setAttendanceMap(map)
@@ -784,7 +800,6 @@ export default function ClientRetention() {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
           <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
-          <TabsTrigger value="wins" className="flex-1 sm:flex-none">Wins</TabsTrigger>
         </TabsList>
 
         {/* TODAY */}
@@ -795,6 +810,8 @@ export default function ClientRetention() {
             <div className="space-y-4">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
+              <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
+              <QueueGroup title="Ready for Expansion / Referral" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
             </div>
 
             {/* Right detail */}
@@ -864,7 +881,7 @@ export default function ClientRetention() {
 
                     {(() => {
                       const ids = [selected.user_id, ...((selected.linked_users ?? []).map((l) => l.user_id))]
-                      const calls = ids.flatMap((id) => attendanceMap[id] ?? []).sort((a, b) => (a.date < b.date ? 1 : -1))
+                      const calls = Array.from(new Map(ids.flatMap((id) => attendanceMap[id] ?? []).map((k) => [k.id, k])).values()).sort((a, b) => (a.date < b.date ? 1 : -1))
                       return (
                         <section>
                           <div className="flex items-center justify-between mb-2 gap-2">
@@ -1073,49 +1090,6 @@ export default function ClientRetention() {
           </div>
         </TabsContent>
 
-        {/* WINS */}
-        <TabsContent value="wins" className="mt-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-purple-600" /> Ready for Expansion / Referral
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {expansionList.length === 0 && <p className="text-sm text-muted-foreground">No expansion-ready clients yet.</p>}
-                {expansionList.map((c) => (
-                  <button key={c.user_id} onClick={() => setSelectedId(c.user_id)} className="w-full text-left p-3 rounded-lg border hover:bg-purple-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{c.full_name}</span>
-                      <Badge variant="outline" className="text-purple-700 border-purple-300">{c.score}/10</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)} · ${c.arr_value.toLocaleString()} ARR</p>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Heart className="h-4 w-4 text-emerald-600" /> Healthy & Stable
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 max-h-[420px] overflow-auto">
-                {stats.buckets.stable.length === 0 && <p className="text-sm text-muted-foreground">No stable clients tracked.</p>}
-                {stats.buckets.stable.map((c) => (
-                  <button key={c.user_id} onClick={() => setSelectedId(c.user_id)} className="w-full text-left p-3 rounded-lg border hover:bg-emerald-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{c.full_name}</span>
-                      <Badge variant="outline" className="text-emerald-700 border-emerald-300">{c.score}/10</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)}</p>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
       </Tabs>
         </>
