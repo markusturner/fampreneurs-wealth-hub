@@ -6343,6 +6343,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_anonymous_survey: {
+        Args: { p_answers: Json; p_survey_id: string }
+        Returns: string
+      }
       user_has_premium_subscription: {
         Args: { user_id: string }
         Returns: boolean
