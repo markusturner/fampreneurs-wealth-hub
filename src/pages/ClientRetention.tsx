@@ -958,7 +958,7 @@ export default function ClientRetention() {
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
                       </Badge>
-                      {upsellInfo(selected) && (
+                      {selected.status === "expansion_ready" && upsellInfo(selected) && (
                         <Badge className="bg-purple-100 text-purple-700 border-none">Upsell → {upsellInfo(selected)!.target}</Badge>
                       )}
                       {selected.referral_ask && (
@@ -1001,7 +1001,7 @@ export default function ClientRetention() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] mb-1">Reach Out About</p>
                       <p className="text-sm text-[#290a52]">{outreachTopic(selected)}</p>
                     </section>
-                    {upsellInfo(selected) && (
+                    {selected.status === "expansion_ready" && upsellInfo(selected) && (
                       <section className="rounded-md border border-purple-200 bg-purple-50/70 p-3">
                         <p className="text-xs font-semibold uppercase tracking-wide text-purple-700 mb-1">Upsell Opportunity</p>
                         <p className="text-sm text-purple-900">
@@ -1237,7 +1237,7 @@ function QueueGroup({
               )}
             </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
-            {upsellInfo(c) && (
+            {c.status === "expansion_ready" && upsellInfo(c) && (
               <p className="text-[10px] font-medium text-purple-700 mt-0.5">
                 Opportunity cost: ${upsellInfo(c)!.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)!.target})
               </p>
