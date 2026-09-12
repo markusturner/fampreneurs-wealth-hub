@@ -27,6 +27,7 @@ interface ClientScore {
   full_name: string
   email: string
   program: string | null
+  program_name?: string | null
   score: number
   status: Status
   signals: { label: string; severity?: string }[]
