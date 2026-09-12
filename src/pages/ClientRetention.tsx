@@ -958,7 +958,7 @@ export default function ClientRetention() {
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
                       </Badge>
-                      {upsellInfo(selected) && (
+                      {selected.status === "expansion_ready" && upsellInfo(selected) && (
                         <Badge className="bg-purple-100 text-purple-700 border-none">Upsell → {upsellInfo(selected)!.target}</Badge>
                       )}
                       {selected.referral_ask && (
