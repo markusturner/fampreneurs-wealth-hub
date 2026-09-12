@@ -229,13 +229,49 @@ export default function ClientRetention() {
     })
   }
 
-  const applyClients = (list: ClientScore[], overrideMap?: Record<string, NotesEntry>) => {
+  const CALL_SIGNATURE = "🎧"
+
+  // Attendance log is the source of truth for coaching calls — fold it into signals + score
+  const mergeAttendance = (list: ClientScore[], map: Record<string, CallRec[]>): ClientScore[] => {
+    const now = Date.now()
+    return list.map((c) => {
+      const ids = [c.user_id, ...((c.linked_users ?? []).map((l) => l.user_id))]
+      const calls = ids.flatMap((id) => map[id] ?? [])
+        .sort((a, b) => (a.date < b.date ? 1 : -1))
+      if (calls.length === 0) return c
+      const last = calls[0]
+      const days = Math.floor((now - new Date(last.date).getTime()) / 86400000)
+      const count90 = calls.filter((k) => (now - new Date(k.date).getTime()) / 86400000 <= 90).length
+
+      // Drop stale "no attendance / missed calls" signals — the log proves otherwise
+      const trimmed = c.signals.filter((s) => {
+        const l = s.label.toLowerCase()
+        if (s.severity === "info") return true
+        return !(l.includes("coaching call") || l.includes("attendance") || l.includes("missed session"))
+      })
+
+      const attendanceScore = days <= 14 ? 9 : days <= 30 ? 7 : days <= 60 ? 5 : 3
+      const delta = Math.max(0, attendanceScore - 5) * 0.20
+      const score = Math.min(10, Math.max(1, Number((c.score + delta).toFixed(1))))
+      const label = days <= 60
+        ? `${CALL_SIGNATURE} Attended ${count90} call${count90 === 1 ? "" : "s"} in last 90d — latest: ${last.title} (${new Date(last.date).toLocaleDateString()})`
+        : `${CALL_SIGNATURE} Last coaching call ${days}d ago — ${last.title}`
+      return {
+        ...c,
+        score,
+        signals: [{ label, severity: days <= 60 ? "info" : "warn" }, ...trimmed],
+      }
+    })
+  }
+
+  const applyClients = (list: ClientScore[], overrideMap?: Record<string, NotesEntry>, attMap?: Record<string, CallRec[]>) => {
     // Always strip prior note-derived signals so notes don't accumulate or persist after deletion
     const cleaned = list.map((c) => ({
       ...c,
-      signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
+      signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith(CALL_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
     }))
-    const merged = mergeNotes(cleaned, overrideMap ?? notesMapRef.current)
+    const withCalls = mergeAttendance(cleaned, attMap ?? attendanceMapRef.current)
+    const merged = mergeNotes(withCalls, overrideMap ?? notesMapRef.current)
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
