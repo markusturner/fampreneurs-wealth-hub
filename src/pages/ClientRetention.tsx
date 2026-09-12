@@ -736,10 +736,13 @@ export default function ClientRetention() {
         body: {
           client_name: selected.full_name,
           status: selected.status,
-          signals: selected.signals,
+          signals: selected.referral_ask
+            ? [...selected.signals, { label: "Referral ask: they are getting value but have NOT finished their trusts — ask for a referral, do not pitch an upgrade" }]
+            : selected.signals,
           program: selected.program,
         },
       })
+
       if (error) throw error
       setDraft(data?.draft ?? "")
     } catch (e: any) {
