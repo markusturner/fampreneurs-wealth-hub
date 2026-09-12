@@ -211,7 +211,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
