@@ -811,6 +811,8 @@ export default function ClientRetention() {
             <div className="space-y-4">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
+              <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
+              <QueueGroup title="Ready for Expansion / Referral" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
             </div>
 
             {/* Right detail */}
