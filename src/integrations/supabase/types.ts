@@ -857,6 +857,42 @@ export type Database = {
         }
         Relationships: []
       }
+      client_retention_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_score: number | null
+          new_status: string | null
+          prev_score: number | null
+          prev_status: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_score?: number | null
+          new_status?: string | null
+          prev_score?: number | null
+          prev_status?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_score?: number | null
+          new_status?: string | null
+          prev_score?: number | null
+          prev_status?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_retention_note_entries: {
         Row: {
           created_at: string
