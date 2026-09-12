@@ -162,6 +162,8 @@ export default function ClientRetention() {
     const gotResults = has(/\b(got results|big results|win|won|closed|saved (them )?\$?|protected (their|his|her) (assets|home|property)|milestone)\b/)
     if (gotResults) { boosts.fathom = Math.max(boosts.fathom, 9); addedSignals.push({ label: "✅ Note: real results achieved", severity: "info" }) }
     if (testimonial && (trustsComplete || funded)) forceExpansion = true
+    // Testimonial but trusts not finished = solid, not expansion — hold them at Stable
+    const capStable = (testimonial || gotResults) && !trustsComplete && !funded
 
     // Attendance
     if (has(/\b(attended|showed up|made it|on the call|joined (the )?call|hopped on)\b/)) {
