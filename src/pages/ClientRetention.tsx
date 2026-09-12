@@ -369,6 +369,22 @@ export default function ClientRetention() {
       if (!map[r.user_id]) map[r.user_id] = []
       map[r.user_id].push(rec)
     })
+    // The retention list identifies people by their profile row, while attendance is logged
+    // against their login id — index the same calls under both so nothing goes missing.
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, user_id, linked_user_ids")
+    ;(profs ?? []).forEach((p: any) => {
+      const ids: string[] = [p.user_id, ...(((p.linked_user_ids as string[] | null) ?? []))].filter(Boolean)
+      const merged: CallRec[] = []
+      const seenRec = new Set<string>()
+      ids.forEach((id) => (map[id] ?? []).forEach((rec) => {
+        if (seenRec.has(rec.id)) return
+        seenRec.add(rec.id)
+        merged.push(rec)
+      }))
+      if (merged.length) map[p.id] = merged
+    })
     Object.values(map).forEach((arr) => arr.sort((a, b) => (a.date < b.date ? 1 : -1)))
     setAttendanceMap(map)
     attendanceMapRef.current = map
