@@ -913,7 +913,7 @@ export default function ClientRetention() {
                                         </span>
                                       ) : (
                                         <span className="text-muted-foreground">
-                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"}/10
+                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
                                         </span>
                                       )}
                                     </div>
