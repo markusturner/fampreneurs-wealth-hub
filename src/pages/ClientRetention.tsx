@@ -34,7 +34,17 @@ interface ClientScore {
   last_active_at: string | null
   linked_users?: { user_id: string; full_name: string }[]
   draft?: string
+  trust_done?: boolean
+  referral_ask?: boolean
 }
+
+// Expansion Ready is reserved for clients who actually finished their trusts.
+function hasTrustDone(c: ClientScore): boolean {
+  const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
+  if (/all 3 trusts completed|assets funded into trust/.test(labels)) return true
+  return /\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)
+}
+
 
 const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v5"
 
@@ -52,7 +62,9 @@ function outreachTopic(c: ClientScore): string {
     if (has(/no accountability|no coaching call|no attendance|missed.*call/)) return "No accountability-call attendance on record — personally invite them to this week's call."
     if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
   }
+  if (c.referral_ask) return "Doing great but the trust isn't finished — ask them for a referral while you nudge the paperwork."
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
+
   if (has(/trust|document/)) return "Trust paperwork is stalled — offer to walk through the next document together."
   if (has(/succession/)) return "Succession plan needs attention — nudge them to finish the next step."
   if (has(/payment|overdue|invoice/)) return "Payment is overdue — reach out about getting the account current."
@@ -318,11 +330,20 @@ export default function ClientRetention() {
     const withCalls = mergeAttendance(cleaned, attMap ?? attendanceMapRef.current)
     const noteMap = overrideMap ?? notesMapRef.current
     const merged = mergeNotes(withCalls, noteMap).map((c) => {
+      const trustDone = hasTrustDone(c)
       // Keep the category in sync with the adjusted score unless it's manually overridden
-      if (noteMap[c.user_id]?.status_override) return c
-      const status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
-      return { ...c, status }
+      if (noteMap[c.user_id]?.status_override) {
+        return { ...c, trust_done: trustDone, referral_ask: !trustDone && c.status === "stable" && c.score >= 7.5 }
+      }
+      let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
+      // Only clients who finished their trusts belong in Expansion Ready.
+      // Everyone else doing great becomes a referral ask instead.
+      let referral = false
+      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = true }
+      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = true
+      return { ...c, status, trust_done: trustDone, referral_ask: referral }
     })
+
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
@@ -715,10 +736,13 @@ export default function ClientRetention() {
         body: {
           client_name: selected.full_name,
           status: selected.status,
-          signals: selected.signals,
+          signals: selected.referral_ask
+            ? [...selected.signals, { label: "Referral ask: they are getting value but have NOT finished their trusts — ask for a referral, do not pitch an upgrade" }]
+            : selected.signals,
           program: selected.program,
         },
       })
+
       if (error) throw error
       setDraft(data?.draft ?? "")
     } catch (e: any) {
@@ -878,10 +902,10 @@ export default function ClientRetention() {
 
         {/* TODAY */}
         <div className="mt-4">
-          <div className="grid lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
 
             {/* Left queue */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
               <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
@@ -889,26 +913,33 @@ export default function ClientRetention() {
             </div>
 
             {/* Right detail */}
-            <Card ref={detailRef} className="scroll-mt-4">
+            <Card ref={detailRef} className="scroll-mt-4 min-w-0 overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <div className="min-w-0">
-                    <CardTitle className="text-base truncate">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base break-words">
                       {selected ? selected.full_name : "Select a client"}
                     </CardTitle>
                     {selected && (
-                      <p className="text-xs text-muted-foreground mt-0.5 break-all sm:break-normal">
+                      <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
                       </p>
                     )}
                   </div>
                   {selected && (
-                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none shrink-0`}>
-                      {STATUS_META[selected.status].label}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
+                        {STATUS_META[selected.status].label}
+                      </Badge>
+                      {selected.referral_ask && (
+                        <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
+                      )}
+                    </div>
                   )}
                 </div>
               </CardHeader>
+
+
 
               {selected && selected.linked_users && selected.linked_users.length > 0 && (
                 <div className="px-6 -mt-2 mb-2 flex items-center gap-1.5 flex-wrap">
@@ -1134,11 +1165,11 @@ function QueueGroup({
   title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean;
 }) {
   return (
-    <Card>
+    <Card className="min-w-0 overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">{icon} {title} <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
+        <CardTitle className="text-sm flex items-center gap-2">{icon} <span className="truncate">{title}</span> <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
       </CardHeader>
-      <CardContent className="space-y-1.5 max-h-[300px] overflow-auto">
+      <CardContent className="space-y-1.5 max-h-[300px] overflow-y-auto overflow-x-hidden px-3 sm:px-6">
         {loading && clients.length === 0 && <>
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
@@ -1149,16 +1180,20 @@ function QueueGroup({
           <button
             key={c.user_id}
             onClick={() => onSelect(c.user_id)}
-            className={`w-full text-left p-2.5 rounded-md border text-sm transition-colors ${selectedId === c.user_id ? "border-[#ffb500] bg-amber-50" : "hover:bg-muted/40"}`}
+            className={`w-full min-w-0 block text-left p-2.5 rounded-md border text-sm transition-colors ${selectedId === c.user_id ? "border-[#ffb500] bg-amber-50" : "hover:bg-muted/40"}`}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-medium truncate">{c.full_name}</span>
-              <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs`}>{c.score}/10</Badge>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="font-medium truncate min-w-0">{c.full_name}</span>
+              <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs shrink-0`}>{c.score}/10</Badge>
             </div>
+            {c.referral_ask && (
+              <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+            )}
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
           </button>
         ))}
       </CardContent>
+
     </Card>
   )
 }
