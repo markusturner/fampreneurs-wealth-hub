@@ -43,14 +43,22 @@ function outreachTopic(c: ClientScore): string {
   const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
   const has = (re: RegExp) => re.test(labels)
 
-  if (has(/fathom|transcript/)) return "No accountability-call attendance on record — personally invite them to this week's call."
-  if (has(/attendance|missed.*call|no.*call/)) return "Missing coaching calls — ask what's blocking them and offer a 1:1 catch-up."
+  // Logged attendance always wins over Fathom transcript guesses
+  const attended = /attended \d+ call/.test(labels)
+  const staleCall = /last coaching call \d+d ago/.test(labels)
+
+  if (staleCall) return "Hasn't been on a call in a while — personally invite them to this week's call."
+  if (!attended) {
+    if (has(/no accountability|no coaching call|no attendance|missed.*call/)) return "No accountability-call attendance on record — personally invite them to this week's call."
+    if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
+  }
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
   if (has(/trust|document/)) return "Trust paperwork is stalled — offer to walk through the next document together."
   if (has(/succession/)) return "Succession plan needs attention — nudge them to finish the next step."
   if (has(/payment|overdue|invoice/)) return "Payment is overdue — reach out about getting the account current."
   if (has(/renewal|tenure|contract/)) return "Renewal window is close — book a strategy call to lock in the next term."
   if (has(/inactive|no activity|quiet|login/)) return "No recent activity — send a personal check-in to see how they're doing."
+
 
   switch (c.status) {
     case "at_risk": return "Gone quiet — send a warm personal check-in and offer a no-pressure 15-min call."
