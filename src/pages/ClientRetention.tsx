@@ -1043,7 +1043,7 @@ export default function ClientRetention() {
                     </div>
                   )}
                 </div>
-              </CardHeader>
+              </DialogHeader>
 
 
 
