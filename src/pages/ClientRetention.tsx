@@ -728,6 +728,19 @@ export default function ClientRetention() {
     }
   }
 
+  // Auto-write the save-play message as soon as a client is selected
+  const autoDraftedFor = useRef<string | null>(null)
+  useEffect(() => {
+    if (!selected || !selectedId) return
+    if (autoDraftedFor.current === selectedId) return
+    if (selected.draft && selected.draft.trim()) { autoDraftedFor.current = selectedId; return }
+    autoDraftedFor.current = selectedId
+    handleDraft()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, selected?.status])
+
+
+
   const handleSend = async () => {
     if (!selected || !draft.trim()) return
     if (!selected.email) {
