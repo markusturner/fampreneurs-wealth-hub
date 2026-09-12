@@ -34,7 +34,17 @@ interface ClientScore {
   last_active_at: string | null
   linked_users?: { user_id: string; full_name: string }[]
   draft?: string
+  trust_done?: boolean
+  referral_ask?: boolean
 }
+
+// Expansion Ready is reserved for clients who actually finished their trusts.
+function hasTrustDone(c: ClientScore): boolean {
+  const labels = c.signals.map((s) => s.label.toLowerCase()).join(" | ")
+  if (/all 3 trusts completed|assets funded into trust/.test(labels)) return true
+  return /\b(3|three|all)\s+trusts?\b[^|]*\b(complete|completed|done|signed|finished|funded)\b/.test(labels)
+}
+
 
 const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v5"
 
