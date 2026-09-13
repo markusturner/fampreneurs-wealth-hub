@@ -118,8 +118,8 @@ function milestoneBadge(startDate?: string | null): { label: string; due: boolea
     if (days >= m && days <= m + 6) return { label: `${m}-day check-in`, due: true }
   }
   const next = MILESTONES.find((m) => m > days)
-  if (next) return { label: `Day ${days} · ${next}-day in ${next - days}d`, due: false }
-  return { label: `Day ${days}`, due: false }
+  if (next) return { label: `${next}-day in ${next - days}d`, due: false }
+  return null
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
