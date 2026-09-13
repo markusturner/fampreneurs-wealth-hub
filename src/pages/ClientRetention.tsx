@@ -584,11 +584,17 @@ export default function ClientRetention() {
   const loadStartDates = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("user_id, contract_start_date")
+      .select("id, user_id, contract_start_date")
       .not("contract_start_date", "is", null)
     if (error) { console.error("start dates", error); return }
     const map: Record<string, string> = {}
-    ;(data ?? []).forEach((r: any) => { if (r.user_id && r.contract_start_date) map[r.user_id] = r.contract_start_date })
+    ;(data ?? []).forEach((r: any) => {
+      if (!r.contract_start_date) return
+      // Health results currently identify clients by profile ID, while other
+      // retention records use auth user ID. Support both so every client matches.
+      if (r.id) map[r.id] = r.contract_start_date
+      if (r.user_id) map[r.user_id] = r.contract_start_date
+    })
     setStartDates(map)
   }
 
