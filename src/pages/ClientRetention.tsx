@@ -1015,6 +1015,15 @@ export default function ClientRetention() {
                             {c.referral_ask && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
+                            {(() => {
+                              const m = milestoneBadge(startDates[c.user_id])
+                              if (!m) return null
+                              return (
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                                  {m.due ? "⏰ " : ""}{m.label}
+                                </span>
+                              )
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
