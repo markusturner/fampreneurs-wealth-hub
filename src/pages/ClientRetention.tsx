@@ -1457,8 +1457,9 @@ function QueueGroup({
 }: {
   status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
 }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
   return (
-    <section className="min-w-[260px] flex-1 rounded-md bg-muted/35 p-2.5">
+    <section ref={setNodeRef} className={`min-w-[260px] flex-1 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
       <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
         {icon}
         <h3 className="min-w-0 truncate text-xs font-semibold">{title}</h3>
@@ -1471,45 +1472,49 @@ function QueueGroup({
         </>}
         {!loading && clients.length === 0 && <p className="px-2 py-4 text-xs text-muted-foreground">No clients in this group.</p>}
 
-        {clients.map((c) => (
-          <button
-            key={c.user_id}
-            onClick={() => onSelect(c.user_id)}
-            className={`block w-full min-w-0 rounded-md border bg-card p-3 text-left text-sm shadow-sm transition-all hover:-translate-y-px hover:shadow-md ${selectedId === c.user_id ? "border-secondary ring-1 ring-secondary" : "border-border hover:border-accent/50"}`}
-          >
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-medium truncate min-w-0">{c.full_name}</span>
-              <span className={`shrink-0 text-xs font-semibold ${STATUS_META[c.status].color}`}>{c.score}/10</span>
-            </div>
-            <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(c)}</p>
-            <div className="mt-2 flex items-center gap-1 flex-wrap">
-              {c.program && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-primary/10 text-primary-foreground">{programShortLabel(c.program)}</span>
-              )}
-              {c.status === "expansion_ready" && upsellInfo(c) && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-accent/15 text-foreground">Upsell → {upsellInfo(c)?.target}</span>
-              )}
-              {c.referral_ask && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-secondary/20 text-foreground">Ask for referral</span>
-              )}
-              {(() => {
-                const m = milestoneBadge(c.contract_start_date ?? startDates?.[c.user_id])
-                if (!m) return null
-                return (
-                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${m.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>
-                    {m.due ? "⏰ " : ""}{m.label}
-                  </span>
-                )
-              })()}
-            </div>
-            {c.status === "expansion_ready" && upsellInfo(c) && (
-              <p className="mt-1.5 text-[10px] font-medium text-foreground">
-                Opportunity cost: ${upsellInfo(c)?.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)?.target})
-              </p>
-            )}
-          </button>
-        ))}
+        <SortableContext items={clients.map((client) => client.user_id)} strategy={verticalListSortingStrategy}>
+          {clients.map((client) => (
+            <SortableClientCard key={client.user_id} client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+          ))}
+        </SortableContext>
       </div>
     </section>
+  )
+}
+
+function SortableClientCard({ client, selected, onSelect, startDate }: { client: ClientScore; selected: boolean; onSelect: (id: string) => void; startDate?: string | null }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: client.user_id })
+  const milestone = milestoneBadge(startDate)
+  return (
+    <article
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`relative w-full min-w-0 rounded-md border bg-card p-3 text-sm shadow-sm transition-shadow hover:shadow-md ${isDragging ? "z-20 opacity-60 shadow-lg" : ""} ${selected ? "border-secondary ring-1 ring-secondary" : "border-border hover:border-accent/50"}`}
+    >
+      <button
+        type="button"
+        aria-label={`Drag ${client.full_name}`}
+        title="Drag client"
+        className="absolute right-2 top-2 touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <button type="button" onClick={() => onSelect(client.user_id)} className="block w-full pr-7 text-left">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <span className="min-w-0 truncate font-medium">{client.full_name}</span>
+          <span className={`shrink-0 text-xs font-semibold ${STATUS_META[client.status].color}`}>{client.score}/10</span>
+        </div>
+        <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(client)}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
+          {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
+          {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
+          {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
+        </div>
+        {client.status === "expansion_ready" && upsellInfo(client) && <p className="mt-1.5 text-[10px] font-medium text-foreground">Opportunity cost: ${upsellInfo(client)?.cost.toLocaleString()} ({programShortLabel(client.program)} → {upsellInfo(client)?.target})</p>}
+      </button>
+    </article>
   )
 }
