@@ -8,6 +8,7 @@ interface ClientScore {
   full_name: string
   email: string
   program: string | null
+  contract_start_date: string | null
   score: number
   status: 'at_risk' | 'slipping' | 'stable' | 'expansion_ready'
   signals: Signal[]
@@ -373,7 +374,7 @@ Deno.serve(async (req) => {
     // Active non-Lite clients
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, user_id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
+      .select('id, user_id, first_name, last_name, display_name, email, program_name, contract_start_date, created_at, needs_profile_completion, membership_type, linked_user_ids')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
@@ -679,6 +680,7 @@ Deno.serve(async (req) => {
         email: p.email,
         program: programKey,
         program_name: p.program_name ?? null,
+        contract_start_date: p.contract_start_date ?? null,
         score,
         status,
         signals,

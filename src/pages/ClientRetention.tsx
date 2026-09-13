@@ -31,6 +31,7 @@ interface ClientScore {
   email: string
   program: string | null
   program_name?: string | null
+  contract_start_date?: string | null
   score: number
   status: Status
   signals: { label: string; severity?: string }[]
@@ -1022,7 +1023,7 @@ export default function ClientRetention() {
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
                             {(() => {
-                              const m = milestoneBadge(startDates[c.user_id])
+                const m = milestoneBadge(c.contract_start_date ?? startDates[c.user_id])
                               if (!m) return null
                               return (
                                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
@@ -1076,7 +1077,7 @@ export default function ClientRetention() {
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
                       {(() => {
-                        const m = milestoneBadge(startDates[selected.user_id])
+                        const m = milestoneBadge(selected.contract_start_date ?? startDates[selected.user_id])
                         if (!m) return null
                         return (
                           <Badge className={`border-none ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
@@ -1354,7 +1355,7 @@ function QueueGroup({
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
               )}
               {(() => {
-                const m = milestoneBadge(startDates?.[c.user_id])
+                const m = milestoneBadge(c.contract_start_date ?? startDates?.[c.user_id])
                 if (!m) return null
                 return (
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
