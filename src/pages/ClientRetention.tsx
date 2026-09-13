@@ -12,18 +12,23 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { DndContext, DragEndEvent, PointerSensor, closestCorners, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
+type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
+type SortDirection = "asc" | "desc"
 
 interface ClientScore {
   user_id: string
@@ -130,6 +135,8 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   expansion_ready: { label: "Expansion Ready", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
 }
 
+const STATUS_ORDER: Record<Status, number> = { at_risk: 0, slipping: 1, stable: 2, expansion_ready: 3 }
+
 export default function ClientRetention() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -183,8 +190,12 @@ export default function ClientRetention() {
   const [savingNote, setSavingNote] = useState(false)
   const [startDates, setStartDates] = useState<Record<string, string>>({})
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
+  const [sortField, setSortField] = useState<SortField>("custom")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [boardOrder, setBoardOrder] = useState<string[]>([])
   const isMobile = useIsMobile()
   const effectiveView = isMobile ? "table" : viewMode
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
   useEffect(() => {
     if (!user) return
@@ -193,6 +204,23 @@ export default function ClientRetention() {
       navigate("/dashboard", { replace: true })
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
+
+  useEffect(() => {
+    if ((!isAdmin && !isOwner) || roleLoading || ownerLoading) return
+    supabase
+      .from("platform_settings")
+      .select("setting_value")
+      .eq("setting_key", "client_retention_board_order")
+      .maybeSingle()
+      .then(({ data }) => {
+        const raw = data?.setting_value
+        let saved: unknown = raw
+        if (typeof raw === "string") {
+          try { saved = JSON.parse(raw) } catch { saved = [] }
+        }
+        if (Array.isArray(saved)) setBoardOrder(saved.filter((id): id is string => typeof id === "string"))
+      })
+  }, [isAdmin, isOwner, roleLoading, ownerLoading])
 
   // Parse free-text notes to derive positive dimension boosts so the score adapts.
   // Each match adds a positive signal and removes stale negative signals for that dimension.
@@ -784,6 +812,85 @@ export default function ClientRetention() {
     return { buckets, avg, active, inactive }
   }, [clients])
 
+  const sortedClients = useMemo(() => {
+    const orderIndex = new Map(boardOrder.map((id, index) => [id, index]))
+    const value = (client: ClientScore): string | number => {
+      if (sortField === "name") return client.full_name.toLowerCase()
+      if (sortField === "status") return STATUS_ORDER[client.status]
+      if (sortField === "program") return programShortLabel(client.program).toLowerCase()
+      if (sortField === "score") return client.score
+      if (sortField === "focus") return outreachTopic(client).toLowerCase()
+      return orderIndex.get(client.user_id) ?? Number.MAX_SAFE_INTEGER
+    }
+    return [...clients].sort((a, b) => {
+      const av = value(a)
+      const bv = value(b)
+      const comparison = typeof av === "number" && typeof bv === "number"
+        ? av - bv
+        : String(av).localeCompare(String(bv))
+      if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison
+      return a.full_name.localeCompare(b.full_name)
+    })
+  }, [clients, boardOrder, sortField, sortDirection])
+
+  const sortedBuckets = useMemo(() => {
+    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
+    sortedClients.forEach((client) => buckets[client.status].push(client))
+    return buckets
+  }, [sortedClients])
+
+  const saveBoardOrder = async (order: string[]) => {
+    const { error } = await supabase.from("platform_settings").upsert(
+      [{ setting_key: "client_retention_board_order", setting_value: JSON.stringify(order), updated_by: user?.id, description: "Custom Client Retention board order" }],
+      { onConflict: "setting_key" },
+    )
+    if (error) toast.error("Couldn't save the new card order")
+  }
+
+  const handleBoardDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over) return
+    const activeId = String(active.id)
+    const overId = String(over.id)
+    const moving = clients.find((client) => client.user_id === activeId)
+    if (!moving) return
+    const overClient = clients.find((client) => client.user_id === overId)
+    const targetStatus = overId.startsWith("column:") ? overId.slice(7) as Status : overClient?.status
+    if (!targetStatus) return
+
+    const allIds = [...boardOrder.filter((id) => clients.some((client) => client.user_id === id)), ...clients.map((client) => client.user_id).filter((id) => !boardOrder.includes(id))]
+    const withoutActive = allIds.filter((id) => id !== activeId)
+    let insertAt = overClient ? withoutActive.indexOf(overId) : withoutActive.length
+    if (!overClient) {
+      const targetIds = withoutActive.filter((id) => clients.find((client) => client.user_id === id)?.status === targetStatus)
+      const lastTarget = targetIds.at(-1)
+      insertAt = lastTarget ? withoutActive.indexOf(lastTarget) + 1 : withoutActive.length
+    }
+    const nextOrder = [...withoutActive]
+    nextOrder.splice(Math.max(0, insertAt), 0, activeId)
+    setBoardOrder(nextOrder)
+    setSortField("custom")
+
+    if (moving.status !== targetStatus) {
+      const previousClients = clients
+      const existing = notesMap[moving.user_id] ?? { entries: [], status_override: null }
+      const nextMap = { ...notesMap, [moving.user_id]: { ...existing, status_override: targetStatus } }
+      setNotesMap(nextMap)
+      setClients((current) => current.map((client) => client.user_id === activeId ? { ...client, status: targetStatus } : client))
+      const { error } = await supabase.from("client_retention_notes").upsert(
+        { user_id: moving.user_id, note: "", status_override: targetStatus, updated_by: user?.id ?? null },
+        { onConflict: "user_id" },
+      )
+      if (error) {
+        setClients(previousClients)
+        setNotesMap(notesMap)
+        toast.error("Couldn't move this client to the new stage")
+        return
+      }
+      await logChange(moving.user_id, moving, { ...moving, status: targetStatus }, `Moved card to ${STATUS_META[targetStatus].label}`)
+    }
+    await saveBoardOrder(nextOrder)
+  }
+
   const handleDraft = async () => {
     if (!selected) return
     setDrafting(true)
@@ -965,9 +1072,34 @@ export default function ClientRetention() {
 
         {/* TODAY */}
         <div className="mt-4">
-          <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
             <h2 className="text-base font-semibold">Client Queue</h2>
-            <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-white p-0.5">
+            <div className="flex items-center gap-2 ml-auto">
+              <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs" aria-label="Sort clients">
+                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                  <SelectValue placeholder="Sort clients" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="custom">Custom order</SelectItem>
+                  <SelectItem value="name">Client name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="program">Program</SelectItem>
+                  <SelectItem value="score">Score</SelectItem>
+                  <SelectItem value="focus">Focus</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+                title={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+                onClick={() => setSortDirection((direction) => direction === "asc" ? "desc" : "asc")}
+              >
+                <ArrowUpDown className={`h-3.5 w-3.5 transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+              </Button>
+            <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-card p-0.5">
               <button
                 onClick={() => setViewMode("board")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${effectiveView === "board" ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
@@ -981,15 +1113,18 @@ export default function ClientRetention() {
                 <TableIcon className="h-3.5 w-3.5" /> Table
               </button>
             </div>
+            </div>
           </div>
 
           {effectiveView === "board" ? (
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-              <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
+              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+                <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              </div>
+            </DndContext>
           ) : (
             <Card className="min-w-0 overflow-hidden">
               <CardContent className="p-0 overflow-x-auto">
@@ -1007,7 +1142,7 @@ export default function ClientRetention() {
                     {loading && clients.length === 0 && (
                       <TableRow><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>
                     )}
-                    {(["at_risk","slipping","stable","expansion_ready"] as Status[]).flatMap((s) => stats.buckets[s]).map((c) => (
+                    {sortedClients.map((c) => (
                       <TableRow
                         key={c.user_id}
                         onClick={() => setSelectedId(c.user_id)}
@@ -1322,8 +1457,9 @@ function QueueGroup({
 }: {
   status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
 }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
   return (
-    <section className="min-w-[260px] flex-1 rounded-md bg-muted/35 p-2.5">
+    <section ref={setNodeRef} className={`min-w-[260px] flex-1 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
       <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
         {icon}
         <h3 className="min-w-0 truncate text-xs font-semibold">{title}</h3>
@@ -1336,45 +1472,49 @@ function QueueGroup({
         </>}
         {!loading && clients.length === 0 && <p className="px-2 py-4 text-xs text-muted-foreground">No clients in this group.</p>}
 
-        {clients.map((c) => (
-          <button
-            key={c.user_id}
-            onClick={() => onSelect(c.user_id)}
-            className={`block w-full min-w-0 rounded-md border bg-card p-3 text-left text-sm shadow-sm transition-all hover:-translate-y-px hover:shadow-md ${selectedId === c.user_id ? "border-secondary ring-1 ring-secondary" : "border-border hover:border-accent/50"}`}
-          >
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-medium truncate min-w-0">{c.full_name}</span>
-              <span className={`shrink-0 text-xs font-semibold ${STATUS_META[c.status].color}`}>{c.score}/10</span>
-            </div>
-            <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(c)}</p>
-            <div className="mt-2 flex items-center gap-1 flex-wrap">
-              {c.program && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-primary/10 text-primary-foreground">{programShortLabel(c.program)}</span>
-              )}
-              {c.status === "expansion_ready" && upsellInfo(c) && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-accent/15 text-foreground">Upsell → {upsellInfo(c)?.target}</span>
-              )}
-              {c.referral_ask && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-secondary/20 text-foreground">Ask for referral</span>
-              )}
-              {(() => {
-                const m = milestoneBadge(c.contract_start_date ?? startDates?.[c.user_id])
-                if (!m) return null
-                return (
-                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${m.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>
-                    {m.due ? "⏰ " : ""}{m.label}
-                  </span>
-                )
-              })()}
-            </div>
-            {c.status === "expansion_ready" && upsellInfo(c) && (
-              <p className="mt-1.5 text-[10px] font-medium text-foreground">
-                Opportunity cost: ${upsellInfo(c)?.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)?.target})
-              </p>
-            )}
-          </button>
-        ))}
+        <SortableContext items={clients.map((client) => client.user_id)} strategy={verticalListSortingStrategy}>
+          {clients.map((client) => (
+            <SortableClientCard key={client.user_id} client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+          ))}
+        </SortableContext>
       </div>
     </section>
+  )
+}
+
+function SortableClientCard({ client, selected, onSelect, startDate }: { client: ClientScore; selected: boolean; onSelect: (id: string) => void; startDate?: string | null }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: client.user_id })
+  const milestone = milestoneBadge(startDate)
+  return (
+    <article
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`relative w-full min-w-0 rounded-md border bg-card p-3 text-sm shadow-sm transition-shadow hover:shadow-md ${isDragging ? "z-20 opacity-60 shadow-lg" : ""} ${selected ? "border-secondary ring-1 ring-secondary" : "border-border hover:border-accent/50"}`}
+    >
+      <button
+        type="button"
+        aria-label={`Drag ${client.full_name}`}
+        title="Drag client"
+        className="absolute right-2 top-2 touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <button type="button" onClick={() => onSelect(client.user_id)} className="block w-full pr-7 text-left">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <span className="min-w-0 truncate font-medium">{client.full_name}</span>
+          <span className={`shrink-0 text-xs font-semibold ${STATUS_META[client.status].color}`}>{client.score}/10</span>
+        </div>
+        <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(client)}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
+          {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
+          {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
+          {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
+        </div>
+        {client.status === "expansion_ready" && upsellInfo(client) && <p className="mt-1.5 text-[10px] font-medium text-foreground">Opportunity cost: ${upsellInfo(client)?.cost.toLocaleString()} ({programShortLabel(client.program)} → {upsellInfo(client)?.target})</p>}
+      </button>
+    </article>
   )
 }
