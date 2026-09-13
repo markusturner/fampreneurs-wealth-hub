@@ -612,7 +612,6 @@ export default function ClientRetention() {
       if (list.length > 0) {
         applyClients(list)
         setLoading(false)
-        try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: list })) } catch {}
         return true
       }
     } catch {}
