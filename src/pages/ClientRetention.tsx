@@ -234,7 +234,8 @@ export default function ClientRetention() {
     const addedSignals: { label: string; severity?: string }[] = []
     const drop = { attendance: false, community: false, trust: false, succession: false, response: false, fathom: false }
     let forceExpansion = false
-    const referralConverted = has(/\b(already\s+)?referred\b[^|.]{0,60}\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
+    const referralConverted = has(/\balready\s+referred\s+(me|my|us|our)\b/) ||
+                              has(/\b(already\s+)?referred\b[^|.]{0,60}\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
                               has(/\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(they|he|she)\s+referred\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
                               has(/\b(successful|paid|converted|closed)\s+referral\b/)
 
@@ -700,7 +701,19 @@ export default function ClientRetention() {
     toast.success(next ? "Autopilot ON — daily sends enabled" : "Autopilot OFF")
   }
 
-  const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
+  // The newest saved history entry is the final score/status from the latest note action.
+  // Use it everywhere so cards, tables, dialogs, and history always agree.
+  const displayClients = useMemo(() => clients.map((client) => {
+    const latest = historyMap[client.user_id]?.[0]
+    if (!latest) return client
+    return {
+      ...client,
+      score: latest.new_score ?? client.score,
+      status: (latest.new_status as Status | null) ?? client.status,
+    }
+  }), [clients, historyMap])
+
+  const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
   // Zoom the trend chart to the actual range so real movement is visible
   const trendDomain = useMemo<[number, number]>(() => {
@@ -812,12 +825,12 @@ export default function ClientRetention() {
 
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
-    clients.forEach((c) => buckets[c.status].push(c))
-    const avg = clients.length ? (clients.reduce((s, c) => s + c.score, 0) / clients.length).toFixed(1) : "0.0"
-    const active = clients.filter((c) => c.last_active_at && (Date.now() - new Date(c.last_active_at).getTime()) / 86400000 <= 14).length
-    const inactive = clients.length - active
+    displayClients.forEach((c) => buckets[c.status].push(c))
+    const avg = displayClients.length ? (displayClients.reduce((s, c) => s + c.score, 0) / displayClients.length).toFixed(1) : "0.0"
+    const active = displayClients.filter((c) => c.last_active_at && (Date.now() - new Date(c.last_active_at).getTime()) / 86400000 <= 14).length
+    const inactive = displayClients.length - active
     return { buckets, avg, active, inactive }
-  }, [clients])
+  }, [displayClients])
 
   const sortedClients = useMemo(() => {
     const orderIndex = new Map(boardOrder.map((id, index) => [id, index]))
@@ -829,7 +842,7 @@ export default function ClientRetention() {
       if (sortField === "focus") return outreachTopic(client).toLowerCase()
       return orderIndex.get(client.user_id) ?? Number.MAX_SAFE_INTEGER
     }
-    return [...clients].sort((a, b) => {
+    return [...displayClients].sort((a, b) => {
       const av = value(a)
       const bv = value(b)
       const comparison = typeof av === "number" && typeof bv === "number"
@@ -838,7 +851,7 @@ export default function ClientRetention() {
       if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison
       return a.full_name.localeCompare(b.full_name)
     })
-  }, [clients, boardOrder, sortField, sortDirection])
+  }, [displayClients, boardOrder, sortField, sortDirection])
 
   const sortedBuckets = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
@@ -1165,7 +1178,7 @@ export default function ClientRetention() {
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
                             {c.referral_converted && (
-                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Paid referral sent</span>
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Successful referral</span>
                             )}
                             {(() => {
                 const m = milestoneBadge(c.contract_start_date ?? startDates[c.user_id])
@@ -1222,7 +1235,7 @@ export default function ClientRetention() {
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
                       {selected.referral_converted && (
-                        <Badge className="bg-emerald-100 text-emerald-700 border-none">Paid referral sent</Badge>
+                        <Badge className="bg-emerald-100 text-emerald-700 border-none">Successful referral</Badge>
                       )}
                       {(() => {
                         const m = milestoneBadge(selected.contract_start_date ?? startDates[selected.user_id])
@@ -1524,7 +1537,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
-          {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Paid referral sent</span>}
+          {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Successful referral</span>}
           {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
         </div>
         {client.status === "expansion_ready" && upsellInfo(client) && <p className="mt-1.5 text-[10px] font-medium text-foreground">Opportunity cost: ${upsellInfo(client)?.cost.toLocaleString()} ({programShortLabel(client.program)} → {upsellInfo(client)?.target})</p>}
