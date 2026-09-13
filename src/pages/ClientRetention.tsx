@@ -12,18 +12,23 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { DndContext, DragEndEvent, PointerSensor, closestCorners, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
+type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
+type SortDirection = "asc" | "desc"
 
 interface ClientScore {
   user_id: string
@@ -130,6 +135,8 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   expansion_ready: { label: "Expansion Ready", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
 }
 
+const STATUS_ORDER: Record<Status, number> = { at_risk: 0, slipping: 1, stable: 2, expansion_ready: 3 }
+
 export default function ClientRetention() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -183,8 +190,12 @@ export default function ClientRetention() {
   const [savingNote, setSavingNote] = useState(false)
   const [startDates, setStartDates] = useState<Record<string, string>>({})
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
+  const [sortField, setSortField] = useState<SortField>("custom")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [boardOrder, setBoardOrder] = useState<string[]>([])
   const isMobile = useIsMobile()
   const effectiveView = isMobile ? "table" : viewMode
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
   useEffect(() => {
     if (!user) return
@@ -193,6 +204,19 @@ export default function ClientRetention() {
       navigate("/dashboard", { replace: true })
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
+
+  useEffect(() => {
+    if ((!isAdmin && !isOwner) || roleLoading || ownerLoading) return
+    supabase
+      .from("platform_settings")
+      .select("setting_value")
+      .eq("setting_key", "client_retention_board_order")
+      .maybeSingle()
+      .then(({ data }) => {
+        const saved = data?.setting_value
+        if (Array.isArray(saved)) setBoardOrder(saved.filter((id): id is string => typeof id === "string"))
+      })
+  }, [isAdmin, isOwner, roleLoading, ownerLoading])
 
   // Parse free-text notes to derive positive dimension boosts so the score adapts.
   // Each match adds a positive signal and removes stale negative signals for that dimension.
@@ -783,6 +807,85 @@ export default function ClientRetention() {
     const inactive = clients.length - active
     return { buckets, avg, active, inactive }
   }, [clients])
+
+  const sortedClients = useMemo(() => {
+    const orderIndex = new Map(boardOrder.map((id, index) => [id, index]))
+    const value = (client: ClientScore): string | number => {
+      if (sortField === "name") return client.full_name.toLowerCase()
+      if (sortField === "status") return STATUS_ORDER[client.status]
+      if (sortField === "program") return programShortLabel(client.program).toLowerCase()
+      if (sortField === "score") return client.score
+      if (sortField === "focus") return outreachTopic(client).toLowerCase()
+      return orderIndex.get(client.user_id) ?? Number.MAX_SAFE_INTEGER
+    }
+    return [...clients].sort((a, b) => {
+      const av = value(a)
+      const bv = value(b)
+      const comparison = typeof av === "number" && typeof bv === "number"
+        ? av - bv
+        : String(av).localeCompare(String(bv))
+      if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison
+      return a.full_name.localeCompare(b.full_name)
+    })
+  }, [clients, boardOrder, sortField, sortDirection])
+
+  const sortedBuckets = useMemo(() => {
+    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
+    sortedClients.forEach((client) => buckets[client.status].push(client))
+    return buckets
+  }, [sortedClients])
+
+  const saveBoardOrder = async (order: string[]) => {
+    const { error } = await supabase.from("platform_settings").upsert(
+      [{ setting_key: "client_retention_board_order", setting_value: order, updated_by: user?.id, description: "Custom Client Retention board order" }],
+      { onConflict: "setting_key" },
+    )
+    if (error) toast.error("Couldn't save the new card order")
+  }
+
+  const handleBoardDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over) return
+    const activeId = String(active.id)
+    const overId = String(over.id)
+    const moving = clients.find((client) => client.user_id === activeId)
+    if (!moving) return
+    const overClient = clients.find((client) => client.user_id === overId)
+    const targetStatus = overId.startsWith("column:") ? overId.slice(7) as Status : overClient?.status
+    if (!targetStatus) return
+
+    const allIds = [...boardOrder.filter((id) => clients.some((client) => client.user_id === id)), ...clients.map((client) => client.user_id).filter((id) => !boardOrder.includes(id))]
+    const withoutActive = allIds.filter((id) => id !== activeId)
+    let insertAt = overClient ? withoutActive.indexOf(overId) : withoutActive.length
+    if (!overClient) {
+      const targetIds = withoutActive.filter((id) => clients.find((client) => client.user_id === id)?.status === targetStatus)
+      const lastTarget = targetIds.at(-1)
+      insertAt = lastTarget ? withoutActive.indexOf(lastTarget) + 1 : withoutActive.length
+    }
+    const nextOrder = [...withoutActive]
+    nextOrder.splice(Math.max(0, insertAt), 0, activeId)
+    setBoardOrder(nextOrder)
+    setSortField("custom")
+
+    if (moving.status !== targetStatus) {
+      const previousClients = clients
+      const existing = notesMap[moving.user_id] ?? { entries: [], status_override: null }
+      const nextMap = { ...notesMap, [moving.user_id]: { ...existing, status_override: targetStatus } }
+      setNotesMap(nextMap)
+      setClients((current) => current.map((client) => client.user_id === activeId ? { ...client, status: targetStatus } : client))
+      const { error } = await supabase.from("client_retention_notes").upsert(
+        { user_id: moving.user_id, note: "", status_override: targetStatus, updated_by: user?.id ?? null },
+        { onConflict: "user_id" },
+      )
+      if (error) {
+        setClients(previousClients)
+        setNotesMap(notesMap)
+        toast.error("Couldn't move this client to the new stage")
+        return
+      }
+      await logChange(moving.user_id, moving, { ...moving, status: targetStatus }, `Moved card to ${STATUS_META[targetStatus].label}`)
+    }
+    await saveBoardOrder(nextOrder)
+  }
 
   const handleDraft = async () => {
     if (!selected) return
