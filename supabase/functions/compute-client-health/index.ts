@@ -210,10 +210,10 @@ async function listFathomMeetings(): Promise<FathomListResult> {
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript: transcriptResult.text, summary, invitees,
+          transcript: transcriptResult.text, summary: summary.slice(0, 4000), invitees,
           speakers,
           share_url: m.share_url ?? m.url,
-          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`.slice(0, 4000),
           invitee_count: inviteeArr.length,
           external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
