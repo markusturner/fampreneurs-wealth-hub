@@ -1293,9 +1293,9 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  title, icon, clients, selectedId, onSelect, loading,
+  title, icon, clients, selectedId, onSelect, loading, startDates,
 }: {
-  title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean;
+  title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
 }) {
   return (
     <Card className="min-w-0 overflow-hidden">
