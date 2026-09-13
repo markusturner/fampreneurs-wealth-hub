@@ -97,6 +97,7 @@ function outreachTopic(c: ClientScore): string {
     if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
   }
   if (c.referral_converted) return "Thank them for the successful paid referral and keep strengthening the relationship."
+  if (c.referral_in_progress) return `They gave ${c.referrals_given ?? 1} referral${(c.referrals_given ?? 1) === 1 ? "" : "s"} that haven't closed yet — follow up and offer to help those folks get started.`
   if (c.referral_ask) return "Doing great but the trust isn't finished — ask them for a referral while you nudge the paperwork."
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
 
