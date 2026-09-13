@@ -818,6 +818,13 @@ export default function ClientRetention() {
     })
   }, [historyAdjustedClients, partnerProfiles])
 
+  // Cache the FINAL placed cards (notes, history and partner merges already applied)
+  // so a reload paints every card in its correct column immediately — no re-shuffle.
+  useEffect(() => {
+    if (loading || displayClients.length === 0) return
+    try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: displayClients })) } catch {}
+  }, [displayClients, loading])
+
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
   // Zoom the trend chart to the actual range so real movement is visible
