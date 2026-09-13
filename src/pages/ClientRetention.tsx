@@ -612,7 +612,6 @@ export default function ClientRetention() {
       if (list.length > 0) {
         applyClients(list)
         setLoading(false)
-        try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: list })) } catch {}
         return true
       }
     } catch {}
@@ -626,7 +625,6 @@ export default function ClientRetention() {
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
       applyClients(list)
-      try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: list })) } catch {}
     } catch (e: any) {
       if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
@@ -689,6 +687,9 @@ export default function ClientRetention() {
     loadClientProfiles()
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
+      // Already showing the saved board from the last visit: leave the cards where
+      // they are and refresh quietly, so nothing visibly jumps between columns.
+      if (cached) { loadHealth(true); return }
       loadCache().then((hadCache) => {
         // Cached data renders instantly — only run the expensive recompute when there is no cache.
         // Fresh data still arrives via the 60s silent refresh below.
@@ -819,6 +820,13 @@ export default function ClientRetention() {
       }
     })
   }, [historyAdjustedClients, partnerProfiles])
+
+  // Cache the FINAL placed cards (notes, history and partner merges already applied)
+  // so a reload paints every card in its correct column immediately — no re-shuffle.
+  useEffect(() => {
+    if (loading || displayClients.length === 0) return
+    try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: displayClients })) } catch {}
+  }, [displayClients, loading])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
