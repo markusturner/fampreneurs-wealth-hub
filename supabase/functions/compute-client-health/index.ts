@@ -273,12 +273,14 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
           transcript: transcriptResult.text || m.transcript,
           summary: summary || m.summary,
           speakers,
-          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`,
+          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`.slice(0, 4000),
         },
         complete,
         rateLimited,
       }
     })()
+    // Bound the isolate-level cache so long-running workers don't exhaust memory.
+    if (_fathomDetailsCache.size > 40) _fathomDetailsCache.clear()
     _fathomDetailsCache.set(m.id, task)
     return task
     }))
