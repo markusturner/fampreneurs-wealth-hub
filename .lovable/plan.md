@@ -11,7 +11,7 @@ Handle the middle case: a client gave referrals, but none have closed yet (e.g. 
 
 2. **Three referral badges instead of two**
    - `Ask for referral` (gold) — strong client, no referrals yet, trust not finished. Unchanged.
-   - `5 referrals in progress` (sky blue) — gave referrals, none closed yet. Replaces the "ask" badge so you follow up on the open ones instead of asking again.
+   - `Referral in progress` (sky blue) — gave referrals, none closed yet. Replaces the "ask" badge so you follow up on the open ones instead of asking again.
    - `Successful referral` (green) — at least one referral closed. Unchanged.
    - Badges show on board cards, table rows, and the client popup.
 
