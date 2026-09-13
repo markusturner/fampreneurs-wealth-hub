@@ -1268,6 +1268,9 @@ export default function ClientRetention() {
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
+                      {selected.referral_in_progress && (
+                        <Badge className="bg-[#2eb2ff]/20 text-[#0b5f8a] border-none">Referral in progress{selected.referrals_given ? ` (${selected.referrals_given})` : ""}</Badge>
+                      )}
                       {selected.referral_converted && (
                         <Badge className="bg-emerald-100 text-emerald-700 border-none">Successful referral</Badge>
                       )}
