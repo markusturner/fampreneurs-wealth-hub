@@ -50,6 +50,16 @@ interface ClientScore {
   referral_in_progress?: boolean
   referrals_given?: number
   referrals_closed?: number
+  is_partner_household?: boolean
+}
+
+interface PartnerProfile {
+  id: string
+  user_id: string
+  full_name: string
+  partner_group_id: string | null
+  program_contract_value: number
+  created_at: string
 }
 
 // Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
@@ -195,6 +205,7 @@ export default function ClientRetention() {
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
   const [startDates, setStartDates] = useState<Record<string, string>>({})
+  const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
@@ -646,27 +657,36 @@ export default function ClientRetention() {
     setTrend(trendArr)
   }
 
-  // Contract start dates from Admin > Users, used for the 30/45/60/75-day check-in badges
-  const loadStartDates = async () => {
+  // Client details from Admin > Users drive milestones and partner grouping here too.
+  const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, contract_start_date")
-      .not("contract_start_date", "is", null)
-    if (error) { console.error("start dates", error); return }
+      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, created_at")
+    if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
+    const profiles: PartnerProfile[] = []
     ;(data ?? []).forEach((r: any) => {
-      if (!r.contract_start_date) return
-      // Health results currently identify clients by profile ID, while other
-      // retention records use auth user ID. Support both so every client matches.
-      if (r.id) map[r.id] = r.contract_start_date
-      if (r.user_id) map[r.user_id] = r.contract_start_date
+      if (r.contract_start_date) {
+        // Health results can identify clients by profile ID or auth user ID.
+        if (r.id) map[r.id] = r.contract_start_date
+        if (r.user_id) map[r.user_id] = r.contract_start_date
+      }
+      profiles.push({
+        id: r.id,
+        user_id: r.user_id,
+        full_name: r.display_name || `${r.first_name || ""} ${r.last_name || ""}`.trim() || "Client",
+        partner_group_id: r.partner_group_id,
+        program_contract_value: Number(r.program_contract_value) || 0,
+        created_at: r.created_at,
+      })
     })
     setStartDates(map)
+    setPartnerProfiles(profiles)
   }
 
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    loadStartDates()
+    loadClientProfiles()
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
@@ -732,7 +752,7 @@ export default function ClientRetention() {
 
   // The newest saved history entry is the final score/status from the latest note action.
   // Use it everywhere so cards, tables, dialogs, and history always agree.
-  const displayClients = useMemo(() => clients.map((client) => {
+  const historyAdjustedClients = useMemo(() => clients.map((client) => {
     const latest = historyMap[client.user_id]?.[0]
     if (!latest) return client
     return {
@@ -741,6 +761,64 @@ export default function ClientRetention() {
       status: (latest.new_status as Status | null) ?? client.status,
     }
   }), [clients, historyMap])
+
+  // Partner links made in Admin > User Management represent one client household.
+  // Merge those accounts into one card while retaining every person's signals and attendance IDs.
+  const displayClients = useMemo(() => {
+    if (!partnerProfiles.length) return historyAdjustedClients
+
+    const profileByAlias = new Map<string, PartnerProfile>()
+    partnerProfiles.forEach((profile) => {
+      profileByAlias.set(profile.id, profile)
+      profileByAlias.set(profile.user_id, profile)
+    })
+    const grouped = new Map<string, ClientScore[]>()
+    historyAdjustedClients.forEach((client) => {
+      const profile = profileByAlias.get(client.user_id)
+      const key = profile?.partner_group_id ? `partners:${profile.partner_group_id}` : `client:${client.user_id}`
+      grouped.set(key, [...(grouped.get(key) ?? []), client])
+    })
+
+    return Array.from(grouped.entries()).map(([key, members]) => {
+      if (!key.startsWith("partners:")) return members[0]
+      const groupId = key.slice("partners:".length)
+      const groupProfiles = partnerProfiles.filter((profile) => profile.partner_group_id === groupId)
+      const primaryProfile = [...groupProfiles].sort((a, b) =>
+        b.program_contract_value - a.program_contract_value || new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )[0]
+      const primary = members.find((client) => {
+        const profile = profileByAlias.get(client.user_id)
+        return profile?.user_id === primaryProfile?.user_id
+      }) ?? members[0]
+      const names = groupProfiles.map((profile) => profile.full_name).filter(Boolean)
+      const linkedUsers = groupProfiles
+        .filter((profile) => profile.user_id !== primaryProfile?.user_id)
+        .map((profile) => ({ user_id: profile.user_id, full_name: profile.full_name }))
+      const signals = Array.from(new Map(members.flatMap((client) => client.signals).map((signal) => [signal.label, signal])).values())
+      const trustDone = members.some((client) => client.trust_done) || hasTrustDone({ ...primary, signals })
+      const score = trustDone ? Math.max(9, ...members.map((client) => client.score)) : Number((members.reduce((sum, client) => sum + client.score, 0) / members.length).toFixed(1))
+      const status = trustDone
+        ? "expansion_ready"
+        : members.reduce<Status>((lowest, client) => STATUS_ORDER[client.status] < STATUS_ORDER[lowest] ? client.status : lowest, primary.status)
+
+      return {
+        ...primary,
+        full_name: names.length ? names.join(" & ") : members.map((client) => client.full_name).join(" & "),
+        email: Array.from(new Set(members.map((client) => client.email).filter(Boolean))).join(" · "),
+        score,
+        status,
+        signals,
+        linked_users: Array.from(new Map([...(primary.linked_users ?? []), ...linkedUsers, ...members.filter((client) => client.user_id !== primary.user_id).map((client) => ({ user_id: client.user_id, full_name: client.full_name }))].map((linked) => [linked.user_id, linked])).values()),
+        trust_done: trustDone,
+        referral_ask: members.some((client) => client.referral_ask),
+        referral_converted: members.some((client) => client.referral_converted),
+        referral_in_progress: members.some((client) => client.referral_in_progress),
+        referrals_given: members.reduce((sum, client) => sum + (client.referrals_given ?? 0), 0),
+        referrals_closed: members.reduce((sum, client) => sum + (client.referrals_closed ?? 0), 0),
+        is_partner_household: groupProfiles.length > 1,
+      }
+    })
+  }, [historyAdjustedClients, partnerProfiles])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
@@ -1202,6 +1280,9 @@ export default function ClientRetention() {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="truncate max-w-[180px]">{c.full_name}</span>
+                            {c.is_partner_household && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Partners</span>
+                            )}
                             {c.status === "expansion_ready" && upsellInfo(c) && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
                             )}
@@ -1259,6 +1340,9 @@ export default function ClientRetention() {
                       {selected.program && (
                         <Badge className="bg-[#290a52]/10 text-[#290a52] border-none">{programShortLabel(selected.program)}</Badge>
                       )}
+                      {selected.is_partner_household && (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-none">Partners</Badge>
+                      )}
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
                       </Badge>
@@ -1290,7 +1374,7 @@ export default function ClientRetention() {
 
 
 
-              {selected && selected.linked_users && selected.linked_users.length > 0 && (
+              {selected && !selected.is_partner_household && selected.linked_users && selected.linked_users.length > 0 && (
                 <div className="px-6 -mt-2 mb-2 flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Linked:</span>
                   {selected.linked_users.map((lu) => {
@@ -1572,6 +1656,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
         <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(client)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-1">
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
+          {client.is_partner_household && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Partners</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
           {client.referral_in_progress && <span className="rounded bg-[#2eb2ff]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b5f8a]">Referral in progress{client.referrals_given ? ` (${client.referrals_given})` : ""}</span>}
