@@ -691,7 +691,7 @@ Deno.serve(async (req) => {
       // -------- Real-engagement override --------
       // The weighted score defaults to neutral when a dimension has no data,
       // which bunched every client into "slipping". Grade on actual recency.
-      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays]
+      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays, lastSurveyDays]
         .filter((d): d is number => typeof d === 'number')
       const mostRecent = recencies.length ? Math.min(...recencies) : null
       const activeDims = recencies.filter((d) => d <= 30).length
@@ -739,6 +739,8 @@ Deno.serve(async (req) => {
           last_succession_days: succDays,
           last_dm_days: dmDays,
           last_fathom_days: lastFathomDays,
+          last_survey_days: lastSurveyDays,
+          survey_rating: avgSurveyRating,
           fathom_meetings_found: myMeetings.length,
           drive_files_found: driveMatches.length,
           trust_completed_in_drive: trustCompletedInDrive ? 'yes' : 'no',
