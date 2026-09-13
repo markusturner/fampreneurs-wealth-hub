@@ -46,6 +46,7 @@ interface ClientScore {
   draft?: string
   trust_done?: boolean
   referral_ask?: boolean
+  referral_converted?: boolean
 }
 
 // Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
@@ -92,6 +93,7 @@ function outreachTopic(c: ClientScore): string {
     if (has(/no accountability|no coaching call|no attendance|missed.*call/)) return "No accountability-call attendance on record — personally invite them to this week's call."
     if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
   }
+  if (c.referral_converted) return "Thank them for the successful paid referral and keep strengthening the relationship."
   if (c.referral_ask) return "Doing great but the trust isn't finished — ask them for a referral while you nudge the paperwork."
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
 
@@ -232,6 +234,9 @@ export default function ClientRetention() {
     const addedSignals: { label: string; severity?: string }[] = []
     const drop = { attendance: false, community: false, trust: false, succession: false, response: false, fathom: false }
     let forceExpansion = false
+    const referralConverted = has(/\b(already\s+)?referred\b[^|.]{0,60}\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
+                              has(/\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(they|he|she)\s+referred\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
+                              has(/\b(successful|paid|converted|closed)\s+referral\b/)
 
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
@@ -282,11 +287,12 @@ export default function ClientRetention() {
     if (has(/\b(happy|loves|love it|excited|grateful|big win|breakthrough|expand|upgrade|referral)\b/)) {
       boosts.fathom = 8; addedSignals.push({ label: "✅ Note: positive sentiment", severity: "info" })
     }
+    if (referralConverted) addedSignals.push({ label: "✅ Note: successfully referred a paid client", severity: "info" })
     if (has(/\b(frustrat|upset|cancel|refund|leaving|quit|unhappy|complain)\b/)) {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion, capStable }
+    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
@@ -308,7 +314,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion, capStable } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
@@ -356,6 +362,7 @@ export default function ClientRetention() {
         ...c,
         score: nextScore,
         status: nextStatus,
+        referral_converted: referralConverted,
         signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
       }
     })
@@ -410,14 +417,14 @@ export default function ClientRetention() {
       const trustDone = hasTrustDone(c)
       // Keep the category in sync with the adjusted score unless it's manually overridden
       if (noteMap[c.user_id]?.status_override) {
-        return { ...c, trust_done: trustDone, referral_ask: !trustDone && c.status === "stable" && c.score >= 7.5 }
+        return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !trustDone && c.status === "stable" && c.score >= 7.5 }
       }
       let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
       // Only clients who finished their trusts belong in Expansion Ready.
       // Everyone else doing great becomes a referral ask instead.
       let referral = false
-      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = true }
-      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = true
+      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = !c.referral_converted }
+      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = !c.referral_converted
       return { ...c, status, trust_done: trustDone, referral_ask: referral }
     })
 
@@ -1157,6 +1164,9 @@ export default function ClientRetention() {
                             {c.referral_ask && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
+                            {c.referral_converted && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Paid referral sent</span>
+                            )}
                             {(() => {
                 const m = milestoneBadge(c.contract_start_date ?? startDates[c.user_id])
                               if (!m) return null
@@ -1210,6 +1220,9 @@ export default function ClientRetention() {
                       )}
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
+                      )}
+                      {selected.referral_converted && (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-none">Paid referral sent</Badge>
                       )}
                       {(() => {
                         const m = milestoneBadge(selected.contract_start_date ?? startDates[selected.user_id])
@@ -1511,6 +1524,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
+          {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Paid referral sent</span>}
           {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
         </div>
         {client.status === "expansion_ready" && upsellInfo(client) && <p className="mt-1.5 text-[10px] font-medium text-foreground">Opportunity cost: ${upsellInfo(client)?.cost.toLocaleString()} ({programShortLabel(client.program)} → {upsellInfo(client)?.target})</p>}
