@@ -242,6 +242,21 @@ export default function ClientRetention() {
                               has(/\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(they|he|she)\s+referred\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
                               has(/\b(successful|paid|converted|closed)\s+referral\b/)
 
+    // Count referrals given vs closed from notes — "gave me 5 referrals", "sent 2 referrals", "referred 3 people"
+    const referralGiven = (() => {
+      const m = text.match(/\b(gave|sent|passed|brought|referred)\s+(me|us)?\s*(\d+)\s+referrals?\b/) ||
+                 text.match(/\b(\d+)\s+referrals?\s+(given|sent|passed|brought|made)\b/) ||
+                 text.match(/\breferred\s+(\d+)\s+(people|families|clients)\b/)
+      return m ? parseInt(m[3] ?? m[1] ?? m[2] ?? "1", 10) : (has(/\b(gave|sent|passed|brought)\s+(me|us)?\s+(a\s+)?referrals?\b/) ? 1 : 0)
+    })()
+    const referralClosed = (() => {
+      const m = text.match(/\b(\d+)\s+referrals?\s+(paid|joined|enrolled|signed\s?up|converted|closed)\b/) ||
+                 text.match(/\b(paid|joined|enrolled|signed\s?up|converted|closed)\s+(\d+)\s+referrals?\b/) ||
+                 text.match(/\b(\d+)\s+of\s+(them|those|his|her|the)\s+referrals?\s+(paid|joined|enrolled|signed\s?up|converted|closed)\b/)
+      return m ? parseInt(m[1] ?? m[2] ?? "0", 10) : 0
+    })()
+    const referralInProgress = referralGiven > 0 && referralClosed < referralGiven
+
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
                            has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
