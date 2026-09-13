@@ -378,11 +378,20 @@ export default function ClientRetention() {
         else nextStatus = "at_risk"
       }
 
+      // Giving referrals (even unclosed) is engagement — small boost, capped below Expansion on its own
+      if (referralInProgress || referralGiven > 0) {
+        nextScore = Math.min(10, nextScore + 0.3)
+        if (!forceExpansion && !trustsCompleteReferral && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
+      }
+
       return {
         ...c,
         score: nextScore,
         status: nextStatus,
         referral_converted: referralConverted,
+        referral_in_progress: referralInProgress,
+        referrals_given: referralGiven,
+        referrals_closed: referralClosed,
         signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
       }
     })
