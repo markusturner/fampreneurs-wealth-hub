@@ -984,11 +984,11 @@ export default function ClientRetention() {
           </div>
 
           {effectiveView === "board" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup title="Ready for Expansion" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+              <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
             </div>
           ) : (
             <Card className="min-w-0 overflow-hidden">
@@ -1318,62 +1318,63 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  title, icon, clients, selectedId, onSelect, loading, startDates,
+  status, title, icon, clients, selectedId, onSelect, loading, startDates,
 }: {
-  title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
+  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
 }) {
   return (
-    <Card className="min-w-0 overflow-hidden">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">{icon} <span className="truncate">{title}</span> <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-1.5 max-h-[300px] overflow-y-auto overflow-x-hidden px-3 sm:px-6">
+    <section className="min-w-[260px] flex-1 rounded-md bg-muted/35 p-2.5">
+      <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
+        {icon}
+        <h3 className="min-w-0 truncate text-xs font-semibold">{title}</h3>
+        <span className="ml-auto rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{clients.length}</span>
+      </div>
+      <div className="space-y-2 max-h-[560px] min-h-[140px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-hide">
         {loading && clients.length === 0 && <>
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
         </>}
-        {!loading && clients.length === 0 && <p className="text-xs text-muted-foreground py-2">No clients in this group.</p>}
+        {!loading && clients.length === 0 && <p className="px-2 py-4 text-xs text-muted-foreground">No clients in this group.</p>}
 
         {clients.map((c) => (
           <button
             key={c.user_id}
             onClick={() => onSelect(c.user_id)}
-            className={`w-full min-w-0 block text-left p-2.5 rounded-md border text-sm transition-colors ${selectedId === c.user_id ? "border-[#ffb500] bg-amber-50" : "hover:bg-muted/40"}`}
+            className={`block w-full min-w-0 rounded-md border bg-card p-3 text-left text-sm shadow-sm transition-all hover:-translate-y-px hover:shadow-md ${selectedId === c.user_id ? "border-secondary ring-1 ring-secondary" : "border-border hover:border-accent/50"}`}
           >
             <div className="flex items-center justify-between gap-2 min-w-0">
               <span className="font-medium truncate min-w-0">{c.full_name}</span>
-              <Badge variant="outline" className={`${STATUS_META[c.status].color} border-current text-xs shrink-0`}>{c.score}/10</Badge>
+              <span className={`shrink-0 text-xs font-semibold ${STATUS_META[c.status].color}`}>{c.score}/10</span>
             </div>
-            <div className="flex items-center gap-1 mt-1 flex-wrap">
+            <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(c)}</p>
+            <div className="mt-2 flex items-center gap-1 flex-wrap">
               {c.program && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#290a52]/10 text-[#290a52]">{programShortLabel(c.program)}</span>
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-primary/10 text-primary-foreground">{programShortLabel(c.program)}</span>
               )}
               {c.status === "expansion_ready" && upsellInfo(c) && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-accent/15 text-foreground">Upsell → {upsellInfo(c)?.target}</span>
               )}
               {c.referral_ask && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-secondary/20 text-foreground">Ask for referral</span>
               )}
               {(() => {
                 const m = milestoneBadge(c.contract_start_date ?? startDates?.[c.user_id])
                 if (!m) return null
                 return (
-                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${m.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>
                     {m.due ? "⏰ " : ""}{m.label}
                   </span>
                 )
               })()}
             </div>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
             {c.status === "expansion_ready" && upsellInfo(c) && (
-              <p className="text-[10px] font-medium text-purple-700 mt-0.5">
-                Opportunity cost: ${upsellInfo(c)!.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)!.target})
+              <p className="mt-1.5 text-[10px] font-medium text-foreground">
+                Opportunity cost: ${upsellInfo(c)?.cost.toLocaleString()} ({programShortLabel(c.program)} → {upsellInfo(c)?.target})
               </p>
             )}
           </button>
         ))}
-      </CardContent>
-
-    </Card>
+      </div>
+    </section>
   )
 }
