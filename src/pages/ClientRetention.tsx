@@ -580,8 +580,21 @@ export default function ClientRetention() {
     setTrend(trendArr)
   }
 
+  // Contract start dates from Admin > Users, used for the 30/45/60/75-day check-in badges
+  const loadStartDates = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("user_id, contract_start_date")
+      .not("contract_start_date", "is", null)
+    if (error) { console.error("start dates", error); return }
+    const map: Record<string, string> = {}
+    ;(data ?? []).forEach((r: any) => { if (r.user_id && r.contract_start_date) map[r.user_id] = r.contract_start_date })
+    setStartDates(map)
+  }
+
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
+    loadStartDates()
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
