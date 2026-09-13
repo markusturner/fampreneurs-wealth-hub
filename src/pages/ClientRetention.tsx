@@ -951,7 +951,9 @@ export default function ClientRetention() {
           status: selected.status,
           signals: selected.referral_ask
             ? [...selected.signals, { label: "Referral ask: they are getting value but have NOT finished their trusts — ask for a referral, do not pitch an upgrade" }]
-            : selected.signals,
+            : selected.referral_in_progress
+              ? [...selected.signals, { label: `Referral in progress: they gave ${selected.referrals_given ?? 1} referral${(selected.referrals_given ?? 1) === 1 ? "" : "s"} but none closed yet — follow up to help those folks get started, do not ask for new referrals` }]
+              : selected.signals,
           program: selected.program,
         },
       })
