@@ -1069,6 +1069,15 @@ export default function ClientRetention() {
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
+                      {(() => {
+                        const m = milestoneBadge(startDates[selected.user_id])
+                        if (!m) return null
+                        return (
+                          <Badge className={`border-none ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                            {m.due ? "⏰ " : ""}{m.label}
+                          </Badge>
+                        )
+                      })()}
                     </div>
                   )}
                 </div>
