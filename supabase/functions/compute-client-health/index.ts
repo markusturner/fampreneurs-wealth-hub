@@ -629,15 +629,61 @@ Deno.serve(async (req) => {
         signals.push({ label: `Renewal window: ${daysToEnd}d to program end`, severity: 'info' })
       } else if (daysToEnd <= 60) tenureScore = 8
 
+      // -------- Survey fill-outs (weekly survey, check-ins, feedback) --------
+      let surveyScore = 6
+      const [surveySub, checkinRow, feedbackRow] = await Promise.all([
+        supabase.from('survey_submissions').select('submitted_at').in('user_id', actIds).order('submitted_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('weekly_checkin_responses').select('created_at').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('feedback_responses').select('created_at, overall_experience_rating, coach_response_rating').in('user_id', actIds).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      ])
+      const lastSurveyAt = [surveySub.data?.submitted_at, checkinRow.data?.created_at, feedbackRow.data?.created_at]
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] ?? null
+      const lastSurveyDays = daysSince(lastSurveyAt)
+      if (lastSurveyDays === null) {
+        surveyScore = 4
+        signals.push({ label: 'No survey or check-in submitted yet', severity: 'warn' })
+      } else if (lastSurveyDays > 45) {
+        surveyScore = 3
+        signals.push({ label: `No survey filled out in ${lastSurveyDays}d`, severity: 'critical' })
+      } else if (lastSurveyDays > 21) {
+        surveyScore = 5
+        signals.push({ label: `Last survey response ${lastSurveyDays}d ago`, severity: 'warn' })
+      } else if (lastSurveyDays > 10) {
+        surveyScore = 7
+      } else {
+        surveyScore = 9
+        signals.push({ label: `Survey filled out ${lastSurveyDays}d ago`, severity: 'info' })
+      }
+      // Ratings the client gave move the dimension up or down
+      const ratings = [feedbackRow.data?.overall_experience_rating, feedbackRow.data?.coach_response_rating]
+        .filter((r: any) => typeof r === 'number') as number[]
+      let avgSurveyRating: number | null = null
+      if (ratings.length) {
+        avgSurveyRating = Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+        if (avgSurveyRating <= 5) {
+          surveyScore = Math.min(surveyScore, 3)
+          signals.push({ label: `Survey rating is low (${avgSurveyRating}/10)`, severity: 'critical' })
+        } else if (avgSurveyRating <= 7) {
+          surveyScore = Math.min(surveyScore, 6)
+          signals.push({ label: `Survey rating is lukewarm (${avgSurveyRating}/10)`, severity: 'warn' })
+        } else {
+          surveyScore = Math.max(surveyScore, 9)
+          signals.push({ label: `Survey rating is strong (${avgSurveyRating}/10)`, severity: 'info' })
+        }
+      }
+
       // -------- Weighted score --------
       const raw =
         (attendanceScore * 0.20) +
-        (communityScore * 0.15) +
+        (communityScore * 0.12) +
         (trustScore * 0.20) +
-        (successionScore * 0.10) +
-        (responseScore * 0.10) +
-        (tenureScore * 0.10) +
-        (fathomScore * 0.15)
+        (successionScore * 0.08) +
+        (responseScore * 0.08) +
+        (tenureScore * 0.07) +
+        (fathomScore * 0.15) +
+        (surveyScore * 0.10)
 
       let score = Math.max(1, Math.min(10, Number(raw.toFixed(1))))
       if (score >= 7 && renewalWindow) score = Math.min(10, score + 1.5)
@@ -645,7 +691,7 @@ Deno.serve(async (req) => {
       // -------- Real-engagement override --------
       // The weighted score defaults to neutral when a dimension has no data,
       // which bunched every client into "slipping". Grade on actual recency.
-      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays]
+      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays, lastSurveyDays]
         .filter((d): d is number => typeof d === 'number')
       const mostRecent = recencies.length ? Math.min(...recencies) : null
       const activeDims = recencies.filter((d) => d <= 30).length
@@ -693,6 +739,8 @@ Deno.serve(async (req) => {
           last_succession_days: succDays,
           last_dm_days: dmDays,
           last_fathom_days: lastFathomDays,
+          last_survey_days: lastSurveyDays,
+          survey_rating: avgSurveyRating,
           fathom_meetings_found: myMeetings.length,
           drive_files_found: driveMatches.length,
           trust_completed_in_drive: trustCompletedInDrive ? 'yes' : 'no',
