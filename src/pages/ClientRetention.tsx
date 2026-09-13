@@ -625,7 +625,6 @@ export default function ClientRetention() {
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
       applyClients(list)
-      try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: list })) } catch {}
     } catch (e: any) {
       if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
