@@ -307,11 +307,12 @@ export default function ClientRetention() {
       boosts.fathom = 8; addedSignals.push({ label: "✅ Note: positive sentiment", severity: "info" })
     }
     if (referralConverted) addedSignals.push({ label: "✅ Note: successfully referred a paid client", severity: "info" })
+    if (referralInProgress && !referralConverted) addedSignals.push({ label: "✅ Note: gave referrals that haven't closed yet", severity: "info" })
     if (has(/\b(frustrat|upset|cancel|refund|leaving|quit|unhappy|complain)\b/)) {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted }
+    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
