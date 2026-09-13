@@ -47,6 +47,9 @@ interface ClientScore {
   trust_done?: boolean
   referral_ask?: boolean
   referral_converted?: boolean
+  referral_in_progress?: boolean
+  referrals_given?: number
+  referrals_closed?: number
 }
 
 // Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
