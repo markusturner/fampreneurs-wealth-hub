@@ -50,6 +50,7 @@ interface ClientScore {
   referral_in_progress?: boolean
   referrals_given?: number
   referrals_closed?: number
+  is_partner_household?: boolean
 }
 
 interface PartnerProfile {
@@ -814,6 +815,7 @@ export default function ClientRetention() {
         referral_in_progress: members.some((client) => client.referral_in_progress),
         referrals_given: members.reduce((sum, client) => sum + (client.referrals_given ?? 0), 0),
         referrals_closed: members.reduce((sum, client) => sum + (client.referrals_closed ?? 0), 0),
+        is_partner_household: groupProfiles.length > 1,
       }
     })
   }, [historyAdjustedClients, partnerProfiles])
@@ -1278,6 +1280,9 @@ export default function ClientRetention() {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="truncate max-w-[180px]">{c.full_name}</span>
+                            {c.is_partner_household && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Partners</span>
+                            )}
                             {c.status === "expansion_ready" && upsellInfo(c) && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">Upsell → {upsellInfo(c)!.target}</span>
                             )}
@@ -1334,6 +1339,9 @@ export default function ClientRetention() {
                     <div className="flex flex-wrap gap-1.5 shrink-0">
                       {selected.program && (
                         <Badge className="bg-[#290a52]/10 text-[#290a52] border-none">{programShortLabel(selected.program)}</Badge>
+                      )}
+                      {selected.is_partner_household && (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-none">Partners</Badge>
                       )}
                       <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
                         {STATUS_META[selected.status].label}
@@ -1648,6 +1656,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
         <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(client)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-1">
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
+          {client.is_partner_household && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Partners</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
           {client.referral_in_progress && <span className="rounded bg-[#2eb2ff]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b5f8a]">Referral in progress{client.referrals_given ? ` (${client.referrals_given})` : ""}</span>}
