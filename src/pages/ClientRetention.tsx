@@ -446,14 +446,14 @@ export default function ClientRetention() {
       const trustDone = hasTrustDone(c)
       // Keep the category in sync with the adjusted score unless it's manually overridden
       if (noteMap[c.user_id]?.status_override) {
-        return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !trustDone && c.status === "stable" && c.score >= 7.5 }
+        return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDone && c.status === "stable" && c.score >= 7.5 }
       }
       let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
       // Only clients who finished their trusts belong in Expansion Ready.
-      // Everyone else doing great becomes a referral ask instead.
+      // Everyone else doing great becomes a referral ask instead — unless they already gave referrals that haven't closed (follow up, don't re-ask).
       let referral = false
-      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = !c.referral_converted }
-      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = !c.referral_converted
+      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = !c.referral_converted && !c.referral_in_progress }
+      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = !c.referral_converted && !c.referral_in_progress
       return { ...c, status, trust_done: trustDone, referral_ask: referral }
     })
 
