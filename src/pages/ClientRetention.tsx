@@ -1374,7 +1374,7 @@ export default function ClientRetention() {
 
 
 
-              {selected && selected.linked_users && selected.linked_users.length > 0 && (
+              {selected && !selected.is_partner_household && selected.linked_users && selected.linked_users.length > 0 && (
                 <div className="px-6 -mt-2 mb-2 flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Linked:</span>
                   {selected.linked_users.map((lu) => {
