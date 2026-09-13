@@ -221,8 +221,8 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 
       cursor = json?.next_cursor ?? undefined
       pages++
-      } while (cursor && pages < 30)
-      complete = !requestFailed && !cursor
+      } while (cursor && pages < 30 && out.length < 150)
+      complete = !requestFailed && (!cursor || out.length >= 150)
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
