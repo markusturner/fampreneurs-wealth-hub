@@ -154,7 +154,7 @@ function transcriptToText(raw: any): { text: string; speakers: string; speakerEm
     if (speakerEmail) speakerEmailSet.add(speakerEmail)
     return `${sp}: ${t?.text ?? ''}`
   }).join('\n')
-  return { text: text.slice(0, 20000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+  return { text: text.slice(0, 6000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
 }
 
 function summaryToText(raw: any): string {
