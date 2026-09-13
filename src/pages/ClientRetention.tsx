@@ -358,6 +358,11 @@ export default function ClientRetention() {
         }
       })
       let nextScore = Math.min(10, Math.max(1, Number((c.score + scoreDelta).toFixed(1))))
+      // Giving referrals (even unclosed) is engagement — small boost, but never Expansion Ready on its own
+      if (referralInProgress || referralGiven > 0) {
+        nextScore = Math.min(10, nextScore + 0.3)
+        if (nextStatus !== "expansion_ready" && nextScore < 8.5) nextScore = Math.min(8.2, nextScore)
+      }
       // A strong positive note is first-hand evidence — it should lift them out of the low buckets
       const strongPositives = (Object.keys(boosts) as (keyof typeof boosts)[]).filter((k) => boosts[k] >= 9).length
       if (strongPositives >= 2) nextScore = Math.max(nextScore, 8.0)
