@@ -213,7 +213,11 @@ export default function ClientRetention() {
       .eq("setting_key", "client_retention_board_order")
       .maybeSingle()
       .then(({ data }) => {
-        const saved = data?.setting_value
+        const raw = data?.setting_value
+        let saved: unknown = raw
+        if (typeof raw === "string") {
+          try { saved = JSON.parse(raw) } catch { saved = [] }
+        }
         if (Array.isArray(saved)) setBoardOrder(saved.filter((id): id is string => typeof id === "string"))
       })
   }, [isAdmin, isOwner, roleLoading, ownerLoading])
@@ -837,7 +841,7 @@ export default function ClientRetention() {
 
   const saveBoardOrder = async (order: string[]) => {
     const { error } = await supabase.from("platform_settings").upsert(
-      [{ setting_key: "client_retention_board_order", setting_value: order, updated_by: user?.id, description: "Custom Client Retention board order" }],
+      [{ setting_key: "client_retention_board_order", setting_value: JSON.stringify(order), updated_by: user?.id, description: "Custom Client Retention board order" }],
       { onConflict: "setting_key" },
     )
     if (error) toast.error("Couldn't save the new card order")
@@ -1068,9 +1072,34 @@ export default function ClientRetention() {
 
         {/* TODAY */}
         <div className="mt-4">
-          <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
             <h2 className="text-base font-semibold">Client Queue</h2>
-            <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-white p-0.5">
+            <div className="flex items-center gap-2 ml-auto">
+              <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs" aria-label="Sort clients">
+                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                  <SelectValue placeholder="Sort clients" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="custom">Custom order</SelectItem>
+                  <SelectItem value="name">Client name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="program">Program</SelectItem>
+                  <SelectItem value="score">Score</SelectItem>
+                  <SelectItem value="focus">Focus</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+                title={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+                onClick={() => setSortDirection((direction) => direction === "asc" ? "desc" : "asc")}
+              >
+                <ArrowUpDown className={`h-3.5 w-3.5 transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+              </Button>
+            <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-card p-0.5">
               <button
                 onClick={() => setViewMode("board")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${effectiveView === "board" ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
@@ -1084,15 +1113,18 @@ export default function ClientRetention() {
                 <TableIcon className="h-3.5 w-3.5" /> Table
               </button>
             </div>
+            </div>
           </div>
 
           {effectiveView === "board" ? (
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-              <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-              <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
+              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+                <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              </div>
+            </DndContext>
           ) : (
             <Card className="min-w-0 overflow-hidden">
               <CardContent className="p-0 overflow-x-auto">
@@ -1110,7 +1142,7 @@ export default function ClientRetention() {
                     {loading && clients.length === 0 && (
                       <TableRow><TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell></TableRow>
                     )}
-                    {(["at_risk","slipping","stable","expansion_ready"] as Status[]).flatMap((s) => stats.buckets[s]).map((c) => (
+                    {sortedClients.map((c) => (
                       <TableRow
                         key={c.user_id}
                         onClick={() => setSelectedId(c.user_id)}
