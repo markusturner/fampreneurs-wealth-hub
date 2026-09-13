@@ -47,6 +47,9 @@ interface ClientScore {
   trust_done?: boolean
   referral_ask?: boolean
   referral_converted?: boolean
+  referral_in_progress?: boolean
+  referrals_given?: number
+  referrals_closed?: number
 }
 
 // Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
@@ -94,6 +97,7 @@ function outreachTopic(c: ClientScore): string {
     if (has(/fathom|transcript/) && has(/no .*(call|attendance)/)) return "No accountability-call attendance on record — personally invite them to this week's call."
   }
   if (c.referral_converted) return "Thank them for the successful paid referral and keep strengthening the relationship."
+  if (c.referral_in_progress) return `They gave ${c.referrals_given ?? 1} referral${(c.referrals_given ?? 1) === 1 ? "" : "s"} that haven't closed yet — follow up and offer to help those folks get started.`
   if (c.referral_ask) return "Doing great but the trust isn't finished — ask them for a referral while you nudge the paperwork."
   if (has(/community|post|comment|engag/)) return "Quiet in the community — tag them in a win thread or ask for a quick update post."
 
@@ -239,6 +243,21 @@ export default function ClientRetention() {
                               has(/\b(client|customer|family|person|someone)\b[^|.]{0,60}\b(they|he|she)\s+referred\b[^|.]{0,60}\b(paid|joined|enrolled|signed up|converted|closed)\b/) ||
                               has(/\b(successful|paid|converted|closed)\s+referral\b/)
 
+    // Count referrals given vs closed from notes — "gave me 5 referrals", "sent 2 referrals", "referred 3 people"
+    const referralGiven = (() => {
+      const m = text.match(/\b(gave|sent|passed|brought|referred)\s+(me|us)?\s*(\d+)\s+referrals?\b/) ||
+                 text.match(/\b(\d+)\s+referrals?\s+(given|sent|passed|brought|made)\b/) ||
+                 text.match(/\breferred\s+(\d+)\s+(people|families|clients)\b/)
+      return m ? parseInt(m[3] ?? m[1] ?? m[2] ?? "1", 10) : (has(/\b(gave|sent|passed|brought)\s+(me|us)?\s+(a\s+)?referrals?\b/) ? 1 : 0)
+    })()
+    const referralClosed = (() => {
+      const m = text.match(/\b(\d+)\s+referrals?\s+(paid|joined|enrolled|signed\s?up|converted|closed)\b/) ||
+                 text.match(/\b(paid|joined|enrolled|signed\s?up|converted|closed)\s+(\d+)\s+referrals?\b/) ||
+                 text.match(/\b(\d+)\s+of\s+(them|those|his|her|the)\s+referrals?\s+(paid|joined|enrolled|signed\s?up|converted|closed)\b/)
+      return m ? parseInt(m[1] ?? m[2] ?? "0", 10) : 0
+    })()
+    const referralInProgress = referralGiven > 0 && referralClosed < referralGiven
+
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
                            has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
@@ -289,11 +308,12 @@ export default function ClientRetention() {
       boosts.fathom = 8; addedSignals.push({ label: "✅ Note: positive sentiment", severity: "info" })
     }
     if (referralConverted) addedSignals.push({ label: "✅ Note: successfully referred a paid client", severity: "info" })
+    if (referralInProgress && !referralConverted) addedSignals.push({ label: "✅ Note: gave referrals that haven't closed yet", severity: "info" })
     if (has(/\b(frustrat|upset|cancel|refund|leaving|quit|unhappy|complain)\b/)) {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted }
+    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
@@ -315,7 +335,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
@@ -359,11 +379,20 @@ export default function ClientRetention() {
         else nextStatus = "at_risk"
       }
 
+      // Giving referrals (even unclosed) is engagement — small boost, capped below Expansion on its own
+      if (referralInProgress || referralGiven > 0) {
+        nextScore = Math.min(10, nextScore + 0.3)
+        if (!forceExpansion && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
+      }
+
       return {
         ...c,
         score: nextScore,
         status: nextStatus,
         referral_converted: referralConverted,
+        referral_in_progress: referralInProgress,
+        referrals_given: referralGiven,
+        referrals_closed: referralClosed,
         signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
       }
     })
@@ -418,14 +447,14 @@ export default function ClientRetention() {
       const trustDone = hasTrustDone(c)
       // Keep the category in sync with the adjusted score unless it's manually overridden
       if (noteMap[c.user_id]?.status_override) {
-        return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !trustDone && c.status === "stable" && c.score >= 7.5 }
+        return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDone && c.status === "stable" && c.score >= 7.5 }
       }
       let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
       // Only clients who finished their trusts belong in Expansion Ready.
-      // Everyone else doing great becomes a referral ask instead.
+      // Everyone else doing great becomes a referral ask instead — unless they already gave referrals that haven't closed (follow up, don't re-ask).
       let referral = false
-      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = !c.referral_converted }
-      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = !c.referral_converted
+      if (status === "expansion_ready" && !trustDone) { status = "stable"; referral = !c.referral_converted && !c.referral_in_progress }
+      else if (status === "stable" && c.score >= 7.5 && !trustDone) referral = !c.referral_converted && !c.referral_in_progress
       return { ...c, status, trust_done: trustDone, referral_ask: referral }
     })
 
@@ -922,7 +951,9 @@ export default function ClientRetention() {
           status: selected.status,
           signals: selected.referral_ask
             ? [...selected.signals, { label: "Referral ask: they are getting value but have NOT finished their trusts — ask for a referral, do not pitch an upgrade" }]
-            : selected.signals,
+            : selected.referral_in_progress
+              ? [...selected.signals, { label: `Referral in progress: they gave ${selected.referrals_given ?? 1} referral${(selected.referrals_given ?? 1) === 1 ? "" : "s"} but none closed yet — follow up to help those folks get started, do not ask for new referrals` }]
+              : selected.signals,
           program: selected.program,
         },
       })
@@ -1177,6 +1208,9 @@ export default function ClientRetention() {
                             {c.referral_ask && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
+                            {c.referral_in_progress && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#2eb2ff]/20 text-[#0b5f8a]">Referral in progress{c.referrals_given ? ` (${c.referrals_given})` : ""}</span>
+                            )}
                             {c.referral_converted && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Successful referral</span>
                             )}
@@ -1233,6 +1267,9 @@ export default function ClientRetention() {
                       )}
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
+                      )}
+                      {selected.referral_in_progress && (
+                        <Badge className="bg-[#2eb2ff]/20 text-[#0b5f8a] border-none">Referral in progress{selected.referrals_given ? ` (${selected.referrals_given})` : ""}</Badge>
                       )}
                       {selected.referral_converted && (
                         <Badge className="bg-emerald-100 text-emerald-700 border-none">Successful referral</Badge>
@@ -1537,6 +1574,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
+          {client.referral_in_progress && <span className="rounded bg-[#2eb2ff]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b5f8a]">Referral in progress{client.referrals_given ? ` (${client.referrals_given})` : ""}</span>}
           {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Successful referral</span>}
           {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
         </div>
