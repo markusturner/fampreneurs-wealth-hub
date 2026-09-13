@@ -104,6 +104,24 @@ function outreachTopic(c: ClientScore): string {
   }
 }
 
+// Check-in milestones counted from the contract start date set in Admin > Users
+const MILESTONES = [30, 45, 60, 75]
+
+function milestoneBadge(startDate?: string | null): { label: string; due: boolean } | null {
+  if (!startDate) return null
+  const start = new Date(startDate)
+  if (isNaN(start.getTime())) return null
+  const days = Math.floor((Date.now() - start.getTime()) / 86400000)
+  if (days < 0) return null
+  // Inside a milestone window (day of, up to 6 days after) = time to reach out
+  for (const m of MILESTONES) {
+    if (days >= m && days <= m + 6) return { label: `${m}-day check-in`, due: true }
+  }
+  const next = MILESTONES.find((m) => m > days)
+  if (next) return { label: `Day ${days} · ${next}-day in ${next - days}d`, due: false }
+  return { label: `Day ${days}`, due: false }
+}
+
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
@@ -162,6 +180,7 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
+  const [startDates, setStartDates] = useState<Record<string, string>>({})
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const isMobile = useIsMobile()
   const effectiveView = isMobile ? "table" : viewMode
@@ -561,8 +580,21 @@ export default function ClientRetention() {
     setTrend(trendArr)
   }
 
+  // Contract start dates from Admin > Users, used for the 30/45/60/75-day check-in badges
+  const loadStartDates = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("user_id, contract_start_date")
+      .not("contract_start_date", "is", null)
+    if (error) { console.error("start dates", error); return }
+    const map: Record<string, string> = {}
+    ;(data ?? []).forEach((r: any) => { if (r.user_id && r.contract_start_date) map[r.user_id] = r.contract_start_date })
+    setStartDates(map)
+  }
+
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
+    loadStartDates()
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
       loadCache().then((hadCache) => {
@@ -946,10 +978,10 @@ export default function ClientRetention() {
 
           {effectiveView === "board" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
-              <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
-              <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
-              <QueueGroup title="Ready for Expansion" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
+              <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup title="Slipping — Watch This Week" icon={<TrendingDown className="h-4 w-4 text-orange-600" />} clients={slippingList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup title="Healthy & Stable" icon={<Heart className="h-4 w-4 text-emerald-600" />} clients={stats.buckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+              <QueueGroup title="Ready for Expansion" icon={<TrendingUp className="h-4 w-4 text-purple-600" />} clients={expansionList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
             </div>
           ) : (
             <Card className="min-w-0 overflow-hidden">
@@ -983,6 +1015,15 @@ export default function ClientRetention() {
                             {c.referral_ask && (
                               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
                             )}
+                            {(() => {
+                              const m = milestoneBadge(startDates[c.user_id])
+                              if (!m) return null
+                              return (
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                                  {m.due ? "⏰ " : ""}{m.label}
+                                </span>
+                              )
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -1028,6 +1069,15 @@ export default function ClientRetention() {
                       {selected.referral_ask && (
                         <Badge className="bg-[#ffb500]/20 text-[#290a52] border-none">Ask for referral</Badge>
                       )}
+                      {(() => {
+                        const m = milestoneBadge(startDates[selected.user_id])
+                        if (!m) return null
+                        return (
+                          <Badge className={`border-none ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                            {m.due ? "⏰ " : ""}{m.label}
+                          </Badge>
+                        )
+                      })()}
                     </div>
                   )}
                 </div>
@@ -1261,9 +1311,9 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  title, icon, clients, selectedId, onSelect, loading,
+  title, icon, clients, selectedId, onSelect, loading, startDates,
 }: {
-  title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean;
+  title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
 }) {
   return (
     <Card className="min-w-0 overflow-hidden">
@@ -1297,6 +1347,15 @@ function QueueGroup({
               {c.referral_ask && (
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#ffb500]/20 text-[#290a52]">Ask for referral</span>
               )}
+              {(() => {
+                const m = milestoneBadge(startDates?.[c.user_id])
+                if (!m) return null
+                return (
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                    {m.due ? "⏰ " : ""}{m.label}
+                  </span>
+                )
+              })()}
             </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{outreachTopic(c)}</p>
             {c.status === "expansion_ready" && upsellInfo(c) && (
