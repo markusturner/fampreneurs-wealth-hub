@@ -154,7 +154,7 @@ function transcriptToText(raw: any): { text: string; speakers: string; speakerEm
     if (speakerEmail) speakerEmailSet.add(speakerEmail)
     return `${sp}: ${t?.text ?? ''}`
   }).join('\n')
-  return { text: text.slice(0, 20000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+  return { text: text.slice(0, 6000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
 }
 
 function summaryToText(raw: any): string {
@@ -210,10 +210,10 @@ async function listFathomMeetings(): Promise<FathomListResult> {
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript: transcriptResult.text, summary, invitees,
+          transcript: transcriptResult.text, summary: summary.slice(0, 4000), invitees,
           speakers,
           share_url: m.share_url ?? m.url,
-          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`.slice(0, 4000),
           invitee_count: inviteeArr.length,
           external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
@@ -221,8 +221,8 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 
       cursor = json?.next_cursor ?? undefined
       pages++
-      } while (cursor && pages < 30)
-      complete = !requestFailed && !cursor
+      } while (cursor && pages < 30 && out.length < 150)
+      complete = !requestFailed && (!cursor || out.length >= 150)
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
@@ -273,12 +273,14 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
           transcript: transcriptResult.text || m.transcript,
           summary: summary || m.summary,
           speakers,
-          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`,
+          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`.slice(0, 4000),
         },
         complete,
         rateLimited,
       }
     })()
+    // Bound the isolate-level cache so long-running workers don't exhaust memory.
+    if (_fathomDetailsCache.size > 40) _fathomDetailsCache.clear()
     _fathomDetailsCache.set(m.id, task)
     return task
     }))
