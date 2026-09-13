@@ -1568,6 +1568,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
+          {client.referral_in_progress && <span className="rounded bg-[#2eb2ff]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b5f8a]">Referral in progress{client.referrals_given ? ` (${client.referrals_given})` : ""}</span>}
           {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Successful referral</span>}
           {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
         </div>
