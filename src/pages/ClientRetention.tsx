@@ -104,6 +104,24 @@ function outreachTopic(c: ClientScore): string {
   }
 }
 
+// Check-in milestones counted from the contract start date set in Admin > Users
+const MILESTONES = [30, 45, 60, 75]
+
+function milestoneBadge(startDate?: string | null): { label: string; due: boolean } | null {
+  if (!startDate) return null
+  const start = new Date(startDate)
+  if (isNaN(start.getTime())) return null
+  const days = Math.floor((Date.now() - start.getTime()) / 86400000)
+  if (days < 0) return null
+  // Inside a milestone window (day of, up to 6 days after) = time to reach out
+  for (const m of MILESTONES) {
+    if (days >= m && days <= m + 6) return { label: `${m}-day check-in`, due: true }
+  }
+  const next = MILESTONES.find((m) => m > days)
+  if (next) return { label: `Day ${days} · ${next}-day in ${next - days}d`, due: false }
+  return { label: `Day ${days}`, due: false }
+}
+
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
