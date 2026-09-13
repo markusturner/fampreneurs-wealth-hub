@@ -687,6 +687,9 @@ export default function ClientRetention() {
     loadClientProfiles()
     // Load notes first so initial render of cached/fresh data is merged
     Promise.all([loadNotes(), loadAttendance()]).then(() => {
+      // Already showing the saved board from the last visit: leave the cards where
+      // they are and refresh quietly, so nothing visibly jumps between columns.
+      if (cached) { loadHealth(true); return }
       loadCache().then((hadCache) => {
         // Cached data renders instantly — only run the expensive recompute when there is no cache.
         // Fresh data still arrives via the 60s silent refresh below.
