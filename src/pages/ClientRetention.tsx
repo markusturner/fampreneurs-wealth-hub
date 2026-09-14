@@ -1094,6 +1094,13 @@ export default function ClientRetention() {
       })
       if (error) throw error
       if ((data as any)?.error) throw new Error((data as any).error)
+      const snippet = draft.trim().replace(/\s+/g, " ").slice(0, 160)
+      await logChange(
+        selected.user_id,
+        selected,
+        selected,
+        `Outreach email sent: "${snippet}${draft.trim().length > 160 ? "…" : ""}"`,
+      )
       toast.success(`Email sent to ${selected.full_name}`)
       setDraft("")
     } catch (e: any) {
