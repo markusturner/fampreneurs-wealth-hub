@@ -116,13 +116,18 @@ const FATHOM_TTL_MS = 60 * 60 * 1000
 // optional external work well before that and return what we already have.
 let _deadlineAt = Number.MAX_SAFE_INTEGER
 const outOfTime = () => Date.now() > _deadlineAt
+// Circuit breaker: after repeated 429s, stop calling Fathom for the rest of the
+// request instead of burning the whole time budget on retry backoff.
+let _fathom429s = 0
+const fathomBlocked = () => _fathom429s >= 5
 
 async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status: number; json: any; body: string; rateLimited: boolean }> {
   let lastStatus = 0
   let lastBody = ''
   let rateLimited = false
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (outOfTime()) break
+  if (fathomBlocked()) return { ok: false, status: 429, json: null, body: '', rateLimited: true }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (outOfTime() || fathomBlocked()) break
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
