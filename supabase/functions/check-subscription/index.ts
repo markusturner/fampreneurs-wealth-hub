@@ -18,7 +18,7 @@ const PRICE_TO_PROGRAM: Record<string, string> = {
   "price_1T1djeKKuJwlPZFrDTlV3lxH": "fbu",
   "price_1T1djuKKuJwlPZFrlK2XGRS0": "fbu",
   "price_1T1dk5KKuJwlPZFrFxNE9FD7": "fbu",
-  // TFV
+  // TTV
   "price_1T1dkMKKuJwlPZFrHGawpC2Y": "tfv",
   "price_1T1dkaKKuJwlPZFrDi8rFpMT": "tfv",
   "price_1T1dknKKuJwlPZFrn92aAO2L": "tfv",

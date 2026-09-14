@@ -123,7 +123,7 @@ export const ZapierIntegration = ({ userId }: ZapierIntegrationProps) => {
           invite_url: "https://truheirs.app/invite/SAMPLE1234",
           invite_type: "temporary",
           role: "family_member",
-          program_name: "The Family Vault",
+          program_name: "The Trust Vault",
           plan_type: "paid_in_full",
           total_amount: 5000,
           note: "Test payload from TruHeirs",

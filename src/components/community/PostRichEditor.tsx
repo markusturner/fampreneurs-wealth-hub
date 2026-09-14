@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client'
 
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
-  tfv: 'The Family Vault',
+  tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
   tffm: 'The Family Fortune Mastermind',
 }

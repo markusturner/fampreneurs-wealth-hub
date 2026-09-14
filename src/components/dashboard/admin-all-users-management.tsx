@@ -55,7 +55,7 @@ import { ChevronDown } from 'lucide-react'
 // Map program_name -> community_groups.name (matches DB trigger logic)
 const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
   'The Family Business University': 'Family Business University',
-  'The Family Vault': 'The Family Vault',
+  'The Trust Vault': 'The Trust Vault',
   'The Private Estate Accelerator': 'The Private Estate Accelerator',
   'The Family Legacy: VIP Weekend': 'The Family Legacy: VIP Weekend',
   'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
@@ -156,7 +156,7 @@ export function AdminAllUsersManagement() {
     return sorted
   }
   const [programOptions, setProgramOptions] = useState<string[]>([
-    'The Family Vault',
+    'The Trust Vault',
     'The Private Estate Accelerator',
     'The Family Legacy: VIP Weekend',
     'The Family Fortune Mastermind'

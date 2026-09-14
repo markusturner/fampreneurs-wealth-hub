@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Map programs to their actual GoHighLevel service agreement template names
     const programServiceAgreements = {
       "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend Program Services Agreement",
-      "The Family Vault": "The Family Vault Program Services Agreement", 
+      "The Trust Vault": "The Trust Vault Program Services Agreement", 
       "The Private Estate Accelerator": "The Private Estate Accelerator Program Services Agreement"
     }
 

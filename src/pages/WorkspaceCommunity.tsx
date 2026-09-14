@@ -101,7 +101,7 @@ type PendingVideoUpload = {
 
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
-  tfv: 'The Family Vault',
+  tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
   tffm: 'The Family Fortune Mastermind',
 }
@@ -258,7 +258,7 @@ export default function WorkspaceCommunity() {
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
 
   // Check if user has access to this program community.
-  // Higher tiers include every program below them (FBU < TFV < PEA < TFFM).
+  // Higher tiers include every program below them (FBU < TTV < PEA < TFFM).
   const entitledPrograms = expandProgramCodes([
     ...profileProgramCodes(profile?.program_name),
     ...(subscriptionStatus.programs || []),

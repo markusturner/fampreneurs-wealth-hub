@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext'
 type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
 const PROGRAM_OPTIONS = [
-  'The Family Vault',
+  'The Trust Vault',
   'The Private Estate Accelerator',
   'The Family Fortune Mastermind',
 ]

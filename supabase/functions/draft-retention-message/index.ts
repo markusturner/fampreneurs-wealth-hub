@@ -11,7 +11,7 @@ const PROMPTS: Record<Body['status'], string> = {
   at_risk: 'The client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they\'ve been quiet, ask how they\'re doing personally, offer a no-pressure 15-min call. Sign off "— Markus".',
   slipping: 'The client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week. Sign off "— Markus".',
   stable: 'The client is doing well. Write a friendly testimonial/referral ask (3-4 sentences). Acknowledge their wins and ask if they know a family we should be talking to. Sign off "— Markus".',
-  expansion_ready: 'The client is ready for an upsell to the next program tier (TFV→TFBA→TFFM Succession Society). Write an upbeat invitation (3-4 sentences) to a strategy call to discuss the next step. Sign off "— Markus".',
+  expansion_ready: 'The client is ready for an upsell to the next program tier (TTV→TFBA→TFFM Succession Society). Write an upbeat invitation (3-4 sentences) to a strategy call to discuss the next step. Sign off "— Markus".',
 }
 
 Deno.serve(async (req) => {

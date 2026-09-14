@@ -139,6 +139,7 @@ export default function WorkspaceCalendar() {
       const nameToShortId: Record<string, string> = {
         'Family Business University': 'fbu',
         'The Family Business University': 'fbu',
+        'The Trust Vault': 'tfv',
         'The Family Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
         'The Family Business Accelerator': 'tfba',
@@ -844,7 +845,7 @@ export default function WorkspaceCalendar() {
               <p className="text-xs text-muted-foreground mb-2">Which communities should see this event?</p>
               <div className="space-y-2">
                 {[
-                  { id: 'tfv', label: 'The Family Vault', short: 'TFV' },
+                  { id: 'tfv', label: 'The Trust Vault', short: 'TTV' },
                   { id: 'tfba', label: 'The Private Estate Accelerator', short: 'PEA' },
                   { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
                 ].map(community => (

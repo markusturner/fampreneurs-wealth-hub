@@ -58,7 +58,7 @@ serve(async (req) => {
       {
         notification_type: 'group_message',
         title: '👥 New Group Message',
-        message: 'Test: A new message was posted in The Family Vault group.',
+        message: 'Test: A new message was posted in The Trust Vault group.',
         link: '/community',
         delay: 24,
       },

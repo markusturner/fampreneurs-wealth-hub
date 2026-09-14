@@ -317,12 +317,12 @@ export default function TrustCreation() {
             <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <CardTitle>Trust Creation Access Required</CardTitle>
             <CardDescription>
-              Trust Creation is available exclusively for <strong>The Family Vault (TFV)</strong> and <strong>The Private Estate Accelerator (PEA)</strong> program members.
+              Trust Creation is available exclusively for <strong>The Trust Vault (TTV)</strong> and <strong>The Private Estate Accelerator (PEA)</strong> program members.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">
-              Please upgrade to TFV or PEA to unlock trust creation features.
+              Please upgrade to TTV or PEA to unlock trust creation features.
             </p>
           </CardContent>
         </Card>
