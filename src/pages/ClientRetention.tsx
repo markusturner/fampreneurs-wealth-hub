@@ -169,7 +169,13 @@ export default function ClientRetention() {
       const parsed = JSON.parse(raw)
       const list: ClientScore[] = parsed?.clients ?? []
       if (!Array.isArray(list) || list.length === 0) return null
-      return { list }
+      const savedOrder = Array.isArray(parsed?.boardOrder)
+        ? parsed.boardOrder.filter((id: unknown): id is string => typeof id === "string")
+        : []
+      const savedDates = parsed?.startDates && typeof parsed.startDates === "object"
+        ? parsed.startDates as Record<string, string>
+        : {}
+      return { list, boardOrder: savedOrder, startDates: savedDates }
     } catch { return null }
   })()
 
@@ -204,12 +210,12 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
-  const [startDates, setStartDates] = useState<Record<string, string>>({})
+  const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [boardOrder, setBoardOrder] = useState<string[]>([])
+  const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
   const isMobile = useIsMobile()
   const effectiveView = isMobile ? "table" : viewMode
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -693,9 +699,9 @@ export default function ClientRetention() {
     // Resolve every source used to place cards before committing any remote
     // health payload. This prevents partial data from moving cards in stages.
     Promise.all([loadNotes(), loadAttendance(), loadClientProfiles(), loadHistory()]).then(([noteMap, attMap]) => {
-      // Already showing the saved board from the last visit: leave the cards where
-      // they are and refresh quietly, so nothing visibly jumps between columns.
-      if (cached) { loadHealth(true, noteMap, attMap); return }
+      // A complete local snapshot is already visible. Do not replace it during
+      // startup; scheduled, realtime, or manual refreshes handle later changes.
+      if (cached) return
       loadCache(noteMap, attMap).then((hadCache) => {
         // Cached data renders instantly — only run the expensive recompute when there is no cache.
         // Fresh data still arrives via the 60s silent refresh below.
@@ -818,8 +824,15 @@ export default function ClientRetention() {
   // so a reload paints every card in its correct column immediately — no re-shuffle.
   useEffect(() => {
     if (loading || displayClients.length === 0) return
-    try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: displayClients })) } catch {}
-  }, [displayClients, loading])
+    try {
+      localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({
+        clients: displayClients,
+        boardOrder,
+        startDates,
+        savedAt: new Date().toISOString(),
+      }))
+    } catch {}
+  }, [displayClients, loading, boardOrder, startDates])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
