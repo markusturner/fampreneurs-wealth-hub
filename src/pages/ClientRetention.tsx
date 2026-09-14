@@ -169,7 +169,13 @@ export default function ClientRetention() {
       const parsed = JSON.parse(raw)
       const list: ClientScore[] = parsed?.clients ?? []
       if (!Array.isArray(list) || list.length === 0) return null
-      return { list }
+      const savedOrder = Array.isArray(parsed?.boardOrder)
+        ? parsed.boardOrder.filter((id: unknown): id is string => typeof id === "string")
+        : []
+      const savedDates = parsed?.startDates && typeof parsed.startDates === "object"
+        ? parsed.startDates as Record<string, string>
+        : {}
+      return { list, boardOrder: savedOrder, startDates: savedDates }
     } catch { return null }
   })()
 
@@ -204,12 +210,12 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
-  const [startDates, setStartDates] = useState<Record<string, string>>({})
+  const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [boardOrder, setBoardOrder] = useState<string[]>([])
+  const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
   const isMobile = useIsMobile()
   const effectiveView = isMobile ? "table" : viewMode
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -224,6 +230,7 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if ((!isAdmin && !isOwner) || roleLoading || ownerLoading) return
+    if (cached) return
     supabase
       .from("platform_settings")
       .select("setting_value")
@@ -595,10 +602,11 @@ export default function ClientRetention() {
       map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at })
     })
     setNotesMap(map)
+    notesMapRef.current = map
     return map
   }
 
-  const loadCache = async () => {
+  const loadCache = async (noteMap: Record<string, NotesEntry>, attMap: Record<string, CallRec[]>) => {
     const { data } = await supabase
       .from("platform_settings")
       .select("setting_value")
@@ -610,7 +618,7 @@ export default function ClientRetention() {
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw
       const list: ClientScore[] = parsed?.clients ?? []
       if (list.length > 0) {
-        applyClients(list)
+        applyClients(list, noteMap, attMap)
         setLoading(false)
         return true
       }
@@ -618,13 +626,17 @@ export default function ClientRetention() {
     return false
   }
 
-  const loadHealth = async (silent = false) => {
+  const loadHealth = async (
+    silent = false,
+    noteMap: Record<string, NotesEntry> = notesMapRef.current,
+    attMap: Record<string, CallRec[]> = attendanceMapRef.current,
+  ) => {
     if (!silent) setLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke("compute-client-health", { body: {} })
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
-      applyClients(list)
+      applyClients(list, noteMap, attMap)
     } catch (e: any) {
       if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
@@ -680,25 +692,25 @@ export default function ClientRetention() {
     })
     setStartDates(map)
     setPartnerProfiles(profiles)
+    return { startDates: map, profiles }
   }
 
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    loadClientProfiles()
-    // Load notes first so initial render of cached/fresh data is merged
-    Promise.all([loadNotes(), loadAttendance()]).then(() => {
-      // Already showing the saved board from the last visit: leave the cards where
-      // they are and refresh quietly, so nothing visibly jumps between columns.
-      if (cached) { loadHealth(true); return }
-      loadCache().then((hadCache) => {
+    // Resolve every source used to place cards before committing any remote
+    // health payload. This prevents partial data from moving cards in stages.
+    Promise.all([loadNotes(), loadAttendance(), loadClientProfiles(), loadHistory()]).then(([noteMap, attMap]) => {
+      // A complete local snapshot is already visible. Keep it untouched during
+      // startup so cards cannot jump columns after the first paint.
+      if (cached) return
+      loadCache(noteMap, attMap).then((hadCache) => {
         // Cached data renders instantly — only run the expensive recompute when there is no cache.
         // Fresh data still arrives via the 60s silent refresh below.
-        if (!hadCache) loadHealth(false)
+        if (!hadCache) loadHealth(false, noteMap, attMap)
       })
     })
     loadTrend()
     loadAutopilot()
-    loadHistory()
 
     // Auto-refresh every 60s so signals stay fresh without manual reload
     const interval = setInterval(() => { loadAttendance().then((m) => loadHealth(true)) }, 60000)
@@ -751,22 +763,10 @@ export default function ClientRetention() {
     toast.success(next ? "Autopilot ON — daily sends enabled" : "Autopilot OFF")
   }
 
-  // The newest saved history entry is the final score/status from the latest note action.
-  // Use it everywhere so cards, tables, dialogs, and history always agree.
-  const historyAdjustedClients = useMemo(() => clients.map((client) => {
-    const latest = historyMap[client.user_id]?.[0]
-    if (!latest) return client
-    return {
-      ...client,
-      score: latest.new_score ?? client.score,
-      status: (latest.new_status as Status | null) ?? client.status,
-    }
-  }), [clients, historyMap])
-
   // Partner links made in Admin > User Management represent one client household.
   // Merge those accounts into one card while retaining every person's signals and attendance IDs.
   const displayClients = useMemo(() => {
-    if (!partnerProfiles.length) return historyAdjustedClients
+    if (!partnerProfiles.length) return clients
 
     const profileByAlias = new Map<string, PartnerProfile>()
     partnerProfiles.forEach((profile) => {
@@ -774,7 +774,7 @@ export default function ClientRetention() {
       profileByAlias.set(profile.user_id, profile)
     })
     const grouped = new Map<string, ClientScore[]>()
-    historyAdjustedClients.forEach((client) => {
+    clients.forEach((client) => {
       const profile = profileByAlias.get(client.user_id)
       const key = profile?.partner_group_id ? `partners:${profile.partner_group_id}` : `client:${client.user_id}`
       grouped.set(key, [...(grouped.get(key) ?? []), client])
@@ -819,14 +819,21 @@ export default function ClientRetention() {
         is_partner_household: groupProfiles.length > 1,
       }
     })
-  }, [historyAdjustedClients, partnerProfiles])
+  }, [clients, partnerProfiles])
 
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
   // so a reload paints every card in its correct column immediately — no re-shuffle.
   useEffect(() => {
     if (loading || displayClients.length === 0) return
-    try { localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({ clients: displayClients })) } catch {}
-  }, [displayClients, loading])
+    try {
+      localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({
+        clients: displayClients,
+        boardOrder,
+        startDates,
+        savedAt: new Date().toISOString(),
+      }))
+    } catch {}
+  }, [displayClients, loading, boardOrder, startDates])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
