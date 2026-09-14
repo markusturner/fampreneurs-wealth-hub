@@ -45,6 +45,8 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     'The Family Business University': 'fbu',
     'Family Business University': 'fbu',
     'The Trust Vault': 'tfv',
+    'The Family Vault': 'tfv',
+    'The Family Business Accelerator': 'tfba',
     'The Private Estate Accelerator': 'tfba',
     'The Family Fortune Mastermind': 'tffm',
     'The Succession Society': 'tffm',
@@ -72,7 +74,7 @@ export function expandProgramCodes(codes: (string | null | undefined)[]): Progra
 // Community group names (including legacy names) that belong to a program code
 export const PROGRAM_GROUP_NAMES: Record<ProgramCode, string[]> = {
   fbu: ['Family Business University', 'The Family Business University'],
-  tfv: ['The Trust Vault'],
+  tfv: ['The Trust Vault', 'The Family Vault'],
   tfba: ['The Private Estate Accelerator', 'The Private Estate Accelerator'],
   tffm: ['The Succession Society', 'The Family Fortune Mastermind'],
 }

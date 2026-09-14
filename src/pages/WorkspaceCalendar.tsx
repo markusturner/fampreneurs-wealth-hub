@@ -140,6 +140,7 @@ export default function WorkspaceCalendar() {
         'Family Business University': 'fbu',
         'The Family Business University': 'fbu',
         'The Trust Vault': 'tfv',
+        'The Family Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
         'The Private Estate Accelerator': 'tfba',
         'The Succession Society': 'tffm',

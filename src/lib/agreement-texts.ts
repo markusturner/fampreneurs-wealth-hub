@@ -469,6 +469,7 @@ By their signatures below, the parties hereby understand and agree to all terms 
 
 export const AGREEMENT_TEXT_MAP: Record<string, string> = {
   'The Trust Vault': TFV_AGREEMENT,
+  'The Family Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
   'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
   'The Family Fortune Mastermind': TFFM_AGREEMENT,

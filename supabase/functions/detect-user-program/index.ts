@@ -70,10 +70,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Check tags first (accept both old and new program names from GoHighLevel)
     if (contact.tags && contact.tags.length > 0) {
       for (const tag of contact.tags) {
-        if (tag.includes("Family Vault")) {
+        if (tag.includes("Family Vault") || tag.includes("Trust Vault")) {
           detectedProgram = "The Trust Vault"
           break
-        } else if (tag.includes("Private Estate Accelerator") || tag.includes("Private Estate Accelerator")) {
+        } else if (tag.includes("Private Estate Accelerator") || tag.includes("Family Business Accelerator")) {
           detectedProgram = "The Private Estate Accelerator"
           break
         } else if (tag.includes("Family Legacy")) {
@@ -88,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
       for (const field of contact.customFields) {
         if (field.key === "program_name" && field.value) {
           const programValue = field.value.toLowerCase()
-          if (programValue.includes("family vault")) {
+          if (programValue.includes("family vault") || programValue.includes("trust vault")) {
             detectedProgram = "The Trust Vault"
           } else if (programValue.includes("private estate accelerator") || programValue.includes("family business accelerator")) {
             detectedProgram = "The Private Estate Accelerator"
