@@ -142,7 +142,7 @@ export default function WorkspaceCalendar() {
         'The Trust Vault': 'tfv',
         'The Family Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
-        'The Private Estate Accelerator': 'tfba',
+        'The Family Business Accelerator': 'tfba',
         'The Succession Society': 'tffm',
         'The Family Fortune Mastermind': 'tffm',
         'The Family Legacy: VIP Weekend': 'tflvip',
