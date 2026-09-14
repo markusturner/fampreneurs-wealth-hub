@@ -62,13 +62,13 @@ interface PartnerProfile {
   created_at: string
 }
 
-// Upsell ladder: TFV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
+// Upsell ladder: TTV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
 const PROGRAM_VALUE: Record<string, number> = { fbu: 900, tfv: 5000, tfba: 9000, tffm: 22000 }
 
 function upsellInfo(c: ClientScore): { target: string; price: number; cost: number } | null {
   const name = (c.program_name || "").toLowerCase()
   const key = (c.program || "").toLowerCase()
-  if (key === "fbu") return { target: "TFV", price: 5000, cost: Math.max(0, 5000 - (PROGRAM_VALUE.fbu ?? 0)) }
+  if (key === "fbu") return { target: "TTV", price: 5000, cost: Math.max(0, 5000 - (PROGRAM_VALUE.fbu ?? 0)) }
   if (key === "tfv") return { target: "PEA", price: 9000, cost: Math.max(0, 9000 - (PROGRAM_VALUE.tfv ?? 0)) }
   if (key === "tfba") return { target: "TSS", price: 22000, cost: Math.max(0, 22000 - (PROGRAM_VALUE.tfba ?? 0)) }
   if (key === "tffm") {
@@ -1136,7 +1136,7 @@ export default function ClientRetention() {
       <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TFV, PEA & TFFM client.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TTV, PEA & TFFM client.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-sm">

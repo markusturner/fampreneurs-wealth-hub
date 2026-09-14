@@ -40,8 +40,8 @@ export const PROGRAMS: Program[] = [
   },
   {
     id: 'tfv',
-    name: 'The Family Vault',
-    shortName: 'TFV',
+    name: 'The Trust Vault',
+    shortName: 'TTV',
     pricing: [
       { label: '$5,000 (Paid in Full)', price_id: 'price_1T1dkMKKuJwlPZFrHGawpC2Y', amount: 500000, interval: 'One-Time', mode: 'payment' },
       { label: '$1,000/mo for 6 months', price_id: 'price_1T1dknKKuJwlPZFrn92aAO2L', amount: 100000, interval: '6-Month Plan', mode: 'subscription' },

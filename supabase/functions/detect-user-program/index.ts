@@ -71,9 +71,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (contact.tags && contact.tags.length > 0) {
       for (const tag of contact.tags) {
         if (tag.includes("Family Vault")) {
-          detectedProgram = "The Family Vault"
+          detectedProgram = "The Trust Vault"
           break
-        } else if (tag.includes("Private Estate Accelerator") || tag.includes("Family Business Accelerator")) {
+        } else if (tag.includes("Private Estate Accelerator") || tag.includes("Private Estate Accelerator")) {
           detectedProgram = "The Private Estate Accelerator"
           break
         } else if (tag.includes("Family Legacy")) {
@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (field.key === "program_name" && field.value) {
           const programValue = field.value.toLowerCase()
           if (programValue.includes("family vault")) {
-            detectedProgram = "The Family Vault"
+            detectedProgram = "The Trust Vault"
           } else if (programValue.includes("private estate accelerator") || programValue.includes("family business accelerator")) {
             detectedProgram = "The Private Estate Accelerator"
           } else if (programValue.includes("family legacy")) {

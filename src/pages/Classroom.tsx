@@ -150,7 +150,7 @@ export default function Classroom() {
   const { subscriptionStatus } = useSubscription()
   const { toast } = useToast()
 
-  // Program access: TFV/TFBA => Trust Creation, TFFM => Succession Planning
+  // Program access: TTV/TFBA => Trust Creation, TFFM => Succession Planning
   const programCodes = [
     ...profileProgramCodes(profile?.program_name),
     ...(subscriptionStatus.programs || []),
@@ -188,7 +188,7 @@ export default function Classroom() {
 
       let userCommunityIds: string[] = []
       if (!isAdminOrOwner) {
-        // Higher tiers include every program below them (FBU < TFV < PEA < TFFM)
+        // Higher tiers include every program below them (FBU < TTV < PEA < TFFM)
         const entitled = expandProgramCodes(programCodes)
         const groupNames = programGroupNames(entitled)
         if (groupNames.length > 0) {

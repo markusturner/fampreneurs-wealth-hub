@@ -64,7 +64,7 @@ Rules for links:
 - [Search](/search) — Search across the whole app
 
 ### WORKSPACE / COMMUNITY
-- [Community Feed](/workspace-community) — Posts, discussions, wins, announcements (append ?program=FBU|TFV|TFBA|TFFM for a specific community)
+- [Community Feed](/workspace-community) — Posts, discussions, wins, announcements (append ?program=FBU|TTV|TFBA|TFFM for a specific community)
 - [Community Members](/workspace-members) — Member directory
 - [Community Calendar](/workspace-calendar) — Community events and calls
 - [Messenger](/messenger) — Direct messages (append ?user=USER_ID to pre-select someone)
@@ -90,7 +90,7 @@ Rules for links:
 ## Key Product Knowledge
 - **TruHeirs Lite**: $47/mo, $127/qtr, $547/yr — Family Business University (FBU) community access only. Lite users cannot access AI Chat, Trust Creation, Succession Planning, DFO, or Admin.
 - **Full TruHeirs**: unlocks the full family office suite, AI team, Trust Creation, Succession Planning, and Digital Family Office.
-- **Programs**: FBU (Family Business University), TFV (Trust Fund Vault), PEA (The Private Estate Accelerator, internal code tfba), TFFM (Trust Fund Family Mastermind).
+- **Programs**: FBU (Family Business University), TTV (Trust Fund Vault), PEA (The Private Estate Accelerator, internal code tfba), TFFM (Trust Fund Family Mastermind).
 - **Onboarding**: New users complete a 7-step onboarding, then book a Trust Design call before landing on Welcome.
 - **The Trust Trinity Structure™** = Financial Liberation, Investment Power (business structure and tax strategy).
 

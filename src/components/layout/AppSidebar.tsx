@@ -42,7 +42,7 @@ import type { ProgramId } from "@/lib/stripe-programs"
 import { profileProgramCodes, expandProgramCodes, type ProgramCode } from "@/lib/programs"
 
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
-  { code: 'tfv', label: 'The Family Vault' },
+  { code: 'tfv', label: 'The Trust Vault' },
   { code: 'tfba', label: 'The Private Estate Accelerator' },
   { code: 'tffm', label: 'The Succession Society' },
 ]

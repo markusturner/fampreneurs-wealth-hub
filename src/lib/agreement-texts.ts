@@ -14,7 +14,7 @@ To gain the most benefit from The Fampreneurs' Mentorship program you agree to t
 
 Section 1. Program Guidelines and Payment Details
 
-Program: The Family Vault Program.
+Program: The Trust Vault Program.
 
 Program Details:
 
@@ -30,7 +30,7 @@ FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking as
 
 Payment Terms:
 
-Total Program Cost: The Family Vault Program - Regularly $3,000, but today for ONLY $2,500.
+Total Program Cost: The Trust Vault Program - Regularly $3,000, but today for ONLY $2,500.
 
 Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
 
@@ -123,7 +123,7 @@ Coaching with The Fampreneurs. You will attend a bi-weekly live virtual training
 
 Section 10. Refund and Cancellation Policies
 
-The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Family Vault Program.
+The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Trust Vault Program.
 
 Section 11. Chargebacks
 
@@ -468,7 +468,7 @@ The information contained within The Family Business University is strictly for 
 By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
 export const AGREEMENT_TEXT_MAP: Record<string, string> = {
-  'The Family Vault': TFV_AGREEMENT,
+  'The Trust Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
   'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
   'The Family Fortune Mastermind': TFFM_AGREEMENT,

@@ -29,7 +29,7 @@ import ReactMarkdown from 'react-markdown'
 const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
-  tfv: 'The Family Vault',
+  tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
   tffm: 'The Succession Society',
 }

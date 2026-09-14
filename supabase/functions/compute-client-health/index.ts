@@ -465,7 +465,7 @@ Deno.serve(async (req) => {
       else if (lastCommunityDays > 4) { communityScore = 7 }
       else communityScore = 9
 
-      // -------- Attendance (TFV has no coaching calls — skip) --------
+      // -------- Attendance (TTV has no coaching calls — skip) --------
       // Manually logged attendance rows have no joined_at — fall back to created_at
       const { data: attendanceRows } = await supabase
         .from('session_attendance')
@@ -477,7 +477,7 @@ Deno.serve(async (req) => {
         .reverse()[0] ?? null
       const lastAttendedDays = daysSince(lastAttendedAt)
       if (programKey === 'tfv') {
-        attendanceScore = 8 // neutral-positive; TFV doesn't include coaching calls
+        attendanceScore = 8 // neutral-positive; TTV doesn't include coaching calls
       } else if (lastAttendedDays === null) {
         signals.push({ label: 'No coaching call attendance logged', severity: 'warn' })
         attendanceScore = 4
@@ -781,7 +781,7 @@ Deno.serve(async (req) => {
         at_risk: 'Client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are personally, offer a no-pressure 15-min call. Sign off "— Markus".',
         slipping: 'Client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week. Sign off "— Markus".',
         stable: `Client is doing well — send the TESTIMONIAL ASK from the Customer Feedback Framework. Use this voice and structure (personalize [Name] and [achievement]):\n\n"Hey [Name], congrats on [specific achievement]. We're going to keep helping you crush it, let us know what you need from our side. BTW, let us know if you're able to film a testimonial for us. It would be great to celebrate your success and this helps us out a lot."\n\nReturn only the text message body. Sign off "— Markus".`,
-        expansion_ready: `Client has hit ASCENSION CRITERIA (Family Protection Plan done, all 3 trusts drafted — Family/Business/Ministry, assets moved into trusts). Per the Customer Feedback Framework, send the Graduation/Ascension Call invite right after their testimonial moment. Use Markus's voice and this exact tone:\n\n"[Name], this was incredible. Because of where you are right now we want to get you on a quick legacy evaluation call to review everything you've built, make sure everything is locked in correctly, map out what's next for your family, and celebrate everything you've built. Depending on where you are we can do this in person or virtually — which works best for you?"\n\nIf they are TFBA → invite to Graduation Call (next step: Succession Society $22k / 6mo or $4k/mo). If TFV → invite to Accelerator strategy call. If TFFM Succession Society → soft-seed a Founding Families nomination conversation WITHOUT naming Founding Families. Keep it 3-5 sentences. Sign off "— Markus".`,
+        expansion_ready: `Client has hit ASCENSION CRITERIA (Family Protection Plan done, all 3 trusts drafted — Family/Business/Ministry, assets moved into trusts). Per the Customer Feedback Framework, send the Graduation/Ascension Call invite right after their testimonial moment. Use Markus's voice and this exact tone:\n\n"[Name], this was incredible. Because of where you are right now we want to get you on a quick legacy evaluation call to review everything you've built, make sure everything is locked in correctly, map out what's next for your family, and celebrate everything you've built. Depending on where you are we can do this in person or virtually — which works best for you?"\n\nIf they are TFBA → invite to Graduation Call (next step: Succession Society $22k / 6mo or $4k/mo). If TTV → invite to Accelerator strategy call. If TFFM Succession Society → soft-seed a Founding Families nomination conversation WITHOUT naming Founding Families. Keep it 3-5 sentences. Sign off "— Markus".`,
       }
       const systemPrompt = `You are Markus's retention assistant for Fampreneurs/TruHeirs. Write personal, brief outreach in his voice — warm, direct, no fluff, no exclamation marks unless celebrating. Avoid corporate language. Follow the Customer Feedback Framework scripts when provided.`
 

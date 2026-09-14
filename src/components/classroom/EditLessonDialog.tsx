@@ -20,7 +20,7 @@ interface CommunityGroup {
 }
 
 const WORKSPACE_COMMUNITY_NAMES = [
-  'The Family Vault',
+  'The Trust Vault',
   'The Private Estate Accelerator',
   'The Family Fortune Mastermind',
 ]
