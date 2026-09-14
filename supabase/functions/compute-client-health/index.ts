@@ -158,7 +158,7 @@ function transcriptToText(raw: any): { text: string; speakers: string; speakerEm
     if (speakerEmail) speakerEmailSet.add(speakerEmail)
     return `${sp}: ${t?.text ?? ''}`
   }).join('\n')
-  return { text: text.slice(0, 6000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+  return { text: text.slice(0, 2500), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
 }
 
 function summaryToText(raw: any): string {
@@ -214,10 +214,10 @@ async function listFathomMeetings(): Promise<FathomListResult> {
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript: transcriptResult.text, summary: summary.slice(0, 4000), invitees,
+          transcript: transcriptResult.text, summary: summary.slice(0, 1500), invitees,
           speakers,
           share_url: m.share_url ?? m.url,
-          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`.slice(0, 4000),
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`.slice(0, 1500),
           invitee_count: inviteeArr.length,
           external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
@@ -225,8 +225,8 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 
       cursor = json?.next_cursor ?? undefined
       pages++
-      } while (cursor && pages < 30 && out.length < 150)
-      complete = !requestFailed && (!cursor || out.length >= 150)
+      } while (cursor && pages < 12 && out.length < 80)
+      complete = !requestFailed && (!cursor || out.length >= 80)
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
@@ -248,8 +248,8 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
   if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
   // Cap work per client: only hydrate the most recent meetings, in small
   // batches. Hydrating everything at once blows the worker memory/CPU limit.
-  const MAX_HYDRATE = 6
-  const BATCH = 3
+  const MAX_HYDRATE = 3
+  const BATCH = 2
   const target = [...meetings]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, MAX_HYDRATE)
@@ -277,14 +277,14 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
           transcript: transcriptResult.text || m.transcript,
           summary: summary || m.summary,
           speakers,
-          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`.slice(0, 4000),
+          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`.slice(0, 1500),
         },
         complete,
         rateLimited,
       }
     })()
     // Bound the isolate-level cache so long-running workers don't exhaust memory.
-    if (_fathomDetailsCache.size > 40) _fathomDetailsCache.clear()
+    if (_fathomDetailsCache.size > 25) _fathomDetailsCache.clear()
     _fathomDetailsCache.set(m.id, task)
     return task
     }))
@@ -366,7 +366,7 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  _deadlineAt = Date.now() + 110_000
+  _deadlineAt = Date.now() + 75_000
 
   try {
     const supabase = createClient(
