@@ -51,6 +51,8 @@ interface ClientScore {
   referrals_given?: number
   referrals_closed?: number
   is_partner_household?: boolean
+  no_show?: boolean
+  continuity?: boolean
 }
 
 interface PartnerProfile {
@@ -278,6 +280,11 @@ export default function ClientRetention() {
     })()
     const referralInProgress = referralGiven > 0 && referralClosed < referralGiven
 
+    // No-show: invited but never showed up — lands in the Invited — No Show column
+    const noShow = has(/\b(no show|no-show|didn'?t show|did not show|never showed|never showed up|invite sent,? no response|invited but (no|never) response|didn'?t show up|never came|never attended)\b/)
+    // Continuity: engaged client who won't upsell — keep renewing instead
+    const continuityOnly = has(/\b(not upselling|no upsell|no interest in upsell|won'?t upgrade|staying (at|on) current (level|tier|plan)|renewal|continuity|happy where (they|he|she) (is|are)|no desire to upgrade)\b/)
+
     // Trust progress
     const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
                            has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
@@ -333,7 +340,7 @@ export default function ClientRetention() {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed }
+    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, noShow, continuityOnly }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
