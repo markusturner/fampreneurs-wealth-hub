@@ -11,7 +11,7 @@ Client Queue becomes six columns, in this order:
 3. Slipping — Watch This Week
 4. Healthy & Stable
 5. Ready for Expansion
-6. **Renewals & Continuity** (new, after Expansion) — clients who won't upsell but should renew or continue.
+6. **Continuity** (new, after Expansion) — clients who won't upsell but should renew or continue.
 
 How a client lands in a new stage:
 - Notes wording drives it, same as today's note detection. Phrases like "no show", "didn't show", "never showed", "invite sent, no response" put them in Invited — No Show. Phrases like "not upselling", "no upsell", "renewal", "continuity", "staying at current level" put them in Renewals & Continuity.
