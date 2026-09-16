@@ -478,7 +478,13 @@ export default function ClientRetention() {
       if (noteMap[c.user_id]?.status_override) {
         return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDone && c.status === "stable" && c.score >= 7.5 }
       }
-      let status: Status = c.score >= 8.5 ? "expansion_ready" : c.score >= 6.5 ? "stable" : c.score >= 4 ? "slipping" : "at_risk"
+      let status: Status
+      if (c.no_show) status = "invited_no_show"
+      else if (c.continuity) status = "continuity"
+      else if (c.score >= 8.5) status = "expansion_ready"
+      else if (c.score >= 6.5) status = "stable"
+      else if (c.score >= 4) status = "slipping"
+      else status = "at_risk"
       // Only clients who finished their trusts belong in Expansion Ready.
       // Everyone else doing great becomes a referral ask instead — unless they already gave referrals that haven't closed (follow up, don't re-ask).
       let referral = false
