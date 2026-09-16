@@ -362,7 +362,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, noShow, continuityOnly } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
@@ -420,6 +420,8 @@ export default function ClientRetention() {
         referral_in_progress: referralInProgress,
         referrals_given: referralGiven,
         referrals_closed: referralClosed,
+        no_show: noShow,
+        continuity: continuityOnly,
         signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
       }
     })
