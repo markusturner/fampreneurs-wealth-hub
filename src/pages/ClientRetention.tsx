@@ -1170,7 +1170,7 @@ export default function ClientRetention() {
 
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-4 sm:mb-5">
         <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Avg Health Score</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.avg}<span className="text-sm sm:text-base text-muted-foreground">/10</span></p>
