@@ -993,7 +993,7 @@ export default function ClientRetention() {
   }, [displayClients, boardOrder, sortField, sortDirection])
 
   const sortedBuckets = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
+    const buckets: Record<Status, ClientScore[]> = { invited_no_show: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     sortedClients.forEach((client) => buckets[client.status].push(client))
     return buckets
   }, [sortedClients])
