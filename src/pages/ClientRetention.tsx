@@ -1221,18 +1221,24 @@ export default function ClientRetention() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={[{
                   name: "Now",
+                  "No Show": stats.buckets.invited_no_show.length,
                   "At Risk": stats.buckets.at_risk.length,
                   "Slipping": stats.buckets.slipping.length,
                   "Stable": stats.buckets.stable.length,
                   "Expansion": stats.buckets.expansion_ready.length,
+                  "Continuity": stats.buckets.continuity.length,
                 }]}>
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <RTooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="No Show" stackId="a" fill="#64748b" />
                   <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
                   <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
                   <Bar dataKey="Stable" stackId="a" fill="#10b981" />
+                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
+                  <Bar dataKey="Continuity" stackId="a" fill="#3b82f6" />
+                </BarChart>
                   <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
                 </BarChart>
               </ResponsiveContainer>
