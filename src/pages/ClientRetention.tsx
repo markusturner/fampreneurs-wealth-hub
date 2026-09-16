@@ -1179,7 +1179,7 @@ export default function ClientRetention() {
           <p className="text-[10px] sm:text-xs text-muted-foreground">Active / Inactive</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.active}<span className="text-sm sm:text-base text-muted-foreground"> / {stats.inactive}</span></p>
         </CardContent></Card>
-        {(["at_risk","slipping","stable","expansion_ready"] as Status[]).map((s) => {
+        {(["invited_no_show","at_risk","slipping","stable","expansion_ready","continuity"] as Status[]).map((s) => {
           const arr = stats.buckets[s].reduce((sum, c) => sum + c.arr_value, 0)
           const opp = s === "expansion_ready"
             ? stats.buckets[s].reduce((sum, c) => sum + (upsellInfo(c)?.cost ?? 0), 0)
