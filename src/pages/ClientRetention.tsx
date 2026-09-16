@@ -1239,8 +1239,6 @@ export default function ClientRetention() {
                   <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="Continuity" stackId="a" fill="#3b82f6" />
                 </BarChart>
-                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
-                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
