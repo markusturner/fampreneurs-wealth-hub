@@ -14,9 +14,9 @@ Client Queue becomes six columns, in this order:
 6. **Continuity** (new, after Expansion) — clients who won't upsell but should renew or continue.
 
 How a client lands in a new stage:
-- Notes wording drives it, same as today's note detection. Phrases like "no show", "didn't show", "never showed", "invite sent, no response" put them in Invited — No Show. Phrases like "not upselling", "no upsell", "renewal", "continuity", "staying at current level" put them in Renewals & Continuity.
+- Notes wording drives it, same as today's note detection. Phrases like "no show", "didn't show", "never showed", "invite sent, no response" put them in Invited — No Show. Phrases like "not upselling", "no upsell", "renewal", "continuity", "staying at current level" put them in Continuity.
 - Dragging a card into either column still wins over automatic placement, and the move is recorded in that client's history.
-- Upsell opportunity-cost text stays limited to Ready for Expansion; Renewals & Continuity cards instead show renewal-focused guidance and an auto-drafted renewal message.
+- Upsell opportunity-cost text stays limited to Ready for Expansion; Continuity cards instead show renewal-focused guidance and an auto-drafted renewal message.
 
 ## 2. Page-level toggle: Clients / Surveys
 
