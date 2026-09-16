@@ -121,10 +121,12 @@ function outreachTopic(c: ClientScore): string {
 
 
   switch (c.status) {
+    case "invited_no_show": return "Invited but never showed up — send a personal nudge to get them on the next call."
     case "at_risk": return "Gone quiet — send a warm personal check-in and offer a no-pressure 15-min call."
     case "slipping": return "Engagement dipping — point them to one small win they can get this week."
     case "stable": return "Doing well — ask for a testimonial or a referral to a family they know."
     case "expansion_ready": return "Ready for the next tier — invite them to a strategy call about upgrading."
+    case "continuity": return "Engaged but not upgrading — keep the relationship warm and confirm their renewal."
   }
 }
 
