@@ -26,7 +26,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
-type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
+type Status = "invited_no_show" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
 type SortDirection = "asc" | "desc"
 
@@ -90,7 +90,7 @@ function hasTrustDone(c: ClientScore): boolean {
 }
 
 
-const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v5"
+const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v6"
 
 // Rule-based outreach topic per client — what Markus should reach out about
 function outreachTopic(c: ClientScore): string {
@@ -145,13 +145,15 @@ function milestoneBadge(startDate?: string | null): { label: string; due: boolea
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
+  invited_no_show: { label: "Invited — No Show", color: "text-slate-700", bg: "bg-slate-100", ring: "ring-slate-300" },
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
   stable: { label: "Stable", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
   expansion_ready: { label: "Expansion Ready", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
+  continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
 }
 
-const STATUS_ORDER: Record<Status, number> = { at_risk: 0, slipping: 1, stable: 2, expansion_ready: 3 }
+const STATUS_ORDER: Record<Status, number> = { invited_no_show: 0, at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
 
 export default function ClientRetention() {
   const navigate = useNavigate()
