@@ -44,6 +44,6 @@ Settings keeps Community, Content, Integrations, and Roles. Users and Invites ta
 ## Technical Details
 
 - `Status` widens to `"invited_no_show" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"`; `STATUS_ORDER`, `STATUS_META`, buckets, droppable columns, and the cache version (`client_retention_cache_v6`) update together so old snapshots are discarded.
-- `analyzeNotes` gains `noShow` and `renewalOnly` flags; placement precedence stays: manual override > drag order > note-derived > score threshold. Score thresholds are unchanged for the four existing stages.
+- `analyzeNotes` gains `noShow` and `continuityOnly` flags; placement precedence stays: manual override > drag order > note-derived > score threshold. Score thresholds are unchanged for the four existing stages.
 - `status_override` values are stored as text in `client_retention_notes`, so no migration is required; the edge function keeps emitting the four computed statuses and the page maps the two new ones.
 - Reuse `AdminAllUsersManagement`, `AdminUserManagement`, `AdminInviteLinks`, and the Surveys page body as-is; the surveys view is extracted into a component so both the route and the tab share it.
