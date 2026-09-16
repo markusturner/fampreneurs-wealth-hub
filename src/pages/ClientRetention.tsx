@@ -1496,8 +1496,8 @@ export default function ClientRetention() {
 
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
-                      const label = (s: string | null) =>
-                        s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : "—"
+                        const label = (s: string | null) =>
+                          s === "invited_no_show" ? "Invited — No Show" : s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : s === "continuity" ? "Continuity" : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
