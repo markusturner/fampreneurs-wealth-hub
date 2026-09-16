@@ -963,7 +963,7 @@ export default function ClientRetention() {
   }
 
   const stats = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
+    const buckets: Record<Status, ClientScore[]> = { invited_no_show: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     displayClients.forEach((c) => buckets[c.status].push(c))
     const avg = displayClients.length ? (displayClients.reduce((s, c) => s + c.score, 0) / displayClients.length).toFixed(1) : "0.0"
     const active = displayClients.filter((c) => c.last_active_at && (Date.now() - new Date(c.last_active_at).getTime()) / 86400000 <= 14).length
