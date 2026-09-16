@@ -11,12 +11,12 @@ Client Queue becomes six columns, in this order:
 3. Slipping — Watch This Week
 4. Healthy & Stable
 5. Ready for Expansion
-6. **Renewals & Continuity** (new, after Expansion) — clients who won't upsell but should renew or continue.
+6. **Continuity** (new, after Expansion) — clients who won't upsell but should renew or continue.
 
 How a client lands in a new stage:
-- Notes wording drives it, same as today's note detection. Phrases like "no show", "didn't show", "never showed", "invite sent, no response" put them in Invited — No Show. Phrases like "not upselling", "no upsell", "renewal", "continuity", "staying at current level" put them in Renewals & Continuity.
+- Notes wording drives it, same as today's note detection. Phrases like "no show", "didn't show", "never showed", "invite sent, no response" put them in Invited — No Show. Phrases like "not upselling", "no upsell", "renewal", "continuity", "staying at current level" put them in Continuity.
 - Dragging a card into either column still wins over automatic placement, and the move is recorded in that client's history.
-- Upsell opportunity-cost text stays limited to Ready for Expansion; Renewals & Continuity cards instead show renewal-focused guidance and an auto-drafted renewal message.
+- Upsell opportunity-cost text stays limited to Ready for Expansion; Continuity cards instead show renewal-focused guidance and an auto-drafted renewal message.
 
 ## 2. Page-level toggle: Clients / Surveys
 
@@ -43,7 +43,7 @@ Settings keeps Community, Content, Integrations, and Roles. Users and Invites ta
 
 ## Technical Details
 
-- `Status` widens to `"invited_no_show" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "renewal"`; `STATUS_ORDER`, `STATUS_META`, buckets, droppable columns, and the cache version (`client_retention_cache_v6`) update together so old snapshots are discarded.
-- `analyzeNotes` gains `noShow` and `renewalOnly` flags; placement precedence stays: manual override > drag order > note-derived > score threshold. Score thresholds are unchanged for the four existing stages.
+- `Status` widens to `"invited_no_show" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"`; `STATUS_ORDER`, `STATUS_META`, buckets, droppable columns, and the cache version (`client_retention_cache_v6`) update together so old snapshots are discarded.
+- `analyzeNotes` gains `noShow` and `continuityOnly` flags; placement precedence stays: manual override > drag order > note-derived > score threshold. Score thresholds are unchanged for the four existing stages.
 - `status_override` values are stored as text in `client_retention_notes`, so no migration is required; the edge function keeps emitting the four computed statuses and the page maps the two new ones.
 - Reuse `AdminAllUsersManagement`, `AdminUserManagement`, `AdminInviteLinks`, and the Surveys page body as-is; the surveys view is extracted into a component so both the route and the tab share it.
