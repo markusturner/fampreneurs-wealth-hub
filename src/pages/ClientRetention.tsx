@@ -1651,6 +1651,24 @@ export default function ClientRetention() {
           </Dialog>
         </div>
       </div>
+      </>
+      )}
+
+      <Dialog open={invitesOpen} onOpenChange={setInvitesOpen}>
+        <DialogContent className="max-w-4xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Invites</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="bulk" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="bulk">Bulk Invite</TabsTrigger>
+              <TabsTrigger value="links">Invite Links</TabsTrigger>
+            </TabsList>
+            <TabsContent value="bulk"><AdminUserManagement /></TabsContent>
+            <TabsContent value="links"><AdminInviteLinks /></TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
         </>
       )}
     </div>
