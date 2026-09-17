@@ -32,7 +32,7 @@ const TYPES = [
   { value: 'single_choice', label: 'Multiple choice' },
 ]
 
-export default function Surveys() {
+export default function Surveys({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
@@ -164,11 +164,13 @@ export default function Surveys() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-4 md:py-8 px-3 sm:px-4 space-y-6 pb-20 md:pb-8">
+    <div className={embedded ? 'space-y-6' : 'container mx-auto max-w-5xl py-4 md:py-8 px-3 sm:px-4 space-y-6 pb-20 md:pb-8'}>
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/welcome')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        {!embedded && (
+          <Button variant="ghost" size="icon" onClick={() => navigate('/welcome')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
         <div className="min-w-0 flex-1">
           <h1 className="text-xl md:text-2xl font-bold truncate">Surveys</h1>
           <p className="text-sm text-muted-foreground">Share the link — answers are anonymous</p>

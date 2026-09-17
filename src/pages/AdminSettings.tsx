@@ -1,16 +1,13 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminPushTest } from '@/components/dashboard/admin-push-test'
-import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { ApiKeyManager } from '@/components/dashboard/api-key-manager'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-admin'
-import { AdminInviteLinks } from '@/components/dashboard/admin-invite-links'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Shield, Zap, Video, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
@@ -64,21 +61,9 @@ export function AdminSettings() {
         </Badge>
       </div>
 
-      <Tabs defaultValue={isAdmin ? "users" : "content"} className="space-y-4 md:space-y-6">
+      <Tabs defaultValue="community" className="space-y-4 md:space-y-6">
         <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
           <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto gap-1 p-1 rounded-xl bg-muted/60">
-            {isAdmin && (
-              <TabsTrigger value="users" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
-                <Shield className="h-4 w-4 shrink-0" />
-                Users
-              </TabsTrigger>
-            )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="invites" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
-                <Link2 className="h-4 w-4 shrink-0" />
-                Invites
-              </TabsTrigger>
-            )}
             {(isAdmin || isOwner) && (
               <TabsTrigger value="community" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <MessageCircle className="h-4 w-4 shrink-0" />
@@ -106,18 +91,6 @@ export function AdminSettings() {
           </TabsList>
         </div>
 
-        {isAdmin && (
-          <TabsContent value="users" className="space-y-6">
-            <AdminAllUsersManagement />
-          </TabsContent>
-        )}
-
-        {(isAdmin || isOwner) && (
-          <TabsContent value="invites" className="space-y-6">
-            <AdminUserManagement />
-            <AdminInviteLinks />
-          </TabsContent>
-        )}
 
         {(isAdmin || isOwner) && (
           <TabsContent value="community" className="space-y-6">

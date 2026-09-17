@@ -21,7 +21,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users } from "lucide-react"
+
+import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
+import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
+import { AdminInviteLinks } from "@/components/dashboard/admin-invite-links"
+import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
@@ -219,6 +224,9 @@ export default function ClientRetention() {
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
+  const [invitesOpen, setInvitesOpen] = useState(false)
+  const [pageView, setPageView] = useState<"clients" | "surveys">("clients")
+  const [clientsTab, setClientsTab] = useState<"queue" | "users">("queue")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
@@ -1168,6 +1176,49 @@ export default function ClientRetention() {
         </div>
       </header>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
+          {(["clients","surveys"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setPageView(v)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${pageView === v ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {pageView === "clients" && (
+          <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
+            <button
+              onClick={() => setClientsTab("queue")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "queue" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" /> Queue
+            </button>
+            <button
+              onClick={() => setClientsTab("users")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "users" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              <Users className="h-3.5 w-3.5" /> All Users
+            </button>
+          </div>
+        )}
+        {pageView === "clients" && clientsTab === "users" && (
+          <Button variant="outline" size="sm" className="h-8 text-xs shrink-0" onClick={() => setInvitesOpen(true)}>
+            <Link2 className="h-3.5 w-3.5 mr-1.5" /> Invites
+          </Button>
+        )}
+      </div>
+
+      {pageView === "surveys" ? (
+        <Surveys embedded />
+      ) : clientsTab === "users" ? (
+        <div className="min-w-0 overflow-x-auto"><AdminAllUsersManagement /></div>
+      ) : (
+      <>
+
+
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-4 sm:mb-5">
@@ -1273,6 +1324,9 @@ export default function ClientRetention() {
               >
                 <ArrowUpDown className={`h-3.5 w-3.5 transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`} />
               </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setInvitesOpen(true)}>
+                <Link2 className="h-3.5 w-3.5 mr-1.5" /> Invites
+              </Button>
             <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-card p-0.5">
               <button
                 onClick={() => setViewMode("board")}
@@ -1293,10 +1347,12 @@ export default function ClientRetention() {
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+                <QueueGroup status="invited_no_show" title="Invited — No Show" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited_no_show} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
               </div>
             </DndContext>
           ) : (
@@ -1553,10 +1609,12 @@ export default function ClientRetention() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">Auto (from signals)</SelectItem>
+                            <SelectItem value="invited_no_show">Invited — No Show</SelectItem>
                             <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
                             <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                            <SelectItem value="continuity">Continuity</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1638,6 +1696,24 @@ export default function ClientRetention() {
           </Dialog>
         </div>
       </div>
+      </>
+      )}
+
+      <Dialog open={invitesOpen} onOpenChange={setInvitesOpen}>
+        <DialogContent className="max-w-4xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Invites</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="bulk" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="bulk">Bulk Invite</TabsTrigger>
+              <TabsTrigger value="links">Invite Links</TabsTrigger>
+            </TabsList>
+            <TabsContent value="bulk"><AdminUserManagement /></TabsContent>
+            <TabsContent value="links"><AdminInviteLinks /></TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
         </>
       )}
     </div>
