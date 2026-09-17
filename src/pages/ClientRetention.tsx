@@ -1176,6 +1176,49 @@ export default function ClientRetention() {
         </div>
       </header>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
+          {(["clients","surveys"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setPageView(v)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${pageView === v ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {pageView === "clients" && (
+          <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
+            <button
+              onClick={() => setClientsTab("queue")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "queue" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" /> Queue
+            </button>
+            <button
+              onClick={() => setClientsTab("users")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "users" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
+            >
+              <Users className="h-3.5 w-3.5" /> All Users
+            </button>
+          </div>
+        )}
+        {pageView === "clients" && clientsTab === "users" && (
+          <Button variant="outline" size="sm" className="h-8 text-xs shrink-0" onClick={() => setInvitesOpen(true)}>
+            <Link2 className="h-3.5 w-3.5 mr-1.5" /> Invites
+          </Button>
+        )}
+      </div>
+
+      {pageView === "surveys" ? (
+        <Surveys embedded />
+      ) : clientsTab === "users" ? (
+        <div className="min-w-0 overflow-x-auto"><AdminAllUsersManagement /></div>
+      ) : (
+      <>
+
+
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-4 sm:mb-5">
