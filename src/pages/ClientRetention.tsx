@@ -1609,6 +1609,7 @@ export default function ClientRetention() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">Auto (from signals)</SelectItem>
+                            <SelectItem value="invited_no_show">Invited — No Show</SelectItem>
                             <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
