@@ -32,7 +32,7 @@ const TYPES = [
   { value: 'single_choice', label: 'Multiple choice' },
 ]
 
-export default function Surveys() {
+export default function Surveys({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
