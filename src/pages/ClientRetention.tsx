@@ -1614,6 +1614,7 @@ export default function ClientRetention() {
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
                             <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                            <SelectItem value="continuity">Continuity</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
