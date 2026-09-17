@@ -1278,6 +1278,9 @@ export default function ClientRetention() {
               >
                 <ArrowUpDown className={`h-3.5 w-3.5 transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`} />
               </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setInvitesOpen(true)}>
+                <Link2 className="h-3.5 w-3.5 mr-1.5" /> Invites
+              </Button>
             <div className="hidden sm:flex items-center gap-1 rounded-lg border bg-card p-0.5">
               <button
                 onClick={() => setViewMode("board")}
