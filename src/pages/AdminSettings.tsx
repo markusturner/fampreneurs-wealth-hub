@@ -64,21 +64,9 @@ export function AdminSettings() {
         </Badge>
       </div>
 
-      <Tabs defaultValue={isAdmin ? "users" : "content"} className="space-y-4 md:space-y-6">
+      <Tabs defaultValue="community" className="space-y-4 md:space-y-6">
         <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
           <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto gap-1 p-1 rounded-xl bg-muted/60">
-            {isAdmin && (
-              <TabsTrigger value="users" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
-                <Shield className="h-4 w-4 shrink-0" />
-                Users
-              </TabsTrigger>
-            )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="invites" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
-                <Link2 className="h-4 w-4 shrink-0" />
-                Invites
-              </TabsTrigger>
-            )}
             {(isAdmin || isOwner) && (
               <TabsTrigger value="community" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <MessageCircle className="h-4 w-4 shrink-0" />
