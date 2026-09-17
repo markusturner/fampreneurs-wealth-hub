@@ -94,18 +94,6 @@ export function AdminSettings() {
           </TabsList>
         </div>
 
-        {isAdmin && (
-          <TabsContent value="users" className="space-y-6">
-            <AdminAllUsersManagement />
-          </TabsContent>
-        )}
-
-        {(isAdmin || isOwner) && (
-          <TabsContent value="invites" className="space-y-6">
-            <AdminUserManagement />
-            <AdminInviteLinks />
-          </TabsContent>
-        )}
 
         {(isAdmin || isOwner) && (
           <TabsContent value="community" className="space-y-6">
