@@ -426,6 +426,15 @@ export default function ClientRetention() {
         if (!forceExpansion && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
       }
 
+      // A rating typed by hand in the change history beats everything else
+      const manualScore = entry.score_override != null ? Math.min(10, Math.max(1, Number(entry.score_override))) : null
+      if (manualScore != null) {
+        nextScore = manualScore
+        if (!entry.status_override) {
+          nextStatus = nextScore >= 8.5 ? "expansion_ready" : nextScore >= 6.5 ? "stable" : nextScore >= 4 ? "slipping" : "at_risk"
+        }
+      }
+
       return {
         ...c,
         score: nextScore,
