@@ -1388,10 +1388,16 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
   }
 
   // In detail mode we show one person's full record instead of the whole table.
+  // Client cards can reference either the auth user id or the profile row id,
+  // and partner households pass both emails joined together.
+  const focusEmails = (focusEmail || '')
+    .split(/[·,;/|]+/)
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
   const focusedUser = detailMode
     ? users.find((u) =>
-        (focusUserId && u.user_id === focusUserId) ||
-        (focusEmail && (u.email || '').toLowerCase() === focusEmail.toLowerCase()))
+        (focusUserId && (u.user_id === focusUserId || (u as any).id === focusUserId)) ||
+        (focusEmails.length > 0 && focusEmails.includes((u.email || '').toLowerCase())))
       ?? null
     : null
   const detailUser = detailMode ? focusedUser : mobileSelectedUser
