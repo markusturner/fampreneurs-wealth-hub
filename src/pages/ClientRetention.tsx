@@ -57,6 +57,7 @@ interface ClientScore {
   referrals_closed?: number
   is_partner_household?: boolean
   continuity?: boolean
+  ai_locked?: boolean
 }
 
 interface PartnerProfile {
@@ -195,7 +196,8 @@ export default function ClientRetention() {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
-  type NoteEntry = { id: string; note: string; created_at: string }
+  type AiAnalysis = { rating: number; status: Status; rationale?: string; concerns?: string[]; positives?: string[] }
+  type NoteEntry = { id: string; note: string; created_at: string; ai_analysis?: AiAnalysis | null }
   type NotesEntry = { entries: NoteEntry[]; status_override: Status | null }
   const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
@@ -402,8 +404,14 @@ export default function ClientRetention() {
       if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
       // Great feedback but trusts unfinished — strong Stable, not Expansion
       if (capStable && !forceExpansion) nextScore = Math.min(Math.max(nextScore, 7.8), 8.2)
+      // AI read of the most recent analyzed note wins over keyword guessing
+      const ai = entry.entries.find((e) => e.ai_analysis && typeof e.ai_analysis.rating === "number")?.ai_analysis ?? null
       let nextStatus: Status = entry.status_override ?? c.status
-      if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
+      if (ai) {
+        nextScore = Math.min(10, Math.max(1, Number(ai.rating.toFixed(1))))
+        if (!entry.status_override) nextStatus = ai.status
+      }
+      else if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
       else if (capStable && !entry.status_override) { nextStatus = "stable" }
       else if (!entry.status_override) {
         if (nextScore >= 8.5) nextStatus = "expansion_ready"
@@ -413,7 +421,7 @@ export default function ClientRetention() {
       }
 
       // Giving referrals (even unclosed) is engagement — small boost, capped below Expansion on its own
-      if (referralInProgress || referralGiven > 0) {
+      if (!ai && (referralInProgress || referralGiven > 0)) {
         nextScore = Math.min(10, nextScore + 0.3)
         if (!forceExpansion && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
       }
@@ -427,7 +435,14 @@ export default function ClientRetention() {
         referrals_given: referralGiven,
         referrals_closed: referralClosed,
         continuity: continuityOnly,
-        signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
+        ai_locked: !!ai,
+        signals: [
+          ...(ai?.rationale ? [{ label: `🤖 AI review (${ai.rating}/10): ${ai.rationale}`, severity: "info" as const }] : []),
+          ...(ai?.concerns ?? []).map((x) => ({ label: `⚠️ ${x}`, severity: "warn" as const })),
+          ...(ai ? [] : addedSignals),
+          ...noteSignals,
+          ...trimmedExisting,
+        ],
       }
     })
   }
@@ -482,6 +497,10 @@ export default function ClientRetention() {
       // Keep the category in sync with the adjusted score unless it's manually overridden
       if (noteMap[c.user_id]?.status_override) {
         return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDone && c.status === "stable" && c.score >= 7.5 }
+      }
+      if (c.ai_locked) {
+        const trustDoneAi = trustDone
+        return { ...c, trust_done: trustDoneAi, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDoneAi && c.status === "stable" && c.score >= 7.5 }
       }
       let status: Status
       if (c.continuity) status = "continuity"
@@ -612,7 +631,7 @@ export default function ClientRetention() {
   const loadNotes = async () => {
     const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
       supabase.from("client_retention_notes").select("user_id, status_override"),
-      supabase.from("client_retention_note_entries").select("id, user_id, note, created_at").order("created_at", { ascending: false }),
+      supabase.from("client_retention_note_entries").select("id, user_id, note, created_at, ai_analysis").order("created_at", { ascending: false }),
     ])
     const map: Record<string, NotesEntry> = {}
     ;(statusRows ?? []).forEach((r: any) => {
@@ -620,7 +639,7 @@ export default function ClientRetention() {
     })
     ;(entryRows ?? []).forEach((r: any) => {
       if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null }
-      map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at })
+      map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at, ai_analysis: (r.ai_analysis as AiAnalysis) ?? null })
     })
     setNotesMap(map)
     notesMapRef.current = map
