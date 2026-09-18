@@ -15,7 +15,7 @@ interface Body {
 }
 
 const PROMPTS: Record<string, string> = {
-  at_risk: 'The client is at risk of churning. Write a very short, warm SMS-style check-in (1-2 sentences, max ~40 words). Acknowledge they\'ve been quiet and offer a no-pressure 15-min call. No fluff.',
+  at_risk: 'The client is at risk of churning. Write a very short, warm SMS-style check-in (1-2 sentences, max ~40 words). Acknowledge they\'ve been quiet and offer a no-pressure quick call. No fluff.',
   slipping: 'The client is slipping in engagement. Write a very short SMS-style re-engagement message (1-2 sentences, max ~40 words). Reference one relevant next step this week. No fluff.',
   stable: 'The client is doing well. Write a very short SMS-style message (1-2 sentences, max ~40 words). Acknowledge their wins and ask if they know a family we should be talking to. No fluff.',
   expansion_ready: 'The client is ready for an upsell to the next program tier (TTV→PEA→Succession Society→TFFM). Write a very short SMS-style invitation (1-2 sentences, max ~40 words) to a strategy call. No fluff.',
