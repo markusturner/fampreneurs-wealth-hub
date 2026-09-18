@@ -6,13 +6,13 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { profileProgramCodes } from '@/lib/programs'
 import {
   Sheet,
   SheetContent,
-  SheetTrigger,
 } from '@/components/ui/sheet'
+
 
 const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
   'Family Business University': { slug: 'fbu', label: 'Family Business University' },
@@ -39,6 +39,18 @@ export function MobileBottomNav() {
   const { total: unreadDMTotal } = useUnreadDMCounts()
   const [moreOpen, setMoreOpen] = useState(false)
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
+
+  // Radix can leave the page unclickable for a moment after a sheet closes; clear it immediately.
+  useEffect(() => {
+    if (!moreOpen && !communityPickerOpen) {
+      const clear = () => { document.body.style.pointerEvents = '' }
+      clear()
+      const t = window.setTimeout(clear, 50)
+      return () => window.clearTimeout(t)
+    }
+  }, [moreOpen, communityPickerOpen])
+
+
 
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
 
@@ -220,23 +232,36 @@ export function MobileBottomNav() {
 
           {/* More button */}
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-            <SheetTrigger asChild>
-              <button className="flex items-center justify-center">
-                <div className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
-                  isMoreActive
-                    ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
-                    : "text-white/70 hover:text-white active:scale-95"
-                )}>
-                  <LayoutGrid className="h-5 w-5 flex-shrink-0" />
-                  {isMoreActive && (
-                    <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
-                      More
-                    </span>
-                  )}
-                </div>
-              </button>
-            </SheetTrigger>
+            <button
+              type="button"
+              aria-label="More"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (typeof document !== 'undefined') document.body.style.pointerEvents = ''
+                setMoreOpen(true)
+              }}
+              onClick={(e) => {
+                e.preventDefault()
+                if (!moreOpen) setMoreOpen(true)
+              }}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] touch-manipulation select-none"
+            >
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 pointer-events-none",
+                isMoreActive
+                  ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
+                  : "text-white/70 active:scale-95"
+              )}>
+                <LayoutGrid className="h-5 w-5 flex-shrink-0" />
+                {isMoreActive && (
+                  <span className="text-xs font-semibold whitespace-nowrap">
+                    More
+                  </span>
+                )}
+              </div>
+            </button>
+
             <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[75vh] overflow-hidden flex flex-col">
               {/* Handle */}
               <div className="flex justify-center mb-4 flex-shrink-0">
