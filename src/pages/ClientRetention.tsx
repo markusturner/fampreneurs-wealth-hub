@@ -16,12 +16,13 @@ import { DndContext, DragEndEvent, PointerSensor, closestCorners, useDroppable, 
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users } from "lucide-react"
+import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users } from "lucide-react"
 
 import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
 import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
@@ -198,7 +199,7 @@ export default function ClientRetention() {
   const [autopilot, setAutopilot] = useState(false)
   type AiAnalysis = { rating: number; status: Status; rationale?: string; concerns?: string[]; positives?: string[] }
   type NoteEntry = { id: string; note: string; created_at: string; ai_analysis?: AiAnalysis | null }
-  type NotesEntry = { entries: NoteEntry[]; status_override: Status | null }
+  type NotesEntry = { entries: NoteEntry[]; status_override: Status | null; score_override?: number | null }
   const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
   useEffect(() => { notesMapRef.current = notesMap }, [notesMap])
@@ -217,6 +218,11 @@ export default function ClientRetention() {
     created_at: string
   }
   const [historyMap, setHistoryMap] = useState<Record<string, HistoryRec[]>>({})
+  const [editHistId, setEditHistId] = useState<string | null>(null)
+  const [histScore, setHistScore] = useState<string>("")
+  const [histStatus, setHistStatus] = useState<Status | "auto">("auto")
+  const [histReason, setHistReason] = useState<string>("")
+  const [savingHist, setSavingHist] = useState(false)
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
@@ -368,7 +374,7 @@ export default function ClientRetention() {
   const mergeNotes = (list: ClientScore[], map: Record<string, NotesEntry>): ClientScore[] => {
     return list.map((c) => {
       const entry = map[c.user_id]
-      if (!entry || (!entry.entries.length && !entry.status_override)) return c
+      if (!entry || (!entry.entries.length && !entry.status_override && entry.score_override == null)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
       const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, continuityOnly } = analyzeNotes(combined)
 
@@ -426,6 +432,15 @@ export default function ClientRetention() {
         if (!forceExpansion && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
       }
 
+      // A rating typed by hand in the change history beats everything else
+      const manualScore = entry.score_override != null ? Math.min(10, Math.max(1, Number(entry.score_override))) : null
+      if (manualScore != null) {
+        nextScore = manualScore
+        if (!entry.status_override) {
+          nextStatus = nextScore >= 8.5 ? "expansion_ready" : nextScore >= 6.5 ? "stable" : nextScore >= 4 ? "slipping" : "at_risk"
+        }
+      }
+
       return {
         ...c,
         score: nextScore,
@@ -435,7 +450,7 @@ export default function ClientRetention() {
         referrals_given: referralGiven,
         referrals_closed: referralClosed,
         continuity: continuityOnly,
-        ai_locked: !!ai,
+        ai_locked: !!ai || manualScore != null,
         signals: [
           ...(ai?.rationale ? [{ label: `🤖 AI review (${ai.rating}/10): ${ai.rationale}`, severity: "info" as const }] : []),
           ...(ai?.concerns ?? []).map((x) => ({ label: `⚠️ ${x}`, severity: "warn" as const })),
@@ -630,15 +645,15 @@ export default function ClientRetention() {
 
   const loadNotes = async () => {
     const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
-      supabase.from("client_retention_notes").select("user_id, status_override"),
+      supabase.from("client_retention_notes").select("user_id, status_override, score_override"),
       supabase.from("client_retention_note_entries").select("id, user_id, note, created_at, ai_analysis").order("created_at", { ascending: false }),
     ])
     const map: Record<string, NotesEntry> = {}
     ;(statusRows ?? []).forEach((r: any) => {
-      map[r.user_id] = { entries: [], status_override: (r.status_override as Status) ?? null }
+      map[r.user_id] = { entries: [], status_override: (r.status_override as Status) ?? null, score_override: r.score_override != null ? Number(r.score_override) : null }
     })
     ;(entryRows ?? []).forEach((r: any) => {
-      if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null }
+      if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null, score_override: null }
       map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at, ai_analysis: (r.ai_analysis as AiAnalysis) ?? null })
     })
     setNotesMap(map)
@@ -942,19 +957,20 @@ export default function ClientRetention() {
           console.error("AI note analysis failed", e)
         }
       }
-      if (statusChanged) {
+      if (statusChanged || newEntry) {
         const { error } = await supabase
           .from("client_retention_notes")
           .upsert(
-            { user_id: selected.user_id, note: "", status_override: nextStatus, updated_by: user?.id ?? null },
+            { user_id: selected.user_id, note: "", status_override: nextStatus, score_override: newEntry ? null : (existing?.score_override ?? null), updated_by: user?.id ?? null },
             { onConflict: "user_id" }
           )
         if (error) throw error
       }
-      const prior = existing ?? { entries: [], status_override: null }
+      const prior = existing ?? { entries: [], status_override: null, score_override: null }
       const nextEntry: NotesEntry = {
         entries: newEntry ? [newEntry, ...prior.entries] : prior.entries,
         status_override: nextStatus,
+        score_override: newEntry ? null : (prior.score_override ?? null),
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
@@ -1008,6 +1024,66 @@ export default function ClientRetention() {
     } finally {
 
       setSavingNote(false)
+    }
+  }
+
+  // Editing a change-history entry: fix the wording, or re-set the rating/stage it produced
+  const saveHistoryEdit = async () => {
+    if (!selected || !editHistId) return
+    const hist = historyMap[selected.user_id] ?? []
+    const row = hist.find((h) => h.id === editHistId)
+    if (!row) return
+    const parsed = Number(histScore)
+    const newScore = histScore.trim() === "" || Number.isNaN(parsed) ? null : Math.min(10, Math.max(1, Number(parsed.toFixed(1))))
+    const newStatus = histStatus === "auto" ? null : histStatus
+    setSavingHist(true)
+    try {
+      const { error } = await supabase
+        .from("client_retention_history")
+        .update({ new_score: newScore, new_status: newStatus, reason: histReason.trim() || null })
+        .eq("id", editHistId)
+      if (error) throw error
+      setHistoryMap((prev) => ({
+        ...prev,
+        [selected.user_id]: (prev[selected.user_id] ?? []).map((h) =>
+          h.id === editHistId ? { ...h, new_score: newScore, new_status: newStatus, reason: histReason.trim() || null } : h
+        ),
+      }))
+
+      // The newest entry is the client's current state — push it onto the card too
+      if (hist[0]?.id === editHistId) {
+        const existing = notesMap[selected.user_id] ?? { entries: [], status_override: null, score_override: null }
+        const { error: upErr } = await supabase.from("client_retention_notes").upsert(
+          { user_id: selected.user_id, note: "", status_override: newStatus, score_override: newScore, updated_by: user?.id ?? null },
+          { onConflict: "user_id" },
+        )
+        if (upErr) throw upErr
+        const nextMap = { ...notesMap, [selected.user_id]: { ...existing, status_override: (newStatus as Status) ?? null, score_override: newScore } }
+        setNotesMap(nextMap)
+        applyClients(clients, nextMap)
+      }
+      setEditHistId(null)
+      toast.success("History updated")
+    } catch (e: any) {
+      toast.error("Couldn't update history: " + (e?.message ?? e))
+    } finally {
+      setSavingHist(false)
+    }
+  }
+
+  const deleteHistoryEntry = async (id: string) => {
+    if (!selected) return
+    setSavingHist(true)
+    try {
+      const { error } = await supabase.from("client_retention_history").delete().eq("id", id)
+      if (error) throw error
+      setHistoryMap((prev) => ({ ...prev, [selected.user_id]: (prev[selected.user_id] ?? []).filter((h) => h.id !== id) }))
+      if (editHistId === id) setEditHistId(null)
+      toast.success("History entry deleted")
+    } catch (e: any) {
+      toast.error("Couldn't delete entry: " + (e?.message ?? e))
+    } finally {
+      setSavingHist(false)
     }
   }
 
@@ -1597,25 +1673,100 @@ export default function ClientRetention() {
                               {hist.map((h) => {
                                 const scoreMoved = h.prev_score !== h.new_score
                                 const statusMoved = h.prev_status !== h.new_status
+                                const editing = editHistId === h.id
                                 return (
                                   <li key={h.id} className="rounded-md border bg-white px-2.5 py-2 text-sm">
-                                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                      {new Date(h.created_at).toLocaleString()}
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                        {new Date(h.created_at).toLocaleString()}
+                                        {hist[0]?.id === h.id && <span className="ml-1 text-[#290a52]">· current</span>}
+                                      </div>
+                                      <div className="flex items-center gap-1 flex-shrink-0">
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6"
+                                          onClick={() => {
+                                            setEditHistId(editing ? null : h.id)
+                                            setHistScore(h.new_score != null ? String(h.new_score) : "")
+                                            setHistStatus((h.new_status as Status) ?? "auto")
+                                            setHistReason(h.reason ?? "")
+                                          }}
+                                        >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                        </Button>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6 text-red-600 hover:text-red-700"
+                                          disabled={savingHist}
+                                          onClick={() => deleteHistoryEntry(h.id)}
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </div>
                                     </div>
-                                    <div className="mt-0.5">
-                                      {scoreMoved || statusMoved ? (
-                                        <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
-                                          {scoreMoved && statusMoved && " · "}
-                                          {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
-                                        </span>
-                                      ) : (
-                                        <span className="text-muted-foreground">
-                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
-                                        </span>
-                                      )}
-                                    </div>
-                                    {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                    {editing ? (
+                                      <div className="mt-2 space-y-2">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <Input
+                                            type="number"
+                                            min={1}
+                                            max={10}
+                                            step={0.1}
+                                            value={histScore}
+                                            onChange={(e) => setHistScore(e.target.value)}
+                                            placeholder="Rating 1-10"
+                                            className="h-8 w-28 text-xs"
+                                          />
+                                          <Select value={histStatus} onValueChange={(v) => setHistStatus(v as Status | "auto")}>
+                                            <SelectTrigger className="h-8 w-[170px] text-xs">
+                                              <SelectValue placeholder="Stage" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="auto">Auto (from signals)</SelectItem>
+                                              <SelectItem value="at_risk">At Risk</SelectItem>
+                                              <SelectItem value="slipping">Slipping</SelectItem>
+                                              <SelectItem value="stable">Stable</SelectItem>
+                                              <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                                              <SelectItem value="continuity">Continuity</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <Textarea
+                                          value={histReason}
+                                          onChange={(e) => setHistReason(e.target.value)}
+                                          rows={2}
+                                          placeholder="What happened"
+                                          className="text-xs"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <Button size="sm" className="h-7 text-xs" disabled={savingHist} onClick={saveHistoryEdit}>
+                                            Save
+                                          </Button>
+                                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditHistId(null)}>
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <div className="mt-0.5">
+                                          {scoreMoved || statusMoved ? (
+                                            <span className="font-medium text-[#290a52]">
+                                              {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
+                                              {scoreMoved && statusMoved && " · "}
+                                              {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
+                                            </span>
+                                          ) : (
+                                            <span className="text-muted-foreground">
+                                              No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
+                                            </span>
+                                          )}
+                                        </div>
+                                        {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                      </>
+                                    )}
                                   </li>
                                 )
                               })}

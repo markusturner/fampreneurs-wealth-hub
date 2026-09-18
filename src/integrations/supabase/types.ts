@@ -924,6 +924,7 @@ export type Database = {
         Row: {
           created_at: string
           note: string
+          score_override: number | null
           status_override: string | null
           updated_at: string
           updated_by: string | null
@@ -932,6 +933,7 @@ export type Database = {
         Insert: {
           created_at?: string
           note?: string
+          score_override?: number | null
           status_override?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -940,6 +942,7 @@ export type Database = {
         Update: {
           created_at?: string
           note?: string
+          score_override?: number | null
           status_override?: string | null
           updated_at?: string
           updated_by?: string | null

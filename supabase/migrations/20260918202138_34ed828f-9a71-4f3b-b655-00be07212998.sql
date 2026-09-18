@@ -1,0 +1,1 @@
+ALTER TABLE public.client_retention_notes ADD COLUMN IF NOT EXISTS score_override numeric;
