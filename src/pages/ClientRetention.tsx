@@ -217,6 +217,11 @@ export default function ClientRetention() {
     created_at: string
   }
   const [historyMap, setHistoryMap] = useState<Record<string, HistoryRec[]>>({})
+  const [editHistId, setEditHistId] = useState<string | null>(null)
+  const [histScore, setHistScore] = useState<string>("")
+  const [histStatus, setHistStatus] = useState<Status | "auto">("auto")
+  const [histReason, setHistReason] = useState<string>("")
+  const [savingHist, setSavingHist] = useState(false)
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
