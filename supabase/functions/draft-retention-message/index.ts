@@ -92,7 +92,7 @@ Signals detected:
 ${signalsText}
 ${notesLine}
 
-Return only the message body — no subject line, no headers.`
+Return only the message body - no subject line, no headers.`
 
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
