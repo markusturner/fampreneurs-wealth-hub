@@ -233,7 +233,6 @@ export default function ClientRetention() {
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
   const [pageView, setPageView] = useState<"clients" | "surveys" | "attendance">(isAttendanceView ? "attendance" : "clients")
-  const [clientsTab, setClientsTab] = useState<"queue" | "users">("queue")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
