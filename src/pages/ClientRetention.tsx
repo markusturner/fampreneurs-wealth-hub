@@ -932,21 +932,72 @@ export default function ClientRetention() {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
     const entry = selected ? notesMap[selected.user_id] : null
     setNoteDraft("")
+    setNoteFiles([])
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
 
+  // Read uploaded photos/documents and turn them into text the AI can score
+  const extractFilesText = async (files: File[]): Promise<string> => {
+    if (!files.length) return ""
+    const TEXTY = /\.(txt|csv|md|json|log|tsv|vcf|srt)$/i
+    const chunks: string[] = []
+    const aiFiles: { name: string; mime: string; data: string }[] = []
+
+    for (const f of files) {
+      if (f.size > 15 * 1024 * 1024) {
+        chunks.push(`File: ${f.name} (too large to read, over 15MB)`)
+        continue
+      }
+      const mime = f.type || ""
+      if (TEXTY.test(f.name) || mime.startsWith("text/")) {
+        const t = await f.text()
+        chunks.push(`File: ${f.name}\n${t.slice(0, 20000)}`)
+        continue
+      }
+      if (mime.startsWith("image/") || mime === "application/pdf" || /\.pdf$/i.test(f.name)) {
+        const buf = new Uint8Array(await f.arrayBuffer())
+        let bin = ""
+        for (let i = 0; i < buf.length; i += 8192) bin += String.fromCharCode(...buf.subarray(i, i + 8192))
+        aiFiles.push({ name: f.name, mime: mime || "application/pdf", data: btoa(bin) })
+        continue
+      }
+      chunks.push(`File: ${f.name} (format not readable here, please upload it as a PDF, image, or CSV)`)
+    }
+
+    if (aiFiles.length) {
+      const { data, error } = await supabase.functions.invoke("extract-document-text", { body: { files: aiFiles } })
+      if (error) {
+        chunks.push(`Attached files could not be read: ${error.message ?? error}`)
+      } else if (data?.text) {
+        chunks.push(String(data.text))
+      }
+    }
+    return chunks.join("\n\n")
+  }
+
   const saveNote = async () => {
     if (!selected) return
-    const text = noteDraft.trim()
+    let text = noteDraft.trim()
     const existing = notesMap[selected.user_id]
     const nextStatus = statusDraft === "auto" ? null : statusDraft
     const statusChanged = (existing?.status_override ?? null) !== nextStatus
-    if (!text && !statusChanged) {
-      toast.error("Type a note or change the status first.")
+    if (!text && !statusChanged && noteFiles.length === 0) {
+      toast.error("Type a note, attach a file, or change the status first.")
       return
     }
     setSavingNote(true)
     try {
+      if (noteFiles.length) {
+        setExtracting(true)
+        try {
+          const extracted = await extractFilesText(noteFiles)
+          if (extracted) {
+            text = [text, `Attached files (${noteFiles.map((f) => f.name).join(", ")}):`, extracted].filter(Boolean).join("\n\n")
+          }
+        } finally {
+          setExtracting(false)
+        }
+      }
       let newEntry: NoteEntry | null = null
       if (text) {
         const { data, error } = await supabase
