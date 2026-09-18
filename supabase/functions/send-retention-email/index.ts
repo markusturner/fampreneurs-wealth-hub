@@ -50,7 +50,7 @@ async function expandToEmail(body: Body): Promise<{ subject: string; html: strin
   const sys = `You are a warm, personal client-success writer for TruHeirs (a family wealth & trust program). Expand a short internal "text-style" save note into a longer EMAIL to the client. Keep it human, specific, and never salesy. 120-220 words. Use the client's first name. Sign off as "The Fampreneurs Team". Output strictly JSON: {"subject": string, "body": string} where body is plain text with paragraph breaks.`;
 
   const user = `Client: ${body.client_name}
-Program: ${body.program ?? "—"}
+Program: ${body.program ?? "-"}
 Status: ${body.status}
 Tone & intent: ${tone.intent}
 
