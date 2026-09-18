@@ -27,7 +27,7 @@ Rules:
 - Be decisive and realistic; most notes are not 9s.
 Return strict JSON only:
 {"rating": number, "status": "at_risk"|"slipping"|"stable"|"expansion_ready"|"continuity", "rationale": string, "concerns": string[], "positives": string[]}
-rationale: one short sentence explaining the rating.`;
+rationale: REQUIRED, one specific sentence citing evidence from the notes. concerns/positives: REQUIRED short evidence phrases from the notes (at least one concern if anything is unpaid, stalled, or quiet).`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -66,6 +66,7 @@ ${body.notes.slice(0, 12000)}
           { role: "user", content: user },
         ],
         response_format: { type: "json_object" },
+        temperature: 0.2,
       }),
     });
 
