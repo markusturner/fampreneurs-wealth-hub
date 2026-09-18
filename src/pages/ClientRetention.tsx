@@ -198,7 +198,7 @@ export default function ClientRetention() {
   const [autopilot, setAutopilot] = useState(false)
   type AiAnalysis = { rating: number; status: Status; rationale?: string; concerns?: string[]; positives?: string[] }
   type NoteEntry = { id: string; note: string; created_at: string; ai_analysis?: AiAnalysis | null }
-  type NotesEntry = { entries: NoteEntry[]; status_override: Status | null }
+  type NotesEntry = { entries: NoteEntry[]; status_override: Status | null; score_override?: number | null }
   const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
   useEffect(() => { notesMapRef.current = notesMap }, [notesMap])
