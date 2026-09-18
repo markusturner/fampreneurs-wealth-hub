@@ -630,15 +630,15 @@ export default function ClientRetention() {
 
   const loadNotes = async () => {
     const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
-      supabase.from("client_retention_notes").select("user_id, status_override"),
+      supabase.from("client_retention_notes").select("user_id, status_override, score_override"),
       supabase.from("client_retention_note_entries").select("id, user_id, note, created_at, ai_analysis").order("created_at", { ascending: false }),
     ])
     const map: Record<string, NotesEntry> = {}
     ;(statusRows ?? []).forEach((r: any) => {
-      map[r.user_id] = { entries: [], status_override: (r.status_override as Status) ?? null }
+      map[r.user_id] = { entries: [], status_override: (r.status_override as Status) ?? null, score_override: r.score_override != null ? Number(r.score_override) : null }
     })
     ;(entryRows ?? []).forEach((r: any) => {
-      if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null }
+      if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null, score_override: null }
       map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at, ai_analysis: (r.ai_analysis as AiAnalysis) ?? null })
     })
     setNotesMap(map)
