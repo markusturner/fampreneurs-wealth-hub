@@ -225,7 +225,7 @@ export default function ClientRetention() {
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
-  const [pageView, setPageView] = useState<"clients" | "surveys">("clients")
+  const [pageView, setPageView] = useState<"clients" | "surveys" | "attendance">(isAttendanceView ? "attendance" : "clients")
   const [clientsTab, setClientsTab] = useState<"queue" | "users">("queue")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
@@ -1145,21 +1145,10 @@ export default function ClientRetention() {
 
   return (
     <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl space-y-4">
-      <Helmet><title>{isAttendanceView ? 'Attendance Log' : 'Client Retention'} | TruHeirs Admin</title></Helmet>
+      <Helmet><title>{pageView === 'attendance' ? 'Attendance Log' : 'Client Retention'} | TruHeirs Admin</title></Helmet>
       <BackToWelcome />
 
-      {isAttendanceView ? (
-        <>
-          <header className="mb-4 sm:mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" /> Attendance Log
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Coaching call attendance — automated and manual entries.</p>
-          </header>
-          <CoachingCallAttendanceLog />
-        </>
-      ) : (
-        <>
+      <>
       <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
