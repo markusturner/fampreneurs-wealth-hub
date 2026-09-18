@@ -1515,14 +1515,16 @@ export function AdminAllUsersManagement() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : isMobile ? (
-              // Mobile: show selected user detail or name list
-              mobileSelectedUser ? (
+          ) : (detailMode || isMobile) ? (
+              // Detail view: one person with everything, or the mobile name list
+              detailUser ? (
                 <div className="space-y-4">
-                  <Button variant="ghost" size="sm" onClick={() => setMobileSelectedUser(null)} className="flex items-center gap-1 -ml-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </Button>
+                  {!detailMode && (
+                    <Button variant="ghost" size="sm" onClick={() => setMobileSelectedUser(null)} className="flex items-center gap-1 -ml-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </Button>
+                  )}
                   <div className="space-y-3 p-4 border rounded-lg">
                     <h3 className="font-semibold text-base break-words">
                       {detailUser.display_name || `${detailUser.first_name || ''} ${detailUser.last_name || ''}`.trim() || 'N/A'}
