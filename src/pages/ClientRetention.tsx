@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users } from "lucide-react"
+import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users, Paperclip, X as XIcon, FileText } from "lucide-react"
 
 import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
 import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
@@ -226,6 +226,9 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
+  const [noteFiles, setNoteFiles] = useState<File[]>([])
+  const [extracting, setExtracting] = useState(false)
+  const noteFileInputRef = useRef<HTMLInputElement>(null)
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   // Contract window per client (due date / extension) so drafts never claim an expired window is still open.
   const [contractDates, setContractDates] = useState<Record<string, { due?: string | null; ext?: string | null }>>({})
@@ -929,21 +932,72 @@ export default function ClientRetention() {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
     const entry = selected ? notesMap[selected.user_id] : null
     setNoteDraft("")
+    setNoteFiles([])
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
 
+  // Read uploaded photos/documents and turn them into text the AI can score
+  const extractFilesText = async (files: File[]): Promise<string> => {
+    if (!files.length) return ""
+    const TEXTY = /\.(txt|csv|md|json|log|tsv|vcf|srt)$/i
+    const chunks: string[] = []
+    const aiFiles: { name: string; mime: string; data: string }[] = []
+
+    for (const f of files) {
+      if (f.size > 15 * 1024 * 1024) {
+        chunks.push(`File: ${f.name} (too large to read, over 15MB)`)
+        continue
+      }
+      const mime = f.type || ""
+      if (TEXTY.test(f.name) || mime.startsWith("text/")) {
+        const t = await f.text()
+        chunks.push(`File: ${f.name}\n${t.slice(0, 20000)}`)
+        continue
+      }
+      if (mime.startsWith("image/") || mime === "application/pdf" || /\.pdf$/i.test(f.name)) {
+        const buf = new Uint8Array(await f.arrayBuffer())
+        let bin = ""
+        for (let i = 0; i < buf.length; i += 8192) bin += String.fromCharCode(...buf.subarray(i, i + 8192))
+        aiFiles.push({ name: f.name, mime: mime || "application/pdf", data: btoa(bin) })
+        continue
+      }
+      chunks.push(`File: ${f.name} (format not readable here, please upload it as a PDF, image, or CSV)`)
+    }
+
+    if (aiFiles.length) {
+      const { data, error } = await supabase.functions.invoke("extract-document-text", { body: { files: aiFiles } })
+      if (error) {
+        chunks.push(`Attached files could not be read: ${error.message ?? error}`)
+      } else if (data?.text) {
+        chunks.push(String(data.text))
+      }
+    }
+    return chunks.join("\n\n")
+  }
+
   const saveNote = async () => {
     if (!selected) return
-    const text = noteDraft.trim()
+    let text = noteDraft.trim()
     const existing = notesMap[selected.user_id]
     const nextStatus = statusDraft === "auto" ? null : statusDraft
     const statusChanged = (existing?.status_override ?? null) !== nextStatus
-    if (!text && !statusChanged) {
-      toast.error("Type a note or change the status first.")
+    if (!text && !statusChanged && noteFiles.length === 0) {
+      toast.error("Type a note, attach a file, or change the status first.")
       return
     }
     setSavingNote(true)
     try {
+      if (noteFiles.length) {
+        setExtracting(true)
+        try {
+          const extracted = await extractFilesText(noteFiles)
+          if (extracted) {
+            text = [text, `Attached files (${noteFiles.map((f) => f.name).join(", ")}):`, extracted].filter(Boolean).join("\n\n")
+          }
+        } finally {
+          setExtracting(false)
+        }
+      }
       let newEntry: NoteEntry | null = null
       if (text) {
         const { data, error } = await supabase
@@ -1000,6 +1054,7 @@ export default function ClientRetention() {
         : `Status set to ${nextStatus ?? "auto (from signals)"}`
       await logChange(selected.user_id, before, after, reason)
       setNoteDraft("")
+      setNoteFiles([])
       const moved = before && after && (before.score !== after.score || before.status !== after.status)
       toast.success(
         moved
@@ -1785,10 +1840,43 @@ export default function ClientRetention() {
                         placeholder="Add a new note & press Enter to append (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
-                      <div className="mt-2 flex justify-end gap-2">
+                      <input
+                        ref={noteFileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.csv,.txt,.md,.json,.doc,.docx,.xls,.xlsx"
+                        className="hidden"
+                        onChange={(e) => {
+                          const list = Array.from(e.target.files ?? [])
+                          if (list.length) setNoteFiles((prev) => [...prev, ...list])
+                          e.target.value = ""
+                        }}
+                      />
+                      {noteFiles.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {noteFiles.map((f, i) => (
+                            <li key={`${f.name}-${i}`} className="flex items-center gap-2 text-xs bg-white border rounded px-2 py-1">
+                              <FileText className="h-3.5 w-3.5 text-[#290a52] shrink-0" />
+                              <span className="truncate flex-1">{f.name}</span>
+                              <button
+                                type="button"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => setNoteFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                              >
+                                <XIcon className="h-3.5 w-3.5" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-2 flex justify-end gap-2 flex-wrap">
+                        <Button size="sm" variant="outline" onClick={() => noteFileInputRef.current?.click()} disabled={savingNote}>
+                          <Paperclip className="h-3.5 w-3.5 mr-1.5" />
+                          Attach photo or document
+                        </Button>
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-                          Add note & save status
+                          {extracting ? "Reading files…" : savingNote ? "Saving…" : "Add note & save status"}
                         </Button>
                       </div>
                     </section>
