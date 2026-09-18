@@ -921,7 +921,7 @@ export default function ClientRetention() {
           const priorNotes = (existing?.entries ?? []).map((e) => e.note).join("\n\n")
           const { data: ai, error: aiErr } = await supabase.functions.invoke("analyze-client-note", {
             body: {
-              client_name: selected.name,
+              client_name: selected.full_name,
               program: selected.program_name ?? selected.program ?? null,
               base_score: selected.score,
               signals: (selected.signals ?? []).filter((x) => !x.label.startsWith("📝")).slice(0, 12),
