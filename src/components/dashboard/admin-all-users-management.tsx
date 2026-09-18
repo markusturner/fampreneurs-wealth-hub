@@ -84,8 +84,16 @@ interface UserProfile {
   stripe_subscription_id?: string | null
 }
 
-export function AdminAllUsersManagement() {
+interface AdminAllUsersManagementProps {
+  /** When set, the component renders only this person's full detail card. */
+  focusUserId?: string | null
+  /** Fallback match when the health record uses a different id. */
+  focusEmail?: string | null
+}
+
+export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null }: AdminAllUsersManagementProps = {}) {
   const isMobile = useIsMobile()
+  const detailMode = !!(focusUserId || focusEmail)
   const [mobileSelectedUser, setMobileSelectedUser] = useState<UserProfile | null>(null)
   const [users, setUsers] = useState<UserProfile[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([])
