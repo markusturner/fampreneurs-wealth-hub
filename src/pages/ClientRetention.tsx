@@ -1708,7 +1708,7 @@ export default function ClientRetention() {
                                               <SelectItem value="at_risk">At Risk</SelectItem>
                                               <SelectItem value="slipping">Slipping</SelectItem>
                                               <SelectItem value="stable">Stable</SelectItem>
-                                              <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                                              <SelectItem value="expansion_ready">Ascension</SelectItem>
                                               <SelectItem value="continuity">Continuity</SelectItem>
                                             </SelectContent>
                                           </Select>
@@ -1770,7 +1770,7 @@ export default function ClientRetention() {
                             <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
-                            <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                            <SelectItem value="expansion_ready">Ascension</SelectItem>
                             <SelectItem value="continuity">Continuity</SelectItem>
                           </SelectContent>
                         </Select>
