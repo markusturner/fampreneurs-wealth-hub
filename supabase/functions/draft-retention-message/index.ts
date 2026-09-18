@@ -99,6 +99,7 @@ Return only the message body — no subject line, no headers.`
       },
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
+        max_tokens: 120,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
