@@ -1290,22 +1290,6 @@ export default function ClientRetention() {
           ))}
         </div>
         {pageView === "clients" && (
-          <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
-            <button
-              onClick={() => setClientsTab("queue")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "queue" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" /> Queue
-            </button>
-            <button
-              onClick={() => setClientsTab("users")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${clientsTab === "users" ? "bg-[#ffb500] text-[#290a52]" : "text-muted-foreground hover:bg-muted/60"}`}
-            >
-              <Users className="h-3.5 w-3.5" /> All Users
-            </button>
-          </div>
-        )}
-        {pageView === "clients" && clientsTab === "users" && (
           <Button variant="outline" size="sm" className="h-8 text-xs shrink-0" onClick={() => setInvitesOpen(true)}>
             <Link2 className="h-3.5 w-3.5 mr-1.5" /> Invites
           </Button>
@@ -1316,8 +1300,6 @@ export default function ClientRetention() {
         <div className="min-w-0 overflow-x-auto"><CoachingCallAttendanceLog /></div>
       ) : pageView === "surveys" ? (
         <Surveys embedded />
-      ) : clientsTab === "users" ? (
-        <div className="min-w-0 overflow-x-auto"><AdminAllUsersManagement /></div>
       ) : (
       <>
 
