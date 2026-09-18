@@ -19,7 +19,7 @@ interface Body {
 
 const STATUS_TONE: Record<string, { subject: string; intent: string }> = {
   at_risk: {
-    subject: "Checking in — we don't want to lose momentum",
+    subject: "Checking in - we don't want to lose momentum",
     intent: "Warm, sincere, slightly urgent. Acknowledge they've been quiet, reaffirm we're in their corner, and offer one concrete next step (a call, a resource, or a personal nudge). Do NOT sound salesy.",
   },
   slipping: {
@@ -31,7 +31,7 @@ const STATUS_TONE: Record<string, { subject: string; intent: string }> = {
     intent: "Encouraging, celebratory. Affirm what they're doing right and tease the next milestone.",
   },
   expansion_ready: {
-    subject: "You're crushing it — here's what's next",
+    subject: "You're crushing it - here's what's next",
     intent: "Confident, congratulatory. Recognize their wins and invite them to the next level (referral, upgrade, advanced module).",
   },
 };
@@ -47,10 +47,10 @@ async function expandToEmail(body: Body): Promise<{ subject: string; html: strin
     return { subject: tone.subject, html: textToHtml(text), text };
   }
 
-  const sys = `You are a warm, personal client-success writer for TruHeirs (a family wealth & trust program). Expand a short internal "text-style" save note into a longer EMAIL to the client. Keep it human, specific, and never salesy. 120-220 words. Use the client's first name. Sign off as "The Fampreneurs Team". Output strictly JSON: {"subject": string, "body": string} where body is plain text with paragraph breaks.`;
+  const sys = `You are a warm, personal client-success writer for TruHeirs (a family wealth & trust program). Expand a short internal "text-style" save note into a longer EMAIL to the client. Keep it human, specific, and never salesy. 120-220 words. Use the client's first name. Sign off as "The Fampreneurs Team". NEVER use em dashes (the long dash character) or emojis in the message. Use a regular hyphen or rephrase instead. Output strictly JSON: {"subject": string, "body": string} where body is plain text with paragraph breaks.`;
 
   const user = `Client: ${body.client_name}
-Program: ${body.program ?? "—"}
+Program: ${body.program ?? "-"}
 Status: ${body.status}
 Tone & intent: ${tone.intent}
 

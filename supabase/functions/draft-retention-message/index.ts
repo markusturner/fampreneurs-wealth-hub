@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Contract window: extension wins over the original due date.
     const endRaw = body.contract_extension_date || body.contract_due_date || null
     const end = endRaw ? new Date(endRaw) : null
-    let contractLine = 'Contract window: unknown — do NOT mention deadlines, windows, renewals dates or "before your window closes".'
+    let contractLine = 'Contract window: unknown - do NOT mention deadlines, windows, renewals dates or "before your window closes".'
     if (end && !isNaN(end.getTime())) {
       const daysLeft = daysBetween(end, now)
       if (daysLeft < 0) {
@@ -52,14 +52,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    let activityLine = 'Last activity: unknown — do not guess or claim recent participation.'
+    let activityLine = 'Last activity: unknown - do not guess or claim recent participation.'
     if (body.last_active_at) {
       const la = new Date(body.last_active_at)
       if (!isNaN(la.getTime())) {
         const d = daysBetween(now, la)
         activityLine = d <= 7
-          ? `Last activity: ${d} days ago — they are currently active.`
-          : `Last activity: ${d} days ago — do NOT say things like "great to see you on the calls" unless that is recent.`
+          ? `Last activity: ${d} days ago - they are currently active.`
+          : `Last activity: ${d} days ago - do NOT say things like "great to see you on the calls" unless that is recent.`
       }
     }
 
@@ -68,11 +68,13 @@ Deno.serve(async (req) => {
       ? `Recent private notes about this client (treat as facts, never quote them directly):\n${(body.notes ?? []).map(n => `- ${n}`).join('\n')}`
       : 'Recent private notes: none.'
 
-    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, BRIEF outreach in his voice — warm, direct, no fluff, no corporate language.
+    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, BRIEF outreach in his voice - warm, direct, no fluff, no corporate language.
 HARD RULES:
 - Keep it SHORT: 1-2 sentences, max ~40 words. This is a text message, not an email. No long paragraphs.
 - End EVERY message with a question so the client has a reason to reply.
-- Do NOT include a sign-off or signature. No "— The Fampreneurs Team", no "Warmly", no name at the end.
+- Do NOT include a sign-off or signature. No "The Fampreneurs Team", no "Warmly", no name at the end.
+- NEVER use em dashes (the long dash character) in the message. Use a regular hyphen or rephrase instead.
+- NEVER use emojis anywhere in the message.
 - NEVER put a length on a call. No "15-minute call", "quick 20 min", "30-minute chat". Just say "a quick call" or "hop on a call".
 - Never state a fact that is not supported by the client data below. No invented calls, wins, dates, deadlines or milestones.
 - Respect the contract window exactly as given. If it is expired, never imply it is still open.
@@ -90,7 +92,7 @@ Signals detected:
 ${signalsText}
 ${notesLine}
 
-Return only the message body — no subject line, no headers.`
+Return only the message body - no subject line, no headers.`
 
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
