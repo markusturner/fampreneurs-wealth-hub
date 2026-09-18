@@ -1666,6 +1666,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
                     </div>
                   </div>
                 </div>
+              ) : detailMode ? (
+                <p className="text-sm text-muted-foreground py-4">No account record found for this client.</p>
               ) : (
                 <ScrollArea className="h-[500px]">
                   <div className="divide-y">
