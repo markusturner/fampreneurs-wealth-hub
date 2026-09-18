@@ -444,7 +444,7 @@ export default function ClientRetention() {
         referrals_given: referralGiven,
         referrals_closed: referralClosed,
         continuity: continuityOnly,
-        ai_locked: !!ai,
+        ai_locked: !!ai || manualScore != null,
         signals: [
           ...(ai?.rationale ? [{ label: `🤖 AI review (${ai.rating}/10): ${ai.rationale}`, severity: "info" as const }] : []),
           ...(ai?.concerns ?? []).map((x) => ({ label: `⚠️ ${x}`, severity: "warn" as const })),
