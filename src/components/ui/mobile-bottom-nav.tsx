@@ -6,13 +6,13 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { profileProgramCodes } from '@/lib/programs'
 import {
   Sheet,
   SheetContent,
-  SheetTrigger,
 } from '@/components/ui/sheet'
+
 
 const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
   'Family Business University': { slug: 'fbu', label: 'Family Business University' },
