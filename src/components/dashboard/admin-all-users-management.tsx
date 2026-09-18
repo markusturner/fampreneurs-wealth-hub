@@ -1665,6 +1665,53 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
                         </button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Duration</span>
+                        {(() => {
+                          const prog = getContractProgress(detailUser);
+                          const start = (detailUser as any).contract_start_date ? new Date((detailUser as any).contract_start_date) : null;
+                          const due = (detailUser as any).contract_due_date ? new Date((detailUser as any).contract_due_date) : null;
+                          const ext = (detailUser as any).contract_extension_date ? new Date((detailUser as any).contract_extension_date) : null;
+                          if (!start || !due) return <span className="text-xs text-muted-foreground">—</span>;
+                          const end = ext || due;
+                          const now = new Date();
+                          const totalDays = Math.round((end.getTime() - start.getTime()) / 86400000);
+                          const elapsed = Math.max(0, Math.round((now.getTime() - start.getTime()) / 86400000));
+                          const remaining = Math.round((end.getTime() - now.getTime()) / 86400000);
+                          const expired = remaining < 0;
+                          return (
+                            <div className="text-right text-xs">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${expired ? 'bg-red-500' : prog >= 80 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${prog ?? 0}%` }} />
+                                </div>
+                                <span className={expired ? 'text-red-600 font-medium' : 'text-muted-foreground'}>
+                                  {expired ? `${Math.abs(remaining)}d past` : `${remaining}d left`}
+                                </span>
+                              </div>
+                              <span className="text-muted-foreground">{elapsed}/{totalDays} days</span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-muted-foreground shrink-0 pt-0.5">DFO Invitees</span>
+                        {(() => {
+                          const invitees = users.filter((u: any) => u.membership_type === 'family_member' && u.trustee_user_id === detailUser.user_id);
+                          if (invitees.length === 0) return <span className="text-xs text-muted-foreground">None</span>;
+                          return (
+                            <div className="text-right text-xs space-y-0.5">
+                              <Badge variant="secondary" className="text-[10px]">{invitees.length} invited</Badge>
+                              {invitees.map((inv: any) => (
+                                <div key={inv.user_id} className="flex items-center justify-end gap-1">
+                                  <span className="font-medium">{inv.display_name || `${inv.first_name || ''} ${inv.last_name || ''}`.trim() || inv.email}</span>
+                                  <span className="text-muted-foreground">{inv.email}</span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Notes</span>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(detailUser.user_id, (detailUser as any).admin_notes)}>
                           <StickyNote className="h-3 w-3 mr-1" /> {(detailUser as any).admin_notes ? 'Edit' : 'Add'}
