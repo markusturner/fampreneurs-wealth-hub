@@ -1525,39 +1525,39 @@ export function AdminAllUsersManagement() {
                   </Button>
                   <div className="space-y-3 p-4 border rounded-lg">
                     <h3 className="font-semibold text-base break-words">
-                      {mobileSelectedUser.display_name || `${mobileSelectedUser.first_name || ''} ${mobileSelectedUser.last_name || ''}`.trim() || 'N/A'}
+                      {detailUser.display_name || `${detailUser.first_name || ''} ${detailUser.last_name || ''}`.trim() || 'N/A'}
                     </h3>
                     <div className="space-y-2.5 text-sm">
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-muted-foreground shrink-0">Email</span>
-                        <span className="text-right break-all text-xs">{mobileSelectedUser.email}</span>
+                        <span className="text-right break-all text-xs">{detailUser.email}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Phone</span>
-                        {editingPhoneUserId === mobileSelectedUser.user_id ? (
+                        {editingPhoneUserId === detailUser.user_id ? (
                           <div className="flex items-center gap-1">
                             <Input
                               value={editingPhoneValue}
                               onChange={(e) => setEditingPhoneValue(e.target.value)}
                               placeholder="Enter phone"
                               className="h-7 w-32 text-xs"
-                              onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(mobileSelectedUser.user_id)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(detailUser.user_id)}
                             />
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(mobileSelectedUser.user_id)} disabled={savingPhone}>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(detailUser.user_id)} disabled={savingPhone}>
                               {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
                             </Button>
                             <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
                               <X className="h-3 w-3" />
                             </Button>
                           </div>
-                        ) : mobileSelectedUser.phone ? (
-                          <span className="text-right text-xs">{mobileSelectedUser.phone}</span>
+                        ) : detailUser.phone ? (
+                          <span className="text-right text-xs">{detailUser.phone}</span>
                         ) : (
                           <Button
                             size="sm"
                             variant="ghost"
                             className="h-7 text-xs text-muted-foreground"
-                            onClick={() => { setEditingPhoneUserId(mobileSelectedUser.user_id); setEditingPhoneValue('') }}
+                            onClick={() => { setEditingPhoneUserId(detailUser.user_id); setEditingPhoneValue('') }}
                           >
                             <Phone className="h-3 w-3 mr-1" />
                             Add
@@ -1566,40 +1566,40 @@ export function AdminAllUsersManagement() {
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Role</span>
-                        <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(mobileSelectedUser)}</div>
+                        <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(detailUser)}</div>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">TruHeirs</span>
-                        <Badge variant={mobileSelectedUser.truheirs_access !== false ? "default" : "secondary"} className={mobileSelectedUser.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
-                          {mobileSelectedUser.truheirs_access !== false ? "Yes" : "No"}
+                        <Badge variant={detailUser.truheirs_access !== false ? "default" : "secondary"} className={detailUser.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
+                          {detailUser.truheirs_access !== false ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">DFO</span>
                         <div className="text-right">
-                          <span className="font-medium text-xs">{getPackageInfo(mobileSelectedUser).package}</span>
-                          <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(mobileSelectedUser).amount}</span>
+                          <span className="font-medium text-xs">{getPackageInfo(detailUser).package}</span>
+                          <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(detailUser).amount}</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Contract Value</span>
-                        <span className="text-right text-xs">{formatCurrency((mobileSelectedUser as any).program_contract_value)}</span>
+                        <span className="text-right text-xs">{formatCurrency((detailUser as any).program_contract_value)}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Cash Collected</span>
-                        <span className="text-right text-xs">{formatCurrency((mobileSelectedUser as any).program_cash_collected)}</span>
+                        <span className="text-right text-xs">{formatCurrency((detailUser as any).program_cash_collected)}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Remaining</span>
-                        <span className="text-right text-xs font-medium">{(mobileSelectedUser as any).program_contract_value ? formatCurrency(getRemainingBalance(mobileSelectedUser)) : '—'}</span>
+                        <span className="text-right text-xs font-medium">{(detailUser as any).program_contract_value ? formatCurrency(getRemainingBalance(detailUser)) : '—'}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Program</span>
-                        <span className="text-right text-xs">{mobileSelectedUser.program_name || 'None'}</span>
+                        <span className="text-right text-xs">{detailUser.program_name || 'None'}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Forms</span>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(mobileSelectedUser.user_id)}>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(detailUser.user_id)}>
                           <FileText className="h-3 w-3 mr-1" /> View
                         </Button>
                       </div>
@@ -1608,38 +1608,38 @@ export function AdminAllUsersManagement() {
                         <button
                           className="text-xs hover:underline"
                           onClick={() => {
-                            setEditingContractUserId(mobileSelectedUser.user_id)
-                            setEditingContractStartDate((mobileSelectedUser as any).contract_start_date || '')
-                            setEditingContractDueDate((mobileSelectedUser as any).contract_due_date || '')
-                            setEditingContractExtensionDate((mobileSelectedUser as any).contract_extension_date || '')
+                            setEditingContractUserId(detailUser.user_id)
+                            setEditingContractStartDate((detailUser as any).contract_start_date || '')
+                            setEditingContractDueDate((detailUser as any).contract_due_date || '')
+                            setEditingContractExtensionDate((detailUser as any).contract_extension_date || '')
                           }}
                         >
-                          {(mobileSelectedUser as any).contract_start_date
-                            ? `${formatShortDate((mobileSelectedUser as any).contract_start_date)} – ${formatShortDate((mobileSelectedUser as any).contract_due_date)}`
+                          {(detailUser as any).contract_start_date
+                            ? `${formatShortDate((detailUser as any).contract_start_date)} – ${formatShortDate((detailUser as any).contract_due_date)}`
                             : 'Set dates'}
                         </button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Notes</span>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(mobileSelectedUser.user_id, (mobileSelectedUser as any).admin_notes)}>
-                          <StickyNote className="h-3 w-3 mr-1" /> {(mobileSelectedUser as any).admin_notes ? 'Edit' : 'Add'}
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(detailUser.user_id, (detailUser as any).admin_notes)}>
+                          <StickyNote className="h-3 w-3 mr-1" /> {(detailUser as any).admin_notes ? 'Edit' : 'Add'}
                         </Button>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5 pt-3 border-t">
-                      <Button size="sm" variant="outline" onClick={() => setPreviewUser(mobileSelectedUser)} className="px-2">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewUser(detailUser)} className="px-2">
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleResendCredentials(mobileSelectedUser)} disabled={resendingCredentialsId === mobileSelectedUser.user_id} className="px-2">
-                        {resendingCredentialsId === mobileSelectedUser.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                      <Button size="sm" variant="outline" onClick={() => handleResendCredentials(detailUser)} disabled={resendingCredentialsId === detailUser.user_id} className="px-2">
+                        {resendingCredentialsId === detailUser.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="px-2">
+                      <Button size="sm" variant="outline" onClick={() => setEditingUser(detailUser)} className="px-2">
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setLinkingUser(mobileSelectedUser)} className="px-2" title="Link related users">
+                      <Button size="sm" variant="outline" onClick={() => setLinkingUser(detailUser)} className="px-2" title="Link related users">
                         <Link2 className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive px-2">
+                      <Button size="sm" variant="outline" onClick={() => setDeletingUserId(detailUser.user_id)} className="text-destructive hover:text-destructive px-2">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
