@@ -15,11 +15,11 @@ interface Body {
 }
 
 const PROMPTS: Record<string, string> = {
-  at_risk: 'The client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they\'ve been quiet, ask how they\'re doing personally, offer a no-pressure 15-min call.',
-  slipping: 'The client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week.',
-  stable: 'The client is doing well. Write a friendly testimonial/referral ask (3-4 sentences). Acknowledge their wins and ask if they know a family we should be talking to.',
-  expansion_ready: 'The client is ready for an upsell to the next program tier (TTV→PEA→Succession Society→TFFM). Write an upbeat invitation (3-4 sentences) to a strategy call to discuss the next step.',
-  continuity: 'The client is not upgrading but should continue or renew. Write a short renewal/continuity message (3-4 sentences) focused on keeping their momentum and staying supported.',
+  at_risk: 'The client is at risk of churning. Write a very short, warm SMS-style check-in (1-2 sentences, max ~40 words). Acknowledge they\'ve been quiet and offer a no-pressure 15-min call. No fluff.',
+  slipping: 'The client is slipping in engagement. Write a very short SMS-style re-engagement message (1-2 sentences, max ~40 words). Reference one relevant next step this week. No fluff.',
+  stable: 'The client is doing well. Write a very short SMS-style message (1-2 sentences, max ~40 words). Acknowledge their wins and ask if they know a family we should be talking to. No fluff.',
+  expansion_ready: 'The client is ready for an upsell to the next program tier (TTV→PEA→Succession Society→TFFM). Write a very short SMS-style invitation (1-2 sentences, max ~40 words) to a strategy call. No fluff.',
+  continuity: 'The client is not upgrading but should continue or renew. Write a very short SMS-style renewal message (1-2 sentences, max ~40 words) focused on keeping momentum. No fluff.',
 }
 
 function daysBetween(a: Date, b: Date) {
@@ -68,8 +68,9 @@ Deno.serve(async (req) => {
       ? `Recent private notes about this client (treat as facts, never quote them directly):\n${(body.notes ?? []).map(n => `- ${n}`).join('\n')}`
       : 'Recent private notes: none.'
 
-    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, brief outreach in his voice — warm, direct, no fluff, no corporate language.
+    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, BRIEF outreach in his voice — warm, direct, no fluff, no corporate language.
 HARD RULES:
+- Keep it SHORT: 1-2 sentences, max ~40 words. This is a text message, not an email. No long paragraphs.
 - Never state a fact that is not supported by the client data below. No invented calls, wins, dates, deadlines or milestones.
 - Respect the contract window exactly as given. If it is expired, never imply it is still open.
 - Never contradict the private notes (unpaid balances, no-shows, silence, disputes).
@@ -98,6 +99,7 @@ Return only the message body — no subject line, no headers.`
       },
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
+        max_tokens: 120,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
