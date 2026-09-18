@@ -1752,13 +1752,13 @@ function QueueGroup({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
   return (
-    <section ref={setNodeRef} className={`min-w-[260px] flex-1 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
+    <section ref={setNodeRef} className={`min-w-[180px] flex-1 basis-0 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
       <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
         {icon}
         <h3 className="min-w-0 truncate text-xs font-semibold">{title}</h3>
         <span className="ml-auto rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{clients.length}</span>
       </div>
-      <div className="space-y-2 max-h-[560px] min-h-[140px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-hide">
+      <div className="space-y-2 max-h-[calc(100vh-360px)] min-h-[120px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-hide">
         {loading && clients.length === 0 && <>
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
