@@ -52,14 +52,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    let activityLine = 'Last activity: unknown — do not guess or claim recent participation.'
+    let activityLine = 'Last activity: unknown - do not guess or claim recent participation.'
     if (body.last_active_at) {
       const la = new Date(body.last_active_at)
       if (!isNaN(la.getTime())) {
         const d = daysBetween(now, la)
         activityLine = d <= 7
-          ? `Last activity: ${d} days ago — they are currently active.`
-          : `Last activity: ${d} days ago — do NOT say things like "great to see you on the calls" unless that is recent.`
+          ? `Last activity: ${d} days ago - they are currently active.`
+          : `Last activity: ${d} days ago - do NOT say things like "great to see you on the calls" unless that is recent.`
       }
     }
 
