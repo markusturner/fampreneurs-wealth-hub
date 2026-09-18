@@ -68,8 +68,9 @@ Deno.serve(async (req) => {
       ? `Recent private notes about this client (treat as facts, never quote them directly):\n${(body.notes ?? []).map(n => `- ${n}`).join('\n')}`
       : 'Recent private notes: none.'
 
-    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, brief outreach in his voice — warm, direct, no fluff, no corporate language.
+    const systemPrompt = `You are Markus's retention assistant at TruHeirs. Write personal, BRIEF outreach in his voice — warm, direct, no fluff, no corporate language.
 HARD RULES:
+- Keep it SHORT: 1-2 sentences, max ~40 words. This is a text message, not an email. No long paragraphs.
 - Never state a fact that is not supported by the client data below. No invented calls, wins, dates, deadlines or milestones.
 - Respect the contract window exactly as given. If it is expired, never imply it is still open.
 - Never contradict the private notes (unpaid balances, no-shows, silence, disputes).
