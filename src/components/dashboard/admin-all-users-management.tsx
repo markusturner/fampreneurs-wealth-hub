@@ -1618,8 +1618,32 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
                         <span className="text-muted-foreground shrink-0">Program</span>
                         <span className="text-right text-xs">{detailUser.program_name || 'None'}</span>
                       </div>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-muted-foreground shrink-0 pt-0.5">Trust Forms</span>
+                        <div className="text-right text-xs space-y-0.5">
+                          {(() => {
+                            const ts = (detailUser as any).trust_sub_dates || {};
+                            const keys = Object.keys(ts);
+                            if (keys.length === 0) return <span className="text-muted-foreground">No submissions</span>;
+                            return keys.sort().map(k => (
+                              <div key={k} className="flex items-center justify-end gap-1">
+                                <Check className="h-3 w-3 text-green-600" />
+                                <span className="font-medium">{k}</span>
+                                <span className="text-muted-foreground">{formatShortDate(ts[k])}</span>
+                              </div>
+                            ));
+                          })()}
+                          {(detailUser as any).proof_of_transfer_date && (
+                            <div className="flex items-center justify-end gap-1">
+                              <Check className="h-3 w-3 text-green-600" />
+                              <span className="font-medium">Proof of Transfer</span>
+                              <span className="text-muted-foreground">{formatShortDate((detailUser as any).proof_of_transfer_date)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-muted-foreground shrink-0">Forms</span>
+                        <span className="text-muted-foreground shrink-0">All Forms</span>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(detailUser.user_id)}>
                           <FileText className="h-3 w-3 mr-1" /> View
                         </Button>
