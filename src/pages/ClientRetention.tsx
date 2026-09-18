@@ -915,6 +915,26 @@ export default function ClientRetention() {
           .single()
         if (error) throw error
         newEntry = { id: data.id, note: data.note, created_at: data.created_at }
+
+        // Have the AI actually read the notes and rate the relationship
+        try {
+          const priorNotes = (existing?.entries ?? []).map((e) => e.note).join("\n\n")
+          const { data: ai, error: aiErr } = await supabase.functions.invoke("analyze-client-note", {
+            body: {
+              client_name: selected.name,
+              program: selected.program_name ?? selected.program ?? null,
+              base_score: selected.score,
+              signals: (selected.signals ?? []).filter((x) => !x.label.startsWith("📝")).slice(0, 12),
+              notes: [text, priorNotes].filter(Boolean).join("\n\n"),
+            },
+          })
+          if (!aiErr && ai && typeof ai.rating === "number") {
+            newEntry.ai_analysis = ai as AiAnalysis
+            await supabase.from("client_retention_note_entries").update({ ai_analysis: ai }).eq("id", newEntry.id)
+          }
+        } catch (e) {
+          console.error("AI note analysis failed", e)
+        }
       }
       if (statusChanged) {
         const { error } = await supabase
