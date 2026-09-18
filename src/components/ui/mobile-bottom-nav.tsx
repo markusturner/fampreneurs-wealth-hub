@@ -40,6 +40,18 @@ export function MobileBottomNav() {
   const [moreOpen, setMoreOpen] = useState(false)
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
 
+  // Radix can leave the page unclickable for a moment after a sheet closes; clear it immediately.
+  useEffect(() => {
+    if (!moreOpen && !communityPickerOpen) {
+      const clear = () => { document.body.style.pointerEvents = '' }
+      clear()
+      const t = window.setTimeout(clear, 50)
+      return () => window.clearTimeout(t)
+    }
+  }, [moreOpen, communityPickerOpen])
+
+
+
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
 
   const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
