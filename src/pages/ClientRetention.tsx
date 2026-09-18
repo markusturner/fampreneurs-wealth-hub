@@ -858,10 +858,19 @@ export default function ClientRetention() {
         .map((profile) => ({ user_id: profile.user_id, full_name: profile.full_name }))
       const signals = Array.from(new Map(members.flatMap((client) => client.signals).map((signal) => [signal.label, signal])).values())
       const trustDone = members.some((client) => client.trust_done) || hasTrustDone({ ...primary, signals })
-      const score = trustDone ? Math.max(9, ...members.map((client) => client.score)) : Number((members.reduce((sum, client) => sum + client.score, 0) / members.length).toFixed(1))
-      const status = trustDone
-        ? "expansion_ready"
-        : members.reduce<Status>((lowest, client) => STATUS_ORDER[client.status] < STATUS_ORDER[lowest] ? client.status : lowest, primary.status)
+      // A reviewed member (AI note review or manual rating) is the source of truth for the household
+      const reviewed = members.filter((client) => client.ai_locked)
+      const reviewedPick = reviewed.find((client) => client.user_id === primary.user_id) ?? reviewed[0]
+      const score = reviewedPick
+        ? reviewedPick.score
+        : trustDone
+          ? Math.max(9, ...members.map((client) => client.score))
+          : Number((members.reduce((sum, client) => sum + client.score, 0) / members.length).toFixed(1))
+      const status: Status = reviewedPick
+        ? reviewedPick.status
+        : trustDone
+          ? "expansion_ready"
+          : members.reduce<Status>((lowest, client) => STATUS_ORDER[client.status] < STATUS_ORDER[lowest] ? client.status : lowest, primary.status)
 
       return {
         ...primary,
