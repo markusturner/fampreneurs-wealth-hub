@@ -31,7 +31,7 @@ const STATUS_TONE: Record<string, { subject: string; intent: string }> = {
     intent: "Encouraging, celebratory. Affirm what they're doing right and tease the next milestone.",
   },
   expansion_ready: {
-    subject: "You're crushing it — here's what's next",
+    subject: "You're crushing it - here's what's next",
     intent: "Confident, congratulatory. Recognize their wins and invite them to the next level (referral, upgrade, advanced module).",
   },
 };
