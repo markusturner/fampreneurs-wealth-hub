@@ -1167,13 +1167,13 @@ export default function ClientRetention() {
 
       <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
-          {(["clients","surveys"] as const).map((v) => (
+          {([["clients","Clients"],["surveys","Surveys"],["attendance","Attendance Log"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setPageView(v)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${pageView === v ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${pageView === v ? "bg-[#290a52] text-white" : "text-muted-foreground hover:bg-muted/60"}`}
             >
-              {v}
+              {label}
             </button>
           ))}
         </div>
@@ -1200,7 +1200,9 @@ export default function ClientRetention() {
         )}
       </div>
 
-      {pageView === "surveys" ? (
+      {pageView === "attendance" ? (
+        <div className="min-w-0 overflow-x-auto"><CoachingCallAttendanceLog /></div>
+      ) : pageView === "surveys" ? (
         <Surveys embedded />
       ) : clientsTab === "users" ? (
         <div className="min-w-0 overflow-x-auto"><AdminAllUsersManagement /></div>
@@ -1703,8 +1705,7 @@ export default function ClientRetention() {
           </Tabs>
         </DialogContent>
       </Dialog>
-        </>
-      )}
+      </>
     </div>
   )
 }
