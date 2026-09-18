@@ -997,35 +997,6 @@ export default function ClientRetention() {
     }
   }
 
-  const deleteNoteEntry = async (entryId: string) => {
-    if (!selected) return
-    setSavingNote(true)
-    try {
-      const { error } = await supabase
-        .from("client_retention_note_entries")
-        .delete()
-        .eq("id", entryId)
-      if (error) throw error
-      const existing = notesMap[selected.user_id]
-      if (!existing) return
-      const nextEntry: NotesEntry = {
-        ...existing,
-        entries: existing.entries.filter((e) => e.id !== entryId),
-      }
-      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
-      setNotesMap(nextMap)
-      const before = clients.find((c) => c.user_id === selected.user_id)
-      const updated = applyClients(clients, nextMap)
-      const after = updated.find((c) => c.user_id === selected.user_id)
-      await logChange(selected.user_id, before, after, "Note removed")
-      toast.success("Note removed")
-    } catch (e: any) {
-      toast.error("Couldn't delete note: " + (e?.message ?? e))
-    } finally {
-
-      setSavingNote(false)
-    }
-  }
 
   // Editing a change-history entry: fix the wording, or re-set the rating/stage it produced
   const saveHistoryEdit = async () => {
