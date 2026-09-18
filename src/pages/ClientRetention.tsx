@@ -760,6 +760,7 @@ export default function ClientRetention() {
       })
     })
     setStartDates(map)
+    setContractDates(windows)
     setPartnerProfiles(profiles)
     return { startDates: map, profiles }
   }
