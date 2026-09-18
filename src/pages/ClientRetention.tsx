@@ -1840,10 +1840,43 @@ export default function ClientRetention() {
                         placeholder="Add a new note & press Enter to append (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
-                      <div className="mt-2 flex justify-end gap-2">
+                      <input
+                        ref={noteFileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.csv,.txt,.md,.json,.doc,.docx,.xls,.xlsx"
+                        className="hidden"
+                        onChange={(e) => {
+                          const list = Array.from(e.target.files ?? [])
+                          if (list.length) setNoteFiles((prev) => [...prev, ...list])
+                          e.target.value = ""
+                        }}
+                      />
+                      {noteFiles.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {noteFiles.map((f, i) => (
+                            <li key={`${f.name}-${i}`} className="flex items-center gap-2 text-xs bg-white border rounded px-2 py-1">
+                              <FileText className="h-3.5 w-3.5 text-[#290a52] shrink-0" />
+                              <span className="truncate flex-1">{f.name}</span>
+                              <button
+                                type="button"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => setNoteFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                              >
+                                <XIcon className="h-3.5 w-3.5" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-2 flex justify-end gap-2 flex-wrap">
+                        <Button size="sm" variant="outline" onClick={() => noteFileInputRef.current?.click()} disabled={savingNote}>
+                          <Paperclip className="h-3.5 w-3.5 mr-1.5" />
+                          Attach photo or document
+                        </Button>
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-                          Add note & save status
+                          {extracting ? "Reading files…" : savingNote ? "Saving…" : "Add note & save status"}
                         </Button>
                       </div>
                     </section>
