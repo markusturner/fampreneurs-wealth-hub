@@ -772,9 +772,12 @@ export default function ClientRetention() {
     // Resolve every source used to place cards before committing any remote
     // health payload. This prevents partial data from moving cards in stages.
     Promise.all([loadNotes(), loadAttendance(), loadClientProfiles(), loadHistory()]).then(([noteMap, attMap]) => {
-      // A complete local snapshot is already visible. Keep it untouched during
-      // startup so cards cannot jump columns after the first paint.
-      if (cached) return
+      // A complete local snapshot is already visible. Keep its placement, but
+      // re-apply the latest notes/AI ratings so edited reviews show right away.
+      if (cached) {
+        setClients((prev) => mergeNotes(prev, noteMap))
+        return
+      }
       loadCache(noteMap, attMap).then((hadCache) => {
         // Cached data renders instantly — only run the expensive recompute when there is no cache.
         // Fresh data still arrives via the 60s silent refresh below.
