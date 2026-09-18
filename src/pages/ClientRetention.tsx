@@ -689,21 +689,27 @@ export default function ClientRetention() {
     since.setDate(since.getDate() - 42)
     const { data } = await supabase
       .from("client_health_snapshots")
-      .select("score, computed_at")
+      .select("user_id, score, computed_at")
       .gte("computed_at", since.toISOString())
       .order("computed_at", { ascending: true })
 
-    const byDay = new Map<string, number[]>()
+    // One score per client per day (latest wins) so repeated runs don't skew the average
+    const byDay = new Map<string, Map<string, number>>()
     ;(data ?? []).forEach((row: any) => {
       const day = new Date(row.computed_at).toISOString().slice(0, 10)
-      const arr = byDay.get(day) ?? []
-      arr.push(Number(row.score))
-      byDay.set(day, arr)
+      const perUser = byDay.get(day) ?? new Map<string, number>()
+      perUser.set(String(row.user_id ?? "unknown"), Number(row.score))
+      byDay.set(day, perUser)
     })
-    const trendArr = Array.from(byDay.entries()).map(([day, scores]) => ({
-      day: day.slice(5),
-      avg: Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)),
-    }))
+    const trendArr = Array.from(byDay.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([day, perUser]) => {
+        const scores = Array.from(perUser.values())
+        return {
+          day: day.slice(5),
+          avg: Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)),
+        }
+      })
     setTrend(trendArr)
   }
 
@@ -1306,7 +1312,6 @@ export default function ClientRetention() {
                   <YAxis tick={{ fontSize: 11 }} />
                   <RTooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="No Show" stackId="a" fill="#64748b" />
                   <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
                   <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
                   <Bar dataKey="Stable" stackId="a" fill="#10b981" />
