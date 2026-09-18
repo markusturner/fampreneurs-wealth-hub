@@ -1186,7 +1186,7 @@ export default function ClientRetention() {
           contract_due_date: contractDates[selected.user_id]?.due ?? null,
           contract_extension_date: contractDates[selected.user_id]?.ext ?? null,
           last_active_at: selected.last_active_at,
-          notes: (notesMap[selected.user_id]?.entries ?? []).slice(-5).map((e: any) => e.text).filter(Boolean),
+          notes: (notesMap[selected.user_id]?.entries ?? []).slice(0, 5).map((e) => e.note).filter(Boolean),
         },
       })
 
