@@ -1821,6 +1821,12 @@ export default function ClientRetention() {
                         </Button>
                       </div>
                     </section>
+
+                    {/* Everything that used to live on the All Users page, for this client */}
+                    <section>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Account Record</p>
+                      <AdminAllUsersManagement focusUserId={selected.user_id} focusEmail={selected.email} />
+                    </section>
                   </div>
                 )}
               </div>
