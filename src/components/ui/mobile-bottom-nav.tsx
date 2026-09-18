@@ -220,23 +220,36 @@ export function MobileBottomNav() {
 
           {/* More button */}
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-            <SheetTrigger asChild>
-              <button className="flex items-center justify-center">
-                <div className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
-                  isMoreActive
-                    ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
-                    : "text-white/70 hover:text-white active:scale-95"
-                )}>
-                  <LayoutGrid className="h-5 w-5 flex-shrink-0" />
-                  {isMoreActive && (
-                    <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
-                      More
-                    </span>
-                  )}
-                </div>
-              </button>
-            </SheetTrigger>
+            <button
+              type="button"
+              aria-label="More"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (typeof document !== 'undefined') document.body.style.pointerEvents = ''
+                setMoreOpen(true)
+              }}
+              onClick={(e) => {
+                e.preventDefault()
+                if (!moreOpen) setMoreOpen(true)
+              }}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] touch-manipulation select-none"
+            >
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 pointer-events-none",
+                isMoreActive
+                  ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
+                  : "text-white/70 active:scale-95"
+              )}>
+                <LayoutGrid className="h-5 w-5 flex-shrink-0" />
+                {isMoreActive && (
+                  <span className="text-xs font-semibold whitespace-nowrap">
+                    More
+                  </span>
+                )}
+              </div>
+            </button>
+
             <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[75vh] overflow-hidden flex flex-col">
               {/* Handle */}
               <div className="flex justify-center mb-4 flex-shrink-0">
