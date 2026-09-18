@@ -368,7 +368,7 @@ export default function ClientRetention() {
   const mergeNotes = (list: ClientScore[], map: Record<string, NotesEntry>): ClientScore[] => {
     return list.map((c) => {
       const entry = map[c.user_id]
-      if (!entry || (!entry.entries.length && !entry.status_override)) return c
+      if (!entry || (!entry.entries.length && !entry.status_override && entry.score_override == null)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
       const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, continuityOnly } = analyzeNotes(combined)
 
