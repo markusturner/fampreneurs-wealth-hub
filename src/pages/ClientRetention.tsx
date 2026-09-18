@@ -227,6 +227,8 @@ export default function ClientRetention() {
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
+  // Contract window per client (due date / extension) so drafts never claim an expired window is still open.
+  const [contractDates, setContractDates] = useState<Record<string, { due?: string | null; ext?: string | null }>>({})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
