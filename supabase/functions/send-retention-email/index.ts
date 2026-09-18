@@ -19,7 +19,7 @@ interface Body {
 
 const STATUS_TONE: Record<string, { subject: string; intent: string }> = {
   at_risk: {
-    subject: "Checking in — we don't want to lose momentum",
+    subject: "Checking in - we don't want to lose momentum",
     intent: "Warm, sincere, slightly urgent. Acknowledge they've been quiet, reaffirm we're in their corner, and offer one concrete next step (a call, a resource, or a personal nudge). Do NOT sound salesy.",
   },
   slipping: {
