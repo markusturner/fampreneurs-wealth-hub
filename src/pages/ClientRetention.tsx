@@ -1180,6 +1180,13 @@ export default function ClientRetention() {
               ? [...selected.signals, { label: `Referral in progress: they gave ${selected.referrals_given ?? 1} referral${(selected.referrals_given ?? 1) === 1 ? "" : "s"} but none closed yet — follow up to help those folks get started, do not ask for new referrals` }]
               : selected.signals,
           program: selected.program,
+          program_name: selected.program_name,
+          score: selected.score,
+          contract_start_date: selected.contract_start_date ?? startDates[selected.user_id] ?? null,
+          contract_due_date: contractDates[selected.user_id]?.due ?? null,
+          contract_extension_date: contractDates[selected.user_id]?.ext ?? null,
+          last_active_at: selected.last_active_at,
+          notes: (notesMap[selected.user_id]?.entries ?? []).slice(-5).map((e: any) => e.text).filter(Boolean),
         },
       })
 
