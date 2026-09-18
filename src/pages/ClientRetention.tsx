@@ -997,35 +997,6 @@ export default function ClientRetention() {
     }
   }
 
-  const deleteNoteEntry = async (entryId: string) => {
-    if (!selected) return
-    setSavingNote(true)
-    try {
-      const { error } = await supabase
-        .from("client_retention_note_entries")
-        .delete()
-        .eq("id", entryId)
-      if (error) throw error
-      const existing = notesMap[selected.user_id]
-      if (!existing) return
-      const nextEntry: NotesEntry = {
-        ...existing,
-        entries: existing.entries.filter((e) => e.id !== entryId),
-      }
-      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
-      setNotesMap(nextMap)
-      const before = clients.find((c) => c.user_id === selected.user_id)
-      const updated = applyClients(clients, nextMap)
-      const after = updated.find((c) => c.user_id === selected.user_id)
-      await logChange(selected.user_id, before, after, "Note removed")
-      toast.success("Note removed")
-    } catch (e: any) {
-      toast.error("Couldn't delete note: " + (e?.message ?? e))
-    } finally {
-
-      setSavingNote(false)
-    }
-  }
 
   // Editing a change-history entry: fix the wording, or re-set the rating/stage it produced
   const saveHistoryEdit = async () => {
@@ -1795,30 +1766,6 @@ export default function ClientRetention() {
                           </SelectContent>
                         </Select>
                       </div>
-                      {(notesMap[selected.user_id]?.entries.length ?? 0) > 0 && (
-                        <ul className="mb-3 space-y-1.5">
-                          {notesMap[selected.user_id].entries.map((entry) => (
-                            <li key={entry.id} className="flex items-start gap-2 rounded-md bg-white border border-amber-200 p-2 text-sm">
-                              <div className="flex-1 min-w-0">
-                                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                  {new Date(entry.created_at).toLocaleString()}
-                                </div>
-                                <div className="whitespace-pre-wrap break-words">{entry.note}</div>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => deleteNoteEntry(entry.id)}
-                                disabled={savingNote}
-                                className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600"
-                                aria-label="Delete note"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                       <Textarea
                         value={noteDraft}
                         onChange={(e) => setNoteDraft(e.target.value)}
