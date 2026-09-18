@@ -1021,6 +1021,66 @@ export default function ClientRetention() {
     }
   }
 
+  // Editing a change-history entry: fix the wording, or re-set the rating/stage it produced
+  const saveHistoryEdit = async () => {
+    if (!selected || !editHistId) return
+    const hist = historyMap[selected.user_id] ?? []
+    const row = hist.find((h) => h.id === editHistId)
+    if (!row) return
+    const parsed = Number(histScore)
+    const newScore = histScore.trim() === "" || Number.isNaN(parsed) ? null : Math.min(10, Math.max(1, Number(parsed.toFixed(1))))
+    const newStatus = histStatus === "auto" ? null : histStatus
+    setSavingHist(true)
+    try {
+      const { error } = await supabase
+        .from("client_retention_history")
+        .update({ new_score: newScore, new_status: newStatus, reason: histReason.trim() || null })
+        .eq("id", editHistId)
+      if (error) throw error
+      setHistoryMap((prev) => ({
+        ...prev,
+        [selected.user_id]: (prev[selected.user_id] ?? []).map((h) =>
+          h.id === editHistId ? { ...h, new_score: newScore, new_status: newStatus, reason: histReason.trim() || null } : h
+        ),
+      }))
+
+      // The newest entry is the client's current state — push it onto the card too
+      if (hist[0]?.id === editHistId) {
+        const existing = notesMap[selected.user_id] ?? { entries: [], status_override: null, score_override: null }
+        const { error: upErr } = await supabase.from("client_retention_notes").upsert(
+          { user_id: selected.user_id, note: "", status_override: newStatus, score_override: newScore, updated_by: user?.id ?? null },
+          { onConflict: "user_id" },
+        )
+        if (upErr) throw upErr
+        const nextMap = { ...notesMap, [selected.user_id]: { ...existing, status_override: (newStatus as Status) ?? null, score_override: newScore } }
+        setNotesMap(nextMap)
+        applyClients(clients, nextMap)
+      }
+      setEditHistId(null)
+      toast.success("History updated")
+    } catch (e: any) {
+      toast.error("Couldn't update history: " + (e?.message ?? e))
+    } finally {
+      setSavingHist(false)
+    }
+  }
+
+  const deleteHistoryEntry = async (id: string) => {
+    if (!selected) return
+    setSavingHist(true)
+    try {
+      const { error } = await supabase.from("client_retention_history").delete().eq("id", id)
+      if (error) throw error
+      setHistoryMap((prev) => ({ ...prev, [selected.user_id]: (prev[selected.user_id] ?? []).filter((h) => h.id !== id) }))
+      if (editHistId === id) setEditHistId(null)
+      toast.success("History entry deleted")
+    } catch (e: any) {
+      toast.error("Couldn't delete entry: " + (e?.message ?? e))
+    } finally {
+      setSavingHist(false)
+    }
+  }
+
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     displayClients.forEach((c) => buckets[c.status].push(c))
