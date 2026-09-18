@@ -227,6 +227,8 @@ export default function ClientRetention() {
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
+  // Contract window per client (due date / extension) so drafts never claim an expired window is still open.
+  const [contractDates, setContractDates] = useState<Record<string, { due?: string | null; ext?: string | null }>>({})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
@@ -732,15 +734,21 @@ export default function ClientRetention() {
   const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, created_at")
+      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at")
     if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
+    const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
     const profiles: PartnerProfile[] = []
     ;(data ?? []).forEach((r: any) => {
       if (r.contract_start_date) {
         // Health results can identify clients by profile ID or auth user ID.
         if (r.id) map[r.id] = r.contract_start_date
         if (r.user_id) map[r.user_id] = r.contract_start_date
+      }
+      if (r.contract_due_date || r.contract_extension_date) {
+        const w = { due: r.contract_due_date, ext: r.contract_extension_date }
+        if (r.id) windows[r.id] = w
+        if (r.user_id) windows[r.user_id] = w
       }
       profiles.push({
         id: r.id,
@@ -752,6 +760,7 @@ export default function ClientRetention() {
       })
     })
     setStartDates(map)
+    setContractDates(windows)
     setPartnerProfiles(profiles)
     return { startDates: map, profiles }
   }
@@ -1171,6 +1180,13 @@ export default function ClientRetention() {
               ? [...selected.signals, { label: `Referral in progress: they gave ${selected.referrals_given ?? 1} referral${(selected.referrals_given ?? 1) === 1 ? "" : "s"} but none closed yet — follow up to help those folks get started, do not ask for new referrals` }]
               : selected.signals,
           program: selected.program,
+          program_name: selected.program_name,
+          score: selected.score,
+          contract_start_date: selected.contract_start_date ?? startDates[selected.user_id] ?? null,
+          contract_due_date: contractDates[selected.user_id]?.due ?? null,
+          contract_extension_date: contractDates[selected.user_id]?.ext ?? null,
+          last_active_at: selected.last_active_at,
+          notes: (notesMap[selected.user_id]?.entries ?? []).slice(0, 5).map((e) => e.note).filter(Boolean),
         },
       })
 
