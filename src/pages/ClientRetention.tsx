@@ -31,7 +31,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
-type Status = "invited_no_show" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
+type Status = "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
 type SortDirection = "asc" | "desc"
 
@@ -56,8 +56,8 @@ interface ClientScore {
   referrals_given?: number
   referrals_closed?: number
   is_partner_household?: boolean
-  no_show?: boolean
   continuity?: boolean
+  ai_locked?: boolean
 }
 
 interface PartnerProfile {
@@ -126,7 +126,6 @@ function outreachTopic(c: ClientScore): string {
 
 
   switch (c.status) {
-    case "invited_no_show": return "Invited but never showed up — send a personal nudge to get them on the next call."
     case "at_risk": return "Gone quiet — send a warm personal check-in and offer a no-pressure 15-min call."
     case "slipping": return "Engagement dipping — point them to one small win they can get this week."
     case "stable": return "Doing well — ask for a testimonial or a referral to a family they know."
@@ -154,7 +153,6 @@ function milestoneBadge(startDate?: string | null): { label: string; due: boolea
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
-  invited_no_show: { label: "Invited — No Show", color: "text-slate-700", bg: "bg-slate-100", ring: "ring-slate-300" },
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
   stable: { label: "Stable", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
@@ -162,7 +160,7 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
 }
 
-const STATUS_ORDER: Record<Status, number> = { invited_no_show: 0, at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
+const STATUS_ORDER: Record<Status, number> = { at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
 
 export default function ClientRetention() {
   const navigate = useNavigate()
@@ -198,7 +196,8 @@ export default function ClientRetention() {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
-  type NoteEntry = { id: string; note: string; created_at: string }
+  type AiAnalysis = { rating: number; status: Status; rationale?: string; concerns?: string[]; positives?: string[] }
+  type NoteEntry = { id: string; note: string; created_at: string; ai_analysis?: AiAnalysis | null }
   type NotesEntry = { entries: NoteEntry[]; status_override: Status | null }
   const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
@@ -291,7 +290,6 @@ export default function ClientRetention() {
     const referralInProgress = referralGiven > 0 && referralClosed < referralGiven
 
     // No-show: invited but never showed up — lands in the Invited — No Show column
-    const noShow = has(/\b(no show|no-show|didn'?t show|did not show|never showed|never showed up|invite sent,? no response|invited but (no|never) response|didn'?t show up|never came|never attended)\b/)
     // Continuity: engaged client who won't upsell — keep renewing instead
     const continuityOnly = has(/\b(not upselling|no upsell|no interest in upsell|won'?t upgrade|staying (at|on) current (level|tier|plan)|renewal|continuity|happy where (they|he|she) (is|are)|no desire to upgrade)\b/)
 
@@ -350,7 +348,7 @@ export default function ClientRetention() {
       boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
     }
 
-    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, noShow, continuityOnly }
+    return { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, continuityOnly }
   }
 
   // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
@@ -372,7 +370,7 @@ export default function ClientRetention() {
       const entry = map[c.user_id]
       if (!entry || (!entry.entries.length && !entry.status_override)) return c
       const combined = entry.entries.map((e) => e.note).join("\n")
-      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, noShow, continuityOnly } = analyzeNotes(combined)
+      const { boosts, addedSignals, drop, forceExpansion, capStable, referralConverted, referralInProgress, referralGiven, referralClosed, continuityOnly } = analyzeNotes(combined)
 
       // Build note signals (each entry shows as its own admin note line)
       const noteSignals = entry.entries.map((e) => ({
@@ -406,8 +404,14 @@ export default function ClientRetention() {
       if (boosts.trust >= 9 && boosts.fathom >= 9) nextScore = Math.max(nextScore, 9.2)
       // Great feedback but trusts unfinished — strong Stable, not Expansion
       if (capStable && !forceExpansion) nextScore = Math.min(Math.max(nextScore, 7.8), 8.2)
+      // AI read of the most recent analyzed note wins over keyword guessing
+      const ai = entry.entries.find((e) => e.ai_analysis && typeof e.ai_analysis.rating === "number")?.ai_analysis ?? null
       let nextStatus: Status = entry.status_override ?? c.status
-      if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
+      if (ai) {
+        nextScore = Math.min(10, Math.max(1, Number(ai.rating.toFixed(1))))
+        if (!entry.status_override) nextStatus = ai.status
+      }
+      else if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
       else if (capStable && !entry.status_override) { nextStatus = "stable" }
       else if (!entry.status_override) {
         if (nextScore >= 8.5) nextStatus = "expansion_ready"
@@ -417,7 +421,7 @@ export default function ClientRetention() {
       }
 
       // Giving referrals (even unclosed) is engagement — small boost, capped below Expansion on its own
-      if (referralInProgress || referralGiven > 0) {
+      if (!ai && (referralInProgress || referralGiven > 0)) {
         nextScore = Math.min(10, nextScore + 0.3)
         if (!forceExpansion && nextStatus !== "expansion_ready") nextScore = Math.min(8.2, nextScore)
       }
@@ -430,9 +434,15 @@ export default function ClientRetention() {
         referral_in_progress: referralInProgress,
         referrals_given: referralGiven,
         referrals_closed: referralClosed,
-        no_show: noShow,
         continuity: continuityOnly,
-        signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
+        ai_locked: !!ai,
+        signals: [
+          ...(ai?.rationale ? [{ label: `🤖 AI review (${ai.rating}/10): ${ai.rationale}`, severity: "info" as const }] : []),
+          ...(ai?.concerns ?? []).map((x) => ({ label: `⚠️ ${x}`, severity: "warn" as const })),
+          ...(ai ? [] : addedSignals),
+          ...noteSignals,
+          ...trimmedExisting,
+        ],
       }
     })
   }
@@ -488,9 +498,12 @@ export default function ClientRetention() {
       if (noteMap[c.user_id]?.status_override) {
         return { ...c, trust_done: trustDone, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDone && c.status === "stable" && c.score >= 7.5 }
       }
+      if (c.ai_locked) {
+        const trustDoneAi = trustDone
+        return { ...c, trust_done: trustDoneAi, referral_ask: !c.referral_converted && !c.referral_in_progress && !trustDoneAi && c.status === "stable" && c.score >= 7.5 }
+      }
       let status: Status
-      if (c.no_show) status = "invited_no_show"
-      else if (c.continuity) status = "continuity"
+      if (c.continuity) status = "continuity"
       else if (c.score >= 8.5) status = "expansion_ready"
       else if (c.score >= 6.5) status = "stable"
       else if (c.score >= 4) status = "slipping"
@@ -618,7 +631,7 @@ export default function ClientRetention() {
   const loadNotes = async () => {
     const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
       supabase.from("client_retention_notes").select("user_id, status_override"),
-      supabase.from("client_retention_note_entries").select("id, user_id, note, created_at").order("created_at", { ascending: false }),
+      supabase.from("client_retention_note_entries").select("id, user_id, note, created_at, ai_analysis").order("created_at", { ascending: false }),
     ])
     const map: Record<string, NotesEntry> = {}
     ;(statusRows ?? []).forEach((r: any) => {
@@ -626,7 +639,7 @@ export default function ClientRetention() {
     })
     ;(entryRows ?? []).forEach((r: any) => {
       if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null }
-      map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at })
+      map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at, ai_analysis: (r.ai_analysis as AiAnalysis) ?? null })
     })
     setNotesMap(map)
     notesMapRef.current = map
@@ -902,6 +915,26 @@ export default function ClientRetention() {
           .single()
         if (error) throw error
         newEntry = { id: data.id, note: data.note, created_at: data.created_at }
+
+        // Have the AI actually read the notes and rate the relationship
+        try {
+          const priorNotes = (existing?.entries ?? []).map((e) => e.note).join("\n\n")
+          const { data: ai, error: aiErr } = await supabase.functions.invoke("analyze-client-note", {
+            body: {
+              client_name: selected.full_name,
+              program: selected.program_name ?? selected.program ?? null,
+              base_score: selected.score,
+              signals: (selected.signals ?? []).filter((x) => !x.label.startsWith("📝")).slice(0, 12),
+              notes: [text, priorNotes].filter(Boolean).join("\n\n"),
+            },
+          })
+          if (!aiErr && ai && typeof ai.rating === "number") {
+            newEntry.ai_analysis = ai as AiAnalysis
+            await supabase.from("client_retention_note_entries").update({ ai_analysis: ai }).eq("id", newEntry.id)
+          }
+        } catch (e) {
+          console.error("AI note analysis failed", e)
+        }
       }
       if (statusChanged) {
         const { error } = await supabase
@@ -973,7 +1006,7 @@ export default function ClientRetention() {
   }
 
   const stats = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { invited_no_show: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     displayClients.forEach((c) => buckets[c.status].push(c))
     const avg = displayClients.length ? (displayClients.reduce((s, c) => s + c.score, 0) / displayClients.length).toFixed(1) : "0.0"
     const active = displayClients.filter((c) => c.last_active_at && (Date.now() - new Date(c.last_active_at).getTime()) / 86400000 <= 14).length
@@ -1003,7 +1036,7 @@ export default function ClientRetention() {
   }, [displayClients, boardOrder, sortField, sortDirection])
 
   const sortedBuckets = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { invited_no_show: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     sortedClients.forEach((client) => buckets[client.status].push(client))
     return buckets
   }, [sortedClients])
@@ -1221,7 +1254,7 @@ export default function ClientRetention() {
           <p className="text-[10px] sm:text-xs text-muted-foreground">Active / Inactive</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.active}<span className="text-sm sm:text-base text-muted-foreground"> / {stats.inactive}</span></p>
         </CardContent></Card>
-        {(["invited_no_show","at_risk","slipping","stable","expansion_ready","continuity"] as Status[]).map((s) => {
+        {(["at_risk","slipping","stable","expansion_ready","continuity"] as Status[]).map((s) => {
           const arr = stats.buckets[s].reduce((sum, c) => sum + c.arr_value, 0)
           const opp = s === "expansion_ready"
             ? stats.buckets[s].reduce((sum, c) => sum + (upsellInfo(c)?.cost ?? 0), 0)
@@ -1263,7 +1296,6 @@ export default function ClientRetention() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={[{
                   name: "Now",
-                  "No Show": stats.buckets.invited_no_show.length,
                   "At Risk": stats.buckets.at_risk.length,
                   "Slipping": stats.buckets.slipping.length,
                   "Stable": stats.buckets.stable.length,
@@ -1338,7 +1370,6 @@ export default function ClientRetention() {
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-                <QueueGroup status="invited_no_show" title="Invited — No Show" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited_no_show} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
@@ -1548,7 +1579,7 @@ export default function ClientRetention() {
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
                         const label = (s: string | null) =>
-                          s === "invited_no_show" ? "Invited — No Show" : s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : s === "continuity" ? "Continuity" : "—"
+                          s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : s === "continuity" ? "Continuity" : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -1600,7 +1631,6 @@ export default function ClientRetention() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">Auto (from signals)</SelectItem>
-                            <SelectItem value="invited_no_show">Invited — No Show</SelectItem>
                             <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>

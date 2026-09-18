@@ -895,6 +895,7 @@ export type Database = {
       }
       client_retention_note_entries: {
         Row: {
+          ai_analysis: Json | null
           created_at: string
           created_by: string | null
           id: string
@@ -902,6 +903,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_analysis?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -909,6 +911,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_analysis?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string

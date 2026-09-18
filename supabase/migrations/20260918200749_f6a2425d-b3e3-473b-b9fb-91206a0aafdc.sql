@@ -1,0 +1,1 @@
+ALTER TABLE public.client_retention_note_entries ADD COLUMN IF NOT EXISTS ai_analysis jsonb;
