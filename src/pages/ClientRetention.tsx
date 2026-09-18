@@ -1054,6 +1054,7 @@ export default function ClientRetention() {
         : `Status set to ${nextStatus ?? "auto (from signals)"}`
       await logChange(selected.user_id, before, after, reason)
       setNoteDraft("")
+      setNoteFiles([])
       const moved = before && after && (before.score !== after.score || before.status !== after.status)
       toast.success(
         moved
