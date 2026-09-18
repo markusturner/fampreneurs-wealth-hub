@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Contract window: extension wins over the original due date.
     const endRaw = body.contract_extension_date || body.contract_due_date || null
     const end = endRaw ? new Date(endRaw) : null
-    let contractLine = 'Contract window: unknown — do NOT mention deadlines, windows, renewals dates or "before your window closes".'
+    let contractLine = 'Contract window: unknown - do NOT mention deadlines, windows, renewals dates or "before your window closes".'
     if (end && !isNaN(end.getTime())) {
       const daysLeft = daysBetween(end, now)
       if (daysLeft < 0) {
