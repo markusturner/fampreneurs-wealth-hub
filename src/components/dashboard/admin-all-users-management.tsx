@@ -1647,7 +1647,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
                         </Button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5 pt-3 border-t">
+                    <div className="grid grid-cols-5 gap-1.5 pt-3 border-t">
                       <Button size="sm" variant="outline" onClick={() => setPreviewUser(detailUser)} className="px-2">
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
