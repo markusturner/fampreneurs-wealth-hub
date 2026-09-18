@@ -130,6 +130,22 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "client_email and short_draft required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Clean the email: strip zero-width/invisible chars, smart quotes, angle brackets and whitespace
+    const rawEmail = String(body.client_email);
+    const cleanedEmail = rawEmail
+      .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
+      .replace(/^.*<|>.*$/g, "")
+      .trim()
+      .toLowerCase();
+
+    if (!/^[\x20-\x7E]+$/.test(cleanedEmail) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanedEmail)) {
+      return new Response(
+        JSON.stringify({ error: `This client's email address is not valid: "${rawEmail}". Please fix it on their account record and try again.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    body.client_email = cleanedEmail;
+
     const { subject, html, text } = await expandToEmail(body);
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
