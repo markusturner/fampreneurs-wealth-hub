@@ -1371,7 +1371,7 @@ export default function ClientRetention() {
                   <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
                   <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
                   <Bar dataKey="Stable" stackId="a" fill="#10b981" />
-                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
+                  <Bar dataKey="Ascension" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="Continuity" stackId="a" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
