@@ -147,8 +147,6 @@ export function MobileBottomNav() {
     { name: 'Client Metrics', href: '/client-metrics', icon: BarChart3 },
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
     { name: 'Client Retention', href: '/client-retention', icon: HeartPulse },
-    { name: 'Attendance Log', href: '/client-retention?tab=attendance', icon: ClipboardList },
-    { name: 'Surveys', href: '/surveys', icon: FileText },
   ] : []
 
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)

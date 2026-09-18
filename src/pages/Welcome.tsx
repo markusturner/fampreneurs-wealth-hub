@@ -336,12 +336,6 @@ export default function Welcome() {
                 <DropdownMenuItem onClick={() => navigate('/client-retention')}>
                   <HeartPulse className="h-4 w-4 mr-2" /> Client Retention
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/client-retention?tab=attendance')}>
-                  <ClipboardList className="h-4 w-4 mr-2" /> Attendance Log
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/surveys')}>
-                  <FileText className="h-4 w-4 mr-2" /> Surveys
-                </DropdownMenuItem>
               </>
             )}
             <DropdownMenuSeparator />
