@@ -734,15 +734,21 @@ export default function ClientRetention() {
   const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, created_at")
+      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at")
     if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
+    const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
     const profiles: PartnerProfile[] = []
     ;(data ?? []).forEach((r: any) => {
       if (r.contract_start_date) {
         // Health results can identify clients by profile ID or auth user ID.
         if (r.id) map[r.id] = r.contract_start_date
         if (r.user_id) map[r.user_id] = r.contract_start_date
+      }
+      if (r.contract_due_date || r.contract_extension_date) {
+        const w = { due: r.contract_due_date, ext: r.contract_extension_date }
+        if (r.id) windows[r.id] = w
+        if (r.user_id) windows[r.user_id] = w
       }
       profiles.push({
         id: r.id,
