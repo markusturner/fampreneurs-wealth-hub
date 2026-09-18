@@ -25,6 +25,15 @@ Rules:
 - Unpaid balances, renegotiated payment plans, missed calls, or silence LOWER the score.
 - Buying the program is not a result. Mentioning a trust is not a completed trust.
 - Be decisive and realistic; most notes are not 9s.
+- Judge the NOTES on their own. Do NOT anchor on the system-computed score; it can be stale or wrong.
+- HARD CAPS, no exceptions:
+  - Client asks to cancel, quit, get a refund, or mentions a chargeback: rating MUST be 1-2.5, status at_risk.
+  - Client asks to pause/suspend their subscription or payments: rating MUST be 1-3, status at_risk.
+  - Any unpaid or overdue balance mentioned: rating MUST be 1-3.9, status at_risk.
+  - Client hired someone else to do the work (e.g. "I have someone working on my trust"): rating MUST be 1-3, status at_risk.
+  - Client ghosting or unresponsive 30+ days: rating MUST be under 4.
+- Several of these at once means the LOWEST end of the range, not the highest.
+- Mixed notes: the most recent bad news outweighs older good news.
 Return strict JSON only:
 {"rating": number, "status": "at_risk"|"slipping"|"stable"|"expansion_ready"|"continuity", "rationale": string, "concerns": string[], "positives": string[]}
 rationale: REQUIRED, one specific sentence citing evidence from the notes. concerns/positives: REQUIRED short evidence phrases from the notes (at least one concern if anything is unpaid, stalled, or quiet).`;
