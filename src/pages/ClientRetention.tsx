@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users } from "lucide-react"
+import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users, Paperclip, X as XIcon, FileText } from "lucide-react"
 
 import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
 import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
@@ -226,6 +226,9 @@ export default function ClientRetention() {
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
+  const [noteFiles, setNoteFiles] = useState<File[]>([])
+  const [extracting, setExtracting] = useState(false)
+  const noteFileInputRef = useRef<HTMLInputElement>(null)
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   // Contract window per client (due date / extension) so drafts never claim an expired window is still open.
   const [contractDates, setContractDates] = useState<Record<string, { due?: string | null; ext?: string | null }>>({})
