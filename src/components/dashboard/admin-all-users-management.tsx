@@ -1387,20 +1387,31 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null 
     return "Standard trustee view: Access to community features, courses, messages, and basic platform functionality."
   }
 
+  // In detail mode we show one person's full record instead of the whole table.
+  const focusedUser = detailMode
+    ? users.find((u) =>
+        (focusUserId && u.user_id === focusUserId) ||
+        (focusEmail && (u.email || '').toLowerCase() === focusEmail.toLowerCase()))
+      ?? null
+    : null
+  const detailUser = detailMode ? focusedUser : mobileSelectedUser
+
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5" style={{ color: '#ffb500' }} />
-            <CardTitle>All Users Management</CardTitle>
-          </div>
-          <CardDescription>
-            View, edit, and manage all trustees and family members in the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3">
+      <Card className={detailMode ? 'border-0 shadow-none bg-transparent' : undefined}>
+        {!detailMode && (
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" style={{ color: '#ffb500' }} />
+              <CardTitle>All Users Management</CardTitle>
+            </div>
+            <CardDescription>
+              View, edit, and manage all trustees and family members in the system
+            </CardDescription>
+          </CardHeader>
+        )}
+        <CardContent className={detailMode ? 'space-y-4 p-0' : 'space-y-4'}>
+          <div className={detailMode ? 'hidden' : 'flex flex-col gap-3'}>
             <div className="flex items-center gap-2 justify-between">
               <div className="flex items-center gap-2 flex-1">
                 <Search className="h-4 w-4 text-muted-foreground" />
