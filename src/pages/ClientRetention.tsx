@@ -1672,25 +1672,100 @@ export default function ClientRetention() {
                               {hist.map((h) => {
                                 const scoreMoved = h.prev_score !== h.new_score
                                 const statusMoved = h.prev_status !== h.new_status
+                                const editing = editHistId === h.id
                                 return (
                                   <li key={h.id} className="rounded-md border bg-white px-2.5 py-2 text-sm">
-                                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                      {new Date(h.created_at).toLocaleString()}
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                        {new Date(h.created_at).toLocaleString()}
+                                        {hist[0]?.id === h.id && <span className="ml-1 text-[#290a52]">· current</span>}
+                                      </div>
+                                      <div className="flex items-center gap-1 flex-shrink-0">
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6"
+                                          onClick={() => {
+                                            setEditHistId(editing ? null : h.id)
+                                            setHistScore(h.new_score != null ? String(h.new_score) : "")
+                                            setHistStatus((h.new_status as Status) ?? "auto")
+                                            setHistReason(h.reason ?? "")
+                                          }}
+                                        >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                        </Button>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6 text-red-600 hover:text-red-700"
+                                          disabled={savingHist}
+                                          onClick={() => deleteHistoryEntry(h.id)}
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </div>
                                     </div>
-                                    <div className="mt-0.5">
-                                      {scoreMoved || statusMoved ? (
-                                        <span className="font-medium text-[#290a52]">
-                                          {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
-                                          {scoreMoved && statusMoved && " · "}
-                                          {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
-                                        </span>
-                                      ) : (
-                                        <span className="text-muted-foreground">
-                                          No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
-                                        </span>
-                                      )}
-                                    </div>
-                                    {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                    {editing ? (
+                                      <div className="mt-2 space-y-2">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <Input
+                                            type="number"
+                                            min={1}
+                                            max={10}
+                                            step={0.1}
+                                            value={histScore}
+                                            onChange={(e) => setHistScore(e.target.value)}
+                                            placeholder="Rating 1-10"
+                                            className="h-8 w-28 text-xs"
+                                          />
+                                          <Select value={histStatus} onValueChange={(v) => setHistStatus(v as Status | "auto")}>
+                                            <SelectTrigger className="h-8 w-[170px] text-xs">
+                                              <SelectValue placeholder="Stage" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="auto">Auto (from signals)</SelectItem>
+                                              <SelectItem value="at_risk">At Risk</SelectItem>
+                                              <SelectItem value="slipping">Slipping</SelectItem>
+                                              <SelectItem value="stable">Stable</SelectItem>
+                                              <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                                              <SelectItem value="continuity">Continuity</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <Textarea
+                                          value={histReason}
+                                          onChange={(e) => setHistReason(e.target.value)}
+                                          rows={2}
+                                          placeholder="What happened"
+                                          className="text-xs"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <Button size="sm" className="h-7 text-xs" disabled={savingHist} onClick={saveHistoryEdit}>
+                                            Save
+                                          </Button>
+                                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditHistId(null)}>
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <div className="mt-0.5">
+                                          {scoreMoved || statusMoved ? (
+                                            <span className="font-medium text-[#290a52]">
+                                              {scoreMoved && <>Rating {h.prev_score ?? "—"} → {h.new_score ?? "—"} out of 10</>}
+                                              {scoreMoved && statusMoved && " · "}
+                                              {statusMoved && <>{label(h.prev_status)} → {label(h.new_status)}</>}
+                                            </span>
+                                          ) : (
+                                            <span className="text-muted-foreground">
+                                              No change · Rating stayed {h.new_score ?? h.prev_score ?? "—"} out of 10
+                                            </span>
+                                          )}
+                                        </div>
+                                        {h.reason && <div className="text-xs text-muted-foreground break-words">{h.reason}</div>}
+                                      </>
+                                    )}
                                   </li>
                                 )
                               })}
