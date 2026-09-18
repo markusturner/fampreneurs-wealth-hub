@@ -157,7 +157,7 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
   stable: { label: "Stable", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
-  expansion_ready: { label: "Expansion Ready", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
+  expansion_ready: { label: "Ascension", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
   continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
 }
 
@@ -1361,7 +1361,7 @@ export default function ClientRetention() {
                   "At Risk": stats.buckets.at_risk.length,
                   "Slipping": stats.buckets.slipping.length,
                   "Stable": stats.buckets.stable.length,
-                  "Expansion": stats.buckets.expansion_ready.length,
+                  "Ascension": stats.buckets.expansion_ready.length,
                   "Continuity": stats.buckets.continuity.length,
                 }]}>
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -1371,7 +1371,7 @@ export default function ClientRetention() {
                   <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
                   <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
                   <Bar dataKey="Stable" stackId="a" fill="#10b981" />
-                  <Bar dataKey="Expansion" stackId="a" fill="#8b5cf6" />
+                  <Bar dataKey="Ascension" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="Continuity" stackId="a" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
@@ -1434,7 +1434,7 @@ export default function ClientRetention() {
                 <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="expansion_ready" title="Ready for Expansion" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
               </div>
             </DndContext>
@@ -1640,7 +1640,7 @@ export default function ClientRetention() {
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
                         const label = (s: string | null) =>
-                          s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Expansion Ready" : s === "continuity" ? "Continuity" : "—"
+                          s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -1708,7 +1708,7 @@ export default function ClientRetention() {
                                               <SelectItem value="at_risk">At Risk</SelectItem>
                                               <SelectItem value="slipping">Slipping</SelectItem>
                                               <SelectItem value="stable">Stable</SelectItem>
-                                              <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                                              <SelectItem value="expansion_ready">Ascension</SelectItem>
                                               <SelectItem value="continuity">Continuity</SelectItem>
                                             </SelectContent>
                                           </Select>
@@ -1770,7 +1770,7 @@ export default function ClientRetention() {
                             <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
-                            <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                            <SelectItem value="expansion_ready">Ascension</SelectItem>
                             <SelectItem value="continuity">Continuity</SelectItem>
                           </SelectContent>
                         </Select>
