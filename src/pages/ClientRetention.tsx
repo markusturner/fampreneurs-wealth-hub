@@ -951,19 +951,20 @@ export default function ClientRetention() {
           console.error("AI note analysis failed", e)
         }
       }
-      if (statusChanged) {
+      if (statusChanged || newEntry) {
         const { error } = await supabase
           .from("client_retention_notes")
           .upsert(
-            { user_id: selected.user_id, note: "", status_override: nextStatus, updated_by: user?.id ?? null },
+            { user_id: selected.user_id, note: "", status_override: nextStatus, score_override: newEntry ? null : (existing?.score_override ?? null), updated_by: user?.id ?? null },
             { onConflict: "user_id" }
           )
         if (error) throw error
       }
-      const prior = existing ?? { entries: [], status_override: null }
+      const prior = existing ?? { entries: [], status_override: null, score_override: null }
       const nextEntry: NotesEntry = {
         entries: newEntry ? [newEntry, ...prior.entries] : prior.entries,
         status_override: nextStatus,
+        score_override: newEntry ? null : (prior.score_override ?? null),
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
