@@ -258,7 +258,9 @@ export default function Onboarding() {
           phone: form.phone_number,
           mailing_address: [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
           needs_profile_completion: false,
-        })
+          ...contractDates,
+        } as any)
+
         .eq('user_id', user.id)
 
       if (profileError) {
