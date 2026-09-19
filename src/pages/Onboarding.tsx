@@ -224,7 +224,29 @@ export default function Onboarding() {
       }, { onConflict: 'user_id' })
       if (error) throw error
 
+      // Start/end dates: created automatically on onboarding completion, based on program
+      let contractDates: { contract_start_date?: string; contract_due_date?: string } = {}
+      try {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('program_name, contract_start_date, contract_due_date')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        const p: any = existingProfile || {}
+        if (!p.contract_start_date) {
+          const start = todayISO()
+          const end = computeContractEndDate(p.program_name, start)
+          contractDates = { contract_start_date: start, ...(end ? { contract_due_date: end } : {}) }
+        } else if (!p.contract_due_date) {
+          const end = computeContractEndDate(p.program_name, p.contract_start_date)
+          if (end) contractDates = { contract_due_date: end }
+        }
+      } catch (dateErr) {
+        console.error('Could not set contract dates:', dateErr)
+      }
+
       // Update the user's profile with collected info
+
       const displayName = `${form.first_name} ${form.last_name}`.trim()
       const { error: profileError } = await supabase
         .from('profiles')
