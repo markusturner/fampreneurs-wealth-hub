@@ -1688,7 +1688,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Contract</span>
                         <button
-                          className="text-xs hover:underline"
+                          className="text-xs hover:underline text-right"
                           onClick={() => {
                             setEditingContractUserId(detailUser.user_id)
                             setEditingContractStartDate((detailUser as any).contract_start_date || '')
@@ -1697,7 +1697,15 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                           }}
                         >
                           {(detailUser as any).contract_start_date
-                            ? `${formatShortDate((detailUser as any).contract_start_date)} – ${formatShortDate((detailUser as any).contract_due_date)}`
+                            ? (
+                              <span className="grid gap-0.5">
+                                <span><span className="text-muted-foreground">Start:</span> {formatShortDate((detailUser as any).contract_start_date)}</span>
+                                <span><span className="text-muted-foreground">End:</span> {formatShortDate((detailUser as any).contract_due_date)}</span>
+                                <span className={(detailUser as any).contract_extension_date ? 'font-medium text-emerald-600' : 'text-muted-foreground'}>
+                                  Extension: {formatShortDate((detailUser as any).contract_extension_date)}
+                                </span>
+                              </span>
+                            )
                             : 'Set dates'}
                         </button>
                       </div>
@@ -1715,17 +1723,20 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                           const elapsed = Math.max(0, Math.round((now.getTime() - start.getTime()) / 86400000));
                           const remaining = Math.round((end.getTime() - now.getTime()) / 86400000);
                           const expired = remaining < 0;
+                           const hasExtension = Boolean(ext);
                           return (
-                            <div className="text-right text-xs">
+                             <div className={`text-right text-xs ${hasExtension ? 'text-emerald-600' : ''}`}>
                               <div className="flex items-center justify-end gap-1.5">
                                 <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                  <div className={`h-full rounded-full ${expired ? 'bg-red-500' : prog >= 80 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${prog ?? 0}%` }} />
+                                   <div className={`h-full rounded-full ${hasExtension ? 'bg-emerald-500' : expired ? 'bg-red-500' : prog !== null && prog >= 80 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${prog ?? 0}%` }} />
                                 </div>
-                                <span className={expired ? 'text-red-600 font-medium' : 'text-muted-foreground'}>
+                                 <span className={hasExtension ? 'text-emerald-600 font-medium' : expired ? 'text-red-600 font-medium' : 'text-muted-foreground'}>
                                   {expired ? `${Math.abs(remaining)}d past` : `${remaining}d left`}
                                 </span>
                               </div>
-                              <span className="text-muted-foreground">{elapsed}/{totalDays} days</span>
+                               <span className={hasExtension ? 'text-emerald-600' : 'text-muted-foreground'}>
+                                 {elapsed}/{totalDays} days{hasExtension ? ' with extension' : ''}
+                               </span>
                             </div>
                           );
                         })()}
