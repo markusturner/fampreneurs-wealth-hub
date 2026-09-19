@@ -200,6 +200,16 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
+  // Extra fields shown inside the Edit User dialog
+  const [editForm, setEditForm] = useState({
+    contract_value: '',
+    cash_collected: '',
+    contract_start_date: '',
+    contract_due_date: '',
+    contract_extension_date: '',
+    admin_notes: '',
+  })
+
   // Trust Access
   const [trustAccessUserId, setTrustAccessUserId] = useState<string | null>(null)
   const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
