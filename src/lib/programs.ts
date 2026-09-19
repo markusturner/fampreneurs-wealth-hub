@@ -75,7 +75,7 @@ export function expandProgramCodes(codes: (string | null | undefined)[]): Progra
 export const PROGRAM_GROUP_NAMES: Record<ProgramCode, string[]> = {
   fbu: ['Family Business University', 'The Family Business University'],
   tfv: ['The Trust Vault', 'The Family Vault'],
-  tfba: ['The Private Estate Accelerator', 'The Private Estate Accelerator'],
+  tfba: ['The Private Estate Accelerator', 'The Family Business Accelerator'],
   tffm: ['The Succession Society', 'The Family Fortune Mastermind'],
 }
 
