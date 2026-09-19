@@ -1559,7 +1559,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                     <div className="space-y-2.5 text-sm">
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-muted-foreground shrink-0">Email</span>
-                        <span className="text-right break-all text-xs">{detailUser.email}</span>
+                        <span className="text-right break-all text-xs">{focusPartnerContact?.email || detailUser.email}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Phone</span>
@@ -1579,8 +1579,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                               <X className="h-3 w-3" />
                             </Button>
                           </div>
-                        ) : detailUser.phone ? (
-                          <span className="text-right text-xs">{detailUser.phone}</span>
+                        ) : (focusPartnerContact?.phone || detailUser.phone) ? (
+                          <span className="text-right text-xs">{focusPartnerContact?.phone || detailUser.phone}</span>
                         ) : (
                           <Button
                             size="sm"
