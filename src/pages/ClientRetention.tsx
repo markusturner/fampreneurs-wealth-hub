@@ -1027,6 +1027,9 @@ export default function ClientRetention() {
             newEntry.ai_analysis = ai as AiAnalysis
             const { error: saveErr } = await supabase.from("client_retention_note_entries").update({ ai_analysis: ai }).eq("id", newEntry.id)
             if (saveErr) { console.error("Saving AI review failed", saveErr); toast.error("AI rating could not be saved") }
+          } else {
+            console.error("AI note analysis unavailable", aiErr, ai)
+            toast.error("AI could not rate this note. Rating left unchanged.")
           }
         } catch (e) {
           console.error("AI note analysis failed", e)
