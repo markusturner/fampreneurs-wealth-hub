@@ -523,7 +523,17 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
       setSelectedProgramNames(new Set())
       return
     }
+    const eu = editingUser as any
+    setEditForm({
+      contract_value: eu.program_contract_value != null ? String(eu.program_contract_value) : '',
+      cash_collected: eu.program_cash_collected != null ? String(eu.program_cash_collected) : '',
+      contract_start_date: eu.contract_start_date || '',
+      contract_due_date: eu.contract_due_date || '',
+      contract_extension_date: eu.contract_extension_date || '',
+      admin_notes: eu.admin_notes || '',
+    })
     let cancelled = false
+
     const load = async () => {
       setLoadingCommunities(true)
       try {
