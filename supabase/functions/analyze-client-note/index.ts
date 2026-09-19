@@ -69,7 +69,7 @@ ${body.notes.slice(0, 12000)}
         "X-Lovable-AIG-SDK": "fetch",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-3.8-flash",
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: user },
