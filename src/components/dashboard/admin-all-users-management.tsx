@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
+import { computeContractEndDate, programDurationDays, todayISO } from '@/lib/contract-duration'
+
 import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image, Link2 } from 'lucide-react'
 import { LinkUsersDialog } from './link-users-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
