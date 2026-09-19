@@ -87,11 +87,13 @@ interface UserProfile {
 interface AdminAllUsersManagementProps {
   /** When set, the component renders only this person's full detail card. */
   focusUserId?: string | null
+  focusPartnerContact?: { email?: string | null; phone?: string | null } | null
+
   /** Fallback match when the health record uses a different id. */
   focusEmail?: string | null
 }
 
-export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null }: AdminAllUsersManagementProps = {}) {
+export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null, focusPartnerContact = null }: AdminAllUsersManagementProps = {}) {
   const isMobile = useIsMobile()
   const detailMode = !!(focusUserId || focusEmail)
   const [mobileSelectedUser, setMobileSelectedUser] = useState<UserProfile | null>(null)
