@@ -85,16 +85,22 @@ ${body.notes.slice(0, 12000)}
     }
 
     const data = await resp.json();
-    const raw = data?.choices?.[0]?.message?.content ?? "{}";
+    const raw = data?.choices?.[0]?.message?.content ?? "";
     let parsed: any = {};
     try {
       parsed = JSON.parse(raw);
     } catch {
-      const m = raw.match(/\{[\s\S]*\}/);
+      const m = String(raw).match(/\{[\s\S]*\}/);
       parsed = m ? JSON.parse(m[0]) : {};
     }
 
-    const rating = Math.min(10, Math.max(1, Number(parsed.rating ?? 6)));
+    // Never invent a neutral score: if the model gave no rating, fail loudly
+    // so the client keeps its existing rating instead of jumping to 6/10.
+    if (parsed.rating === undefined || parsed.rating === null || isNaN(Number(parsed.rating))) {
+      return json({ error: "AI did not return a rating", raw: String(raw).slice(0, 500) }, 502);
+    }
+
+    const rating = Math.min(10, Math.max(1, Number(parsed.rating)));
     const allowed = ["at_risk", "slipping", "stable", "expansion_ready", "continuity"];
     let status = allowed.includes(parsed.status) ? parsed.status : null;
     if (!status) {
