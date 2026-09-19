@@ -165,17 +165,24 @@ serve(async (req) => {
     const resend = new Resend(resendKey);
     const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "TruHeirs <onboarding@resend.dev>";
 
-    const sent = await resend.emails.send({
-      from: fromEmail,
-      to: [body.client_email],
-      subject,
-      html,
-      text,
-    });
+    // Send to each address individually so every partner gets their own copy
+    const failed: string[] = [];
+    for (const to of cleanedEmails) {
+      const sent = await resend.emails.send({
+        from: fromEmail,
+        to: [to],
+        subject,
+        html,
+        text,
+      });
+      if ((sent as any)?.error) {
+        console.error(`Resend error for ${to}:`, (sent as any).error);
+        failed.push(to);
+      }
+    }
 
-    if ((sent as any)?.error) {
-      console.error("Resend error:", (sent as any).error);
-      return new Response(JSON.stringify({ error: (sent as any).error?.message ?? "Send failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (failed.length === cleanedEmails.length) {
+      return new Response(JSON.stringify({ error: "Send failed for all recipients" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Log
