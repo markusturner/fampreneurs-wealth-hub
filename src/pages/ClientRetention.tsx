@@ -40,6 +40,7 @@ interface ClientScore {
   user_id: string
   full_name: string
   email: string
+  phone?: string | null
   program: string | null
   program_name?: string | null
   contract_start_date?: string | null
@@ -66,6 +67,7 @@ interface PartnerProfile {
   user_id: string
   full_name: string
   partner_group_id: string | null
+  phone?: string | null
   program_contract_value: number
   created_at: string
 }
@@ -736,7 +738,7 @@ export default function ClientRetention() {
   const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at")
+      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at, phone")
     if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
     const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
@@ -759,6 +761,7 @@ export default function ClientRetention() {
         partner_group_id: r.partner_group_id,
         program_contract_value: Number(r.program_contract_value) || 0,
         created_at: r.created_at,
+        phone: r.phone,
       })
     })
     setStartDates(map)
@@ -890,6 +893,7 @@ export default function ClientRetention() {
         ...primary,
         full_name: names.length ? names.join(" & ") : members.map((client) => client.full_name).join(" & "),
         email: Array.from(new Set(members.map((client) => client.email).filter(Boolean))).join(" · "),
+        phone: Array.from(new Set(groupProfiles.map((p) => p.phone).filter(Boolean) as string[])).join(" · ") || primary.phone || null,
         score,
         status,
         signals,
@@ -1918,7 +1922,7 @@ export default function ClientRetention() {
                     {/* Everything that used to live on the All Users page, for this client */}
                     <section>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Account Record</p>
-                      <AdminAllUsersManagement focusUserId={selected.user_id} focusEmail={selected.email} />
+                      <AdminAllUsersManagement focusUserId={selected.user_id} focusEmail={selected.email} focusPartnerContact={selected.is_partner_household ? { email: selected.email, phone: selected.phone } : null} />
                     </section>
                   </div>
                 )}
