@@ -131,7 +131,8 @@ serve(async (req) => {
     }
 
     // Clean the email: strip zero-width/invisible chars, smart quotes, angle brackets and whitespace
-    const rawEmail = String(body.client_email);
+    // Partner households send a joined list ("a@x.com · b@y.com"); use the first address
+    const rawEmail = String(body.client_email).split(/[·,;|]| and /i)[0];
     const cleanedEmail = rawEmail
       .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
       .replace(/^.*<|>.*$/g, "")
