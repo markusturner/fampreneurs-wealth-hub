@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
+import { computeContractEndDate, todayISO } from '@/lib/contract-duration'
+
 
 
 
