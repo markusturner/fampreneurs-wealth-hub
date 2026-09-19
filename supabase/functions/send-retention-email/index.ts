@@ -130,22 +130,31 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "client_email and short_draft required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Clean the email: strip zero-width/invisible chars, smart quotes, angle brackets and whitespace
-    // Partner households send a joined list ("a@x.com · b@y.com"); use the first address
-    const rawEmail = String(body.client_email).split(/[·,;|]| and /i)[0];
-    const cleanedEmail = rawEmail
-      .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
-      .replace(/^.*<|>.*$/g, "")
-      .trim()
-      .toLowerCase();
-
-    if (!/^[\x20-\x7E]+$/.test(cleanedEmail) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanedEmail)) {
+    // Clean each email: strip zero-width/invisible chars, smart quotes, angle brackets and whitespace
+    // Partner households send a joined list ("a@x.com · b@y.com"); email each address individually
+    const rawEmails = String(body.client_email).split(/[·,;|]| and /i);
+    const cleanedEmails: string[] = [];
+    for (const rawEmail of rawEmails) {
+      const cleanedEmail = rawEmail
+        .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
+        .replace(/^.*<|>.*$/g, "")
+        .trim()
+        .toLowerCase();
+      if (!cleanedEmail) continue;
+      if (!/^[\x20-\x7E]+$/.test(cleanedEmail) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanedEmail)) {
+        return new Response(
+          JSON.stringify({ error: `This client's email address is not valid: "${rawEmail}". Please fix it on their account record and try again.` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (!cleanedEmails.includes(cleanedEmail)) cleanedEmails.push(cleanedEmail);
+    }
+    if (cleanedEmails.length === 0) {
       return new Response(
-        JSON.stringify({ error: `This client's email address is not valid: "${rawEmail}". Please fix it on their account record and try again.` }),
+        JSON.stringify({ error: "This client has no valid email address on their account record." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-    body.client_email = cleanedEmail;
 
     const { subject, html, text } = await expandToEmail(body);
 
@@ -156,17 +165,24 @@ serve(async (req) => {
     const resend = new Resend(resendKey);
     const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "TruHeirs <onboarding@resend.dev>";
 
-    const sent = await resend.emails.send({
-      from: fromEmail,
-      to: [body.client_email],
-      subject,
-      html,
-      text,
-    });
+    // Send to each address individually so every partner gets their own copy
+    const failed: string[] = [];
+    for (const to of cleanedEmails) {
+      const sent = await resend.emails.send({
+        from: fromEmail,
+        to: [to],
+        subject,
+        html,
+        text,
+      });
+      if ((sent as any)?.error) {
+        console.error(`Resend error for ${to}:`, (sent as any).error);
+        failed.push(to);
+      }
+    }
 
-    if ((sent as any)?.error) {
-      console.error("Resend error:", (sent as any).error);
-      return new Response(JSON.stringify({ error: (sent as any).error?.message ?? "Send failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (failed.length === cleanedEmails.length) {
+      return new Response(JSON.stringify({ error: "Send failed for all recipients" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Log
