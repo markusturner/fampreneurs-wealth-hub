@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
+import { computeContractEndDate, programDurationDays, todayISO } from '@/lib/contract-duration'
+
 import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image, Link2 } from 'lucide-react'
 import { LinkUsersDialog } from './link-users-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -200,6 +202,16 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
+  // Extra fields shown inside the Edit User dialog
+  const [editForm, setEditForm] = useState({
+    contract_value: '',
+    cash_collected: '',
+    contract_start_date: '',
+    contract_due_date: '',
+    contract_extension_date: '',
+    admin_notes: '',
+  })
+
   // Trust Access
   const [trustAccessUserId, setTrustAccessUserId] = useState<string | null>(null)
   const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
@@ -513,7 +525,17 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
       setSelectedProgramNames(new Set())
       return
     }
+    const eu = editingUser as any
+    setEditForm({
+      contract_value: eu.program_contract_value != null ? String(eu.program_contract_value) : '',
+      cash_collected: eu.program_cash_collected != null ? String(eu.program_cash_collected) : '',
+      contract_start_date: eu.contract_start_date || '',
+      contract_due_date: eu.contract_due_date || '',
+      contract_extension_date: eu.contract_extension_date || '',
+      admin_notes: eu.admin_notes || '',
+    })
     let cancelled = false
+
     const load = async () => {
       setLoadingCommunities(true)
       try {
@@ -571,7 +593,14 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
           membership_type: editingUser.membership_type,
           is_admin: editingUser.is_admin,
           is_moderator: editingUser.is_moderator,
-        })
+          program_contract_value: editForm.contract_value.trim() === '' ? null : Number(editForm.contract_value.replace(/[,$]/g, '')),
+          program_cash_collected: editForm.cash_collected.trim() === '' ? null : Number(editForm.cash_collected.replace(/[,$]/g, '')),
+          contract_start_date: editForm.contract_start_date || null,
+          contract_due_date: editForm.contract_due_date || null,
+          contract_extension_date: editForm.contract_extension_date || null,
+          admin_notes: editForm.admin_notes.trim() === '' ? null : editForm.admin_notes,
+        } as any)
+
         .eq('user_id', editingUser.user_id)
         .select()
 
@@ -2496,7 +2525,164 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                   onCheckedChange={(checked) => setEditingUser({...editingUser, truheirs_access: checked})}
                 />
               </div>
+
+              {/* Money */}
+              <div className="space-y-3 pt-4 border-t">
+                <Label>Financials</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-contract-value" className="text-xs text-muted-foreground">Contract Value</Label>
+                    <Input
+                      id="edit-contract-value"
+                      inputMode="decimal"
+                      value={editForm.contract_value}
+                      onChange={(e) => setEditForm({ ...editForm, contract_value: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="edit-cash-collected" className="text-xs text-muted-foreground">Cash Collected</Label>
+                    <Input
+                      id="edit-cash-collected"
+                      inputMode="decimal"
+                      value={editForm.cash_collected}
+                      onChange={(e) => setEditForm({ ...editForm, cash_collected: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Remaining</Label>
+                    <div className="h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm">
+                      {(() => {
+                        const cv = Number(editForm.contract_value.replace(/[,$]/g, '')) || 0
+                        const cc = Number(editForm.cash_collected.replace(/[,$]/g, '')) || 0
+                        return cv ? formatCurrency(Math.max(0, cv - cc)) : '—'
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contract dates */}
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <Label>Contract Dates</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const start = editForm.contract_start_date || todayISO()
+                      const end = computeContractEndDate(Array.from(selectedProgramNames).join(', '), start)
+                      setEditForm({ ...editForm, contract_start_date: start, contract_due_date: end || editForm.contract_due_date })
+                    }}
+                  >
+                    Auto-set from program
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Start</Label>
+                    <Input
+                      type="date"
+                      value={editForm.contract_start_date}
+                      onChange={(e) => {
+                        const start = e.target.value
+                        const end = computeContractEndDate(Array.from(selectedProgramNames).join(', '), start)
+                        setEditForm({ ...editForm, contract_start_date: start, contract_due_date: end || editForm.contract_due_date })
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">End</Label>
+                    <Input
+                      type="date"
+                      value={editForm.contract_due_date}
+                      onChange={(e) => setEditForm({ ...editForm, contract_due_date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Extension</Label>
+                    <Input
+                      type="date"
+                      value={editForm.contract_extension_date}
+                      onChange={(e) => setEditForm({ ...editForm, contract_extension_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {(() => {
+                    const days = programDurationDays(Array.from(selectedProgramNames).join(', '))
+                    return days ? `Program length: ${days} days` : 'Select a program to auto-calculate the end date.'
+                  })()}
+                </p>
+              </div>
+
+              {/* Admin notes */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label htmlFor="edit-admin-notes">Notes</Label>
+                <Textarea
+                  id="edit-admin-notes"
+                  value={editForm.admin_notes}
+                  onChange={(e) => setEditForm({ ...editForm, admin_notes: e.target.value })}
+                  placeholder="Internal notes about this client"
+                  rows={4}
+                />
+              </div>
+
+              {/* Read-only record summary */}
+              <div className="space-y-2 pt-4 border-t text-sm">
+                <Label>Record Summary</Label>
+                {focusPartnerContact?.email && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Partner Emails</span>
+                    <span className="text-right break-all text-xs">{focusPartnerContact.email}</span>
+                  </div>
+                )}
+                {focusPartnerContact?.phone && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Partner Phones</span>
+                    <span className="text-right text-xs">{focusPartnerContact.phone}</span>
+                  </div>
+                )}
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">DFO</span>
+                  <span className="text-xs">{getPackageInfo(editingUser).package} {getPackageInfo(editingUser).amount}</span>
+                </div>
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-muted-foreground">Trust Forms</span>
+                  <div className="text-right text-xs">
+                    {(() => {
+                      const ts = (editingUser as any).trust_sub_dates || {}
+                      const keys = Object.keys(ts)
+                      if (keys.length === 0) return <span className="text-muted-foreground">No submissions</span>
+                      return keys.sort().map(k => (
+                        <div key={k}>{k} <span className="text-muted-foreground">{formatShortDate(ts[k])}</span></div>
+                      ))
+                    })()}
+                  </div>
+                </div>
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-muted-foreground">DFO Invitees</span>
+                  <div className="text-right text-xs">
+                    {(() => {
+                      const invitees = users.filter((u: any) => u.membership_type === 'family_member' && u.trustee_user_id === editingUser.user_id)
+                      if (invitees.length === 0) return <span className="text-muted-foreground">None</span>
+                      return invitees.map((inv: any) => (
+                        <div key={inv.user_id}>{inv.display_name || `${inv.first_name || ''} ${inv.last_name || ''}`.trim() || inv.email} <span className="text-muted-foreground">{inv.email}</span></div>
+                      ))
+                    })()}
+                  </div>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">All Forms</span>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(editingUser.user_id)}>
+                    <FileText className="h-3 w-3 mr-1" /> View
+                  </Button>
+                </div>
+              </div>
             </div>
+
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
