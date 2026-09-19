@@ -591,7 +591,14 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
           membership_type: editingUser.membership_type,
           is_admin: editingUser.is_admin,
           is_moderator: editingUser.is_moderator,
-        })
+          program_contract_value: editForm.contract_value.trim() === '' ? null : Number(editForm.contract_value.replace(/[,$]/g, '')),
+          program_cash_collected: editForm.cash_collected.trim() === '' ? null : Number(editForm.cash_collected.replace(/[,$]/g, '')),
+          contract_start_date: editForm.contract_start_date || null,
+          contract_due_date: editForm.contract_due_date || null,
+          contract_extension_date: editForm.contract_extension_date || null,
+          admin_notes: editForm.admin_notes.trim() === '' ? null : editForm.admin_notes,
+        } as any)
+
         .eq('user_id', editingUser.user_id)
         .select()
 
