@@ -99,6 +99,18 @@ function hasTrustDone(c: ClientScore): boolean {
   return /\btrusts?\b[^|.]{0,20}\b(is|are|was|were)?\s*(complete|completed|finished|done|signed)\b/.test(labels)
 }
 
+// Turn an email address into a readable name: sbesty@verizon.net -> Sbesty,
+// david.yost@gmail.com -> David Yost, used when an invited client has no name saved.
+function prettifyEmailName(email?: string | null): string {
+  if (!email || !email.includes("@")) return "Invited Client"
+  const local = email.split("@")[0]
+  const words = local
+    .replace(/[0-9]+/g, " ")
+    .split(/[._\-+]+/)
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ""))
+    .filter(Boolean)
+  return words.length ? words.join(" ") : "Invited Client"
+}
 
 const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v9"
 
@@ -860,7 +872,7 @@ export default function ClientRetention() {
         setPendingInvites((data ?? []).map((p: any) => ({
           id: p.id,
           user_id: p.user_id,
-          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Invited Client",
+          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || prettifyEmailName(p.email),
           email: p.email || "",
           phone: p.phone ?? null,
           program_name: p.program_name ?? null,
