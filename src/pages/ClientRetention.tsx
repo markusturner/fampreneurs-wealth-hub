@@ -157,10 +157,10 @@ function milestoneBadge(startDate?: string | null): { label: string; due: boolea
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
-  invited: { label: "Invitation", color: "text-slate-700", bg: "bg-slate-100", ring: "ring-slate-300" },
+  invited: { label: "Non-Active", color: "text-slate-700", bg: "bg-slate-100", ring: "ring-slate-300" },
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
-  stable: { label: "Stable", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
+  stable: { label: "Healthy", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
   expansion_ready: { label: "Ascension", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
   continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
 }
@@ -1445,7 +1445,7 @@ export default function ClientRetention() {
                   name: "Now",
                   "At Risk": stats.buckets.at_risk.length,
                   "Slipping": stats.buckets.slipping.length,
-                  "Stable": stats.buckets.stable.length,
+                  "Healthy": stats.buckets.stable.length,
                   "Ascension": stats.buckets.expansion_ready.length,
                   "Continuity": stats.buckets.continuity.length,
                 }]}>
@@ -1455,7 +1455,7 @@ export default function ClientRetention() {
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                   <Bar dataKey="At Risk" stackId="a" fill="#ef4444" />
                   <Bar dataKey="Slipping" stackId="a" fill="#f59e0b" />
-                  <Bar dataKey="Stable" stackId="a" fill="#10b981" />
+                  <Bar dataKey="Healthy" stackId="a" fill="#10b981" />
                   <Bar dataKey="Ascension" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="Continuity" stackId="a" fill="#3b82f6" />
                 </BarChart>
@@ -1516,10 +1516,10 @@ export default function ClientRetention() {
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-                <QueueGroup status="invited" title="Invitation" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
               </div>
@@ -1726,7 +1726,7 @@ export default function ClientRetention() {
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
                         const label = (s: string | null) =>
-                          s === "invited" ? "Invitation" : s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
+                          s === "invited" ? "Non-Active" : s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Healthy" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -1791,10 +1791,10 @@ export default function ClientRetention() {
                                             </SelectTrigger>
                                             <SelectContent>
                                               <SelectItem value="auto">Auto (from signals)</SelectItem>
-                                              <SelectItem value="invited">Invitation</SelectItem>
+                                              <SelectItem value="invited">Non-Active</SelectItem>
 <SelectItem value="at_risk">At Risk</SelectItem>
                                               <SelectItem value="slipping">Slipping</SelectItem>
-                                              <SelectItem value="stable">Stable</SelectItem>
+                                              <SelectItem value="stable">Healthy</SelectItem>
                                               <SelectItem value="expansion_ready">Ascension</SelectItem>
                                               <SelectItem value="continuity">Continuity</SelectItem>
                                             </SelectContent>
@@ -1854,10 +1854,10 @@ export default function ClientRetention() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">Auto (from signals)</SelectItem>
-                            <SelectItem value="invited">Invitation</SelectItem>
+                            <SelectItem value="invited">Non-Active</SelectItem>
 <SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
-                            <SelectItem value="stable">Stable</SelectItem>
+                            <SelectItem value="stable">Healthy</SelectItem>
                             <SelectItem value="expansion_ready">Ascension</SelectItem>
                             <SelectItem value="continuity">Continuity</SelectItem>
                           </SelectContent>
