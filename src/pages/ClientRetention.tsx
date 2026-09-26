@@ -848,9 +848,22 @@ export default function ClientRetention() {
   const [onboardedIds, setOnboardedIds] = useState<Set<string> | null>(null)
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    supabase.from("onboarding_responses").select("user_id").limit(5000).then(({ data, error }) => {
-      if (error) { console.error("onboarding ids", error); return }
-      setOnboardedIds(new Set((data ?? []).map((r: any) => r.user_id)))
+    Promise.all([
+      supabase.from("onboarding_responses").select("user_id").limit(5000),
+      supabase.from("program_agreements").select("user_id").limit(5000),
+      supabase.from("profiles").select("id, user_id, skip_onboarding, contract_start_date").limit(5000),
+    ]).then(([onb, agr, prof]) => {
+      const set = new Set<string>()
+      ;(onb.data ?? []).forEach((r: any) => r.user_id && set.add(r.user_id))
+      ;(agr.data ?? []).forEach((r: any) => r.user_id && set.add(r.user_id))
+      const activeUsers = new Set(set)
+      ;(prof.data ?? []).forEach((p: any) => {
+        if (p.skip_onboarding || p.contract_start_date || activeUsers.has(p.user_id)) {
+          if (p.user_id) set.add(p.user_id)
+          if (p.id) set.add(p.id)
+        }
+      })
+      setOnboardedIds(set)
     })
   }, [isAdmin, isOwner])
 
