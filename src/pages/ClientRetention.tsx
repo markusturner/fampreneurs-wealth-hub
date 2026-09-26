@@ -845,26 +845,27 @@ export default function ClientRetention() {
 
   // Partner links made in Admin > User Management represent one client household.
   // Merge those accounts into one card while retaining every person's signals and attendance IDs.
-  const [onboardedIds, setOnboardedIds] = useState<Set<string> | null>(null)
+  // Non-Active = clients who were SENT login access (needs_profile_completion)
+  // but have not signed up and finished onboarding yet. Everyone else keeps
+  // their computed stage.
+  const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    Promise.all([
-      supabase.from("onboarding_responses").select("user_id").limit(5000),
-      supabase.from("program_agreements").select("user_id").limit(5000),
-      supabase.from("profiles").select("id, user_id, skip_onboarding, contract_start_date").limit(5000),
-    ]).then(([onb, agr, prof]) => {
-      const set = new Set<string>()
-      ;(onb.data ?? []).forEach((r: any) => r.user_id && set.add(r.user_id))
-      ;(agr.data ?? []).forEach((r: any) => r.user_id && set.add(r.user_id))
-      const activeUsers = new Set(set)
-      ;(prof.data ?? []).forEach((p: any) => {
-        if (p.skip_onboarding || p.contract_start_date || activeUsers.has(p.user_id)) {
-          if (p.user_id) set.add(p.user_id)
-          if (p.id) set.add(p.id)
-        }
+    supabase
+      .from("profiles")
+      .select("id, user_id, display_name, first_name, last_name, email, phone, program_name")
+      .eq("needs_profile_completion", true)
+      .limit(5000)
+      .then(({ data }) => {
+        setPendingInvites((data ?? []).map((p: any) => ({
+          id: p.id,
+          user_id: p.user_id,
+          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Invited Client",
+          email: p.email || "",
+          phone: p.phone ?? null,
+          program_name: p.program_name ?? null,
+        })))
       })
-      setOnboardedIds(set)
-    })
   }, [isAdmin, isOwner])
 
   const baseDisplayClients = useMemo(() => {
