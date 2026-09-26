@@ -854,17 +854,6 @@ export default function ClientRetention() {
     })
   }, [isAdmin, isOwner])
 
-  const displayClients = useMemo(() => {
-    if (!onboardedIds) return baseDisplayClients
-    return baseDisplayClients.map((c) => {
-      const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
-      const done = ids.some((id) => onboardedIds.has(id))
-      if (!done && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
-      if (done && c.status === "invited") return { ...c, status: "stable" as Status }
-      return c
-    })
-  }, [baseDisplayClients, onboardedIds, notesMap])
-
   const baseDisplayClients = useMemo(() => {
     if (!partnerProfiles.length) return clients
 
@@ -931,19 +920,30 @@ export default function ClientRetention() {
     })
   }, [clients, partnerProfiles])
 
+  const displayClients = useMemo(() => {
+    if (!onboardedIds) return baseDisplayClients
+    return baseDisplayClients.map((c) => {
+      const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
+      const done = ids.some((id) => onboardedIds.has(id))
+      if (!done && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
+      return c
+    })
+  }, [baseDisplayClients, onboardedIds, notesMap])
+
+
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
   // so a reload paints every card in its correct column immediately — no re-shuffle.
   useEffect(() => {
-    if (loading || displayClients.length === 0) return
+    if (loading || baseDisplayClients.length === 0) return
     try {
       localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({
-        clients: displayClients,
+        clients: baseDisplayClients,
         boardOrder,
         startDates,
         savedAt: new Date().toISOString(),
       }))
     } catch {}
-  }, [displayClients, loading, boardOrder, startDates])
+  }, [baseDisplayClients, loading, boardOrder, startDates])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
