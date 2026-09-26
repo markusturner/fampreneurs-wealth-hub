@@ -32,7 +32,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
-type Status = "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
+type Status = "invited" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
 type SortDirection = "asc" | "desc"
 
@@ -129,6 +129,7 @@ function outreachTopic(c: ClientScore): string {
 
 
   switch (c.status) {
+    case "invited": return "Has not finished onboarding yet. Send a friendly nudge to finish getting set up."
     case "at_risk": return "Gone quiet — send a warm personal check-in and offer a no-pressure 15-min call."
     case "slipping": return "Engagement dipping — point them to one small win they can get this week."
     case "stable": return "Doing well — ask for a testimonial or a referral to a family they know."
@@ -156,6 +157,7 @@ function milestoneBadge(startDate?: string | null): { label: string; due: boolea
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
+  invited: { label: "Invitation", color: "text-slate-700", bg: "bg-slate-100", ring: "ring-slate-300" },
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
   slipping: { label: "Slipping", color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
   stable: { label: "Stable", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
@@ -163,7 +165,7 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
 }
 
-const STATUS_ORDER: Record<Status, number> = { at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
+const STATUS_ORDER: Record<Status, number> = { invited: 0, at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
 
 export default function ClientRetention() {
   const navigate = useNavigate()
@@ -843,7 +845,16 @@ export default function ClientRetention() {
 
   // Partner links made in Admin > User Management represent one client household.
   // Merge those accounts into one card while retaining every person's signals and attendance IDs.
-  const displayClients = useMemo(() => {
+  const [onboardedIds, setOnboardedIds] = useState<Set<string> | null>(null)
+  useEffect(() => {
+    if (!(isAdmin || isOwner)) return
+    supabase.from("onboarding_responses").select("user_id").limit(5000).then(({ data, error }) => {
+      if (error) { console.error("onboarding ids", error); return }
+      setOnboardedIds(new Set((data ?? []).map((r: any) => r.user_id)))
+    })
+  }, [isAdmin, isOwner])
+
+  const baseDisplayClients = useMemo(() => {
     if (!partnerProfiles.length) return clients
 
     const profileByAlias = new Map<string, PartnerProfile>()
@@ -909,19 +920,30 @@ export default function ClientRetention() {
     })
   }, [clients, partnerProfiles])
 
+  const displayClients = useMemo(() => {
+    if (!onboardedIds) return baseDisplayClients
+    return baseDisplayClients.map((c) => {
+      const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
+      const done = ids.some((id) => onboardedIds.has(id))
+      if (!done && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
+      return c
+    })
+  }, [baseDisplayClients, onboardedIds, notesMap])
+
+
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
   // so a reload paints every card in its correct column immediately — no re-shuffle.
   useEffect(() => {
-    if (loading || displayClients.length === 0) return
+    if (loading || baseDisplayClients.length === 0) return
     try {
       localStorage.setItem(CLIENT_RETENTION_CACHE_KEY, JSON.stringify({
-        clients: displayClients,
+        clients: baseDisplayClients,
         boardOrder,
         startDates,
         savedAt: new Date().toISOString(),
       }))
     } catch {}
-  }, [displayClients, loading, boardOrder, startDates])
+  }, [baseDisplayClients, loading, boardOrder, startDates])
 
   const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
 
@@ -1142,7 +1164,7 @@ export default function ClientRetention() {
   }
 
   const stats = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets: Record<Status, ClientScore[]> = { invited: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     displayClients.forEach((c) => buckets[c.status].push(c))
     const avg = displayClients.length ? (displayClients.reduce((s, c) => s + c.score, 0) / displayClients.length).toFixed(1) : "0.0"
     const active = displayClients.filter((c) => c.last_active_at && (Date.now() - new Date(c.last_active_at).getTime()) / 86400000 <= 14).length
@@ -1172,7 +1194,7 @@ export default function ClientRetention() {
   }, [displayClients, boardOrder, sortField, sortDirection])
 
   const sortedBuckets = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets: Record<Status, ClientScore[]> = { invited: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
     sortedClients.forEach((client) => buckets[client.status].push(client))
     return buckets
   }, [sortedClients])
@@ -1370,7 +1392,7 @@ export default function ClientRetention() {
 
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-4 sm:mb-5">
         <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Avg Health Score</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.avg}<span className="text-sm sm:text-base text-muted-foreground">/10</span></p>
@@ -1379,7 +1401,7 @@ export default function ClientRetention() {
           <p className="text-[10px] sm:text-xs text-muted-foreground">Active / Inactive</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.active}<span className="text-sm sm:text-base text-muted-foreground"> / {stats.inactive}</span></p>
         </CardContent></Card>
-        {(["at_risk","slipping","stable","expansion_ready","continuity"] as Status[]).map((s) => {
+        {(["invited","at_risk","slipping","stable","expansion_ready","continuity"] as Status[]).map((s) => {
           const arr = stats.buckets[s].reduce((sum, c) => sum + c.arr_value, 0)
           const opp = s === "expansion_ready"
             ? stats.buckets[s].reduce((sum, c) => sum + (upsellInfo(c)?.cost ?? 0), 0)
@@ -1494,6 +1516,7 @@ export default function ClientRetention() {
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+                <QueueGroup status="invited" title="Invitation" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="at_risk" title="Urgent — Act Today" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="slipping" title="Slipping — Watch This Week" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
                 <QueueGroup status="stable" title="Healthy & Stable" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
@@ -1703,7 +1726,7 @@ export default function ClientRetention() {
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
                         const label = (s: string | null) =>
-                          s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
+                          s === "invited" ? "Invitation" : s === "at_risk" ? "At Risk" : s === "slipping" ? "Slipping" : s === "stable" ? "Stable" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -1768,7 +1791,8 @@ export default function ClientRetention() {
                                             </SelectTrigger>
                                             <SelectContent>
                                               <SelectItem value="auto">Auto (from signals)</SelectItem>
-                                              <SelectItem value="at_risk">At Risk</SelectItem>
+                                              <SelectItem value="invited">Invitation</SelectItem>
+<SelectItem value="at_risk">At Risk</SelectItem>
                                               <SelectItem value="slipping">Slipping</SelectItem>
                                               <SelectItem value="stable">Stable</SelectItem>
                                               <SelectItem value="expansion_ready">Ascension</SelectItem>
@@ -1830,7 +1854,8 @@ export default function ClientRetention() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">Auto (from signals)</SelectItem>
-                            <SelectItem value="at_risk">At Risk</SelectItem>
+                            <SelectItem value="invited">Invitation</SelectItem>
+<SelectItem value="at_risk">At Risk</SelectItem>
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Stable</SelectItem>
                             <SelectItem value="expansion_ready">Ascension</SelectItem>
