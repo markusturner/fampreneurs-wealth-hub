@@ -860,7 +860,7 @@ export default function ClientRetention() {
         setPendingInvites((data ?? []).map((p: any) => ({
           id: p.id,
           user_id: p.user_id,
-          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Invited Client",
+          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || prettifyEmailName(p.email),
           email: p.email || "",
           phone: p.phone ?? null,
           program_name: p.program_name ?? null,
