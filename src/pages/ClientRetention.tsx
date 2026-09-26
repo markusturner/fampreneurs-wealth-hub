@@ -865,18 +865,27 @@ export default function ClientRetention() {
     if (!(isAdmin || isOwner)) return
     supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, email, phone, program_name")
+      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date")
       .eq("needs_profile_completion", true)
       .limit(5000)
-      .then(({ data }) => {
-        setPendingInvites((data ?? []).map((p: any) => ({
-          id: p.id,
-          user_id: p.user_id,
-          full_name: p.display_name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || prettifyEmailName(p.email),
-          email: p.email || "",
-          phone: p.phone ?? null,
-          program_name: p.program_name ?? null,
-        })))
+      .then(async ({ data }) => {
+        const rows = (data ?? []) as any[]
+        const ids = rows.map((p) => p.user_id).filter(Boolean)
+        const [onb, agr] = ids.length ? await Promise.all([
+          supabase.from("onboarding_responses").select("user_id").in("user_id", ids),
+          supabase.from("program_agreements").select("user_id").in("user_id", ids),
+        ]) : [{ data: [] }, { data: [] }] as any
+        const done = new Set([...(onb.data ?? []), ...(agr.data ?? [])].map((r: any) => r.user_id))
+        setPendingInvites(rows
+          .filter((p) => !done.has(p.user_id) && !p.skip_onboarding && !p.contract_start_date)
+          .map((p) => ({
+            id: p.id,
+            user_id: p.user_id,
+            full_name: p.email || "Invited Client",
+            email: p.email || "",
+            phone: p.phone ?? null,
+            program_name: p.program_name ?? null,
+          })))
       })
   }, [isAdmin, isOwner])
 
@@ -951,7 +960,7 @@ export default function ClientRetention() {
     const mapped = baseDisplayClients.map((c) => {
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
       const pending = ids.some((id) => invitedIds.has(id))
-      if (pending && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
+      if (pending && !notesMap[c.user_id]?.status_override) return { ...c, full_name: c.email?.split(" · ")[0] || c.full_name, status: "invited" as Status }
       return c
     })
     // Invited clients are excluded from health snapshots, so add placeholder
@@ -1217,6 +1226,7 @@ export default function ClientRetention() {
     return { buckets, avg, active, inactive }
   }, [displayClients])
 
+  const [clientSearch, setClientSearch] = useState("")
   const sortedClients = useMemo(() => {
     const orderIndex = new Map(boardOrder.map((id, index) => [id, index]))
     const value = (client: ClientScore): string | number => {
@@ -1227,7 +1237,9 @@ export default function ClientRetention() {
       if (sortField === "focus") return outreachTopic(client).toLowerCase()
       return orderIndex.get(client.user_id) ?? Number.MAX_SAFE_INTEGER
     }
-    return [...displayClients].sort((a, b) => {
+    const q = clientSearch.trim().toLowerCase()
+    const pool = q ? displayClients.filter((c) => `${c.full_name} ${c.email ?? ""}`.toLowerCase().includes(q)) : displayClients
+    return [...pool].sort((a, b) => {
       const av = value(a)
       const bv = value(b)
       const comparison = typeof av === "number" && typeof bv === "number"
@@ -1236,7 +1248,7 @@ export default function ClientRetention() {
       if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison
       return a.full_name.localeCompare(b.full_name)
     })
-  }, [displayClients, boardOrder, sortField, sortDirection])
+  }, [displayClients, boardOrder, sortField, sortDirection, clientSearch])
 
   const sortedBuckets = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { invited: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
@@ -1513,7 +1525,14 @@ export default function ClientRetention() {
         <div className="mt-4">
           <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
             <h2 className="text-base font-semibold">Client Queue</h2>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 ml-auto flex-wrap">
+              <Input
+                value={clientSearch}
+                onChange={(e) => setClientSearch(e.target.value)}
+                placeholder="Search clients..."
+                aria-label="Search clients"
+                className="h-8 w-[180px] text-xs"
+              />
               <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
                 <SelectTrigger className="h-8 w-[150px] text-xs" aria-label="Sort clients">
                   <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
