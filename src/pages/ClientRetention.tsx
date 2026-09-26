@@ -1456,6 +1456,10 @@ export default function ClientRetention() {
           <p className="text-xl sm:text-2xl font-bold">{stats.avg}<span className="text-sm sm:text-base text-muted-foreground">/10</span></p>
         </CardContent></Card>
         <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Total Clients</p>
+          <p className="text-xl sm:text-2xl font-bold">{stats.active + stats.inactive}</p>
+        </CardContent></Card>
+        <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Active / Inactive</p>
           <p className="text-xl sm:text-2xl font-bold">{stats.active}<span className="text-sm sm:text-base text-muted-foreground"> / {stats.inactive}</span></p>
         </CardContent></Card>
