@@ -100,7 +100,7 @@ function hasTrustDone(c: ClientScore): boolean {
 }
 
 
-const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v8"
+const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v9"
 
 // Rule-based outreach topic per client — what Markus should reach out about
 function outreachTopic(c: ClientScore): string {
