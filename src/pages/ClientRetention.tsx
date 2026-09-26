@@ -935,14 +935,33 @@ export default function ClientRetention() {
   }, [clients, partnerProfiles])
 
   const displayClients = useMemo(() => {
-    if (!onboardedIds) return baseDisplayClients
-    return baseDisplayClients.map((c) => {
+    const invitedIds = new Set(pendingInvites.flatMap((p) => [p.user_id, p.id]).filter(Boolean))
+    const mapped = baseDisplayClients.map((c) => {
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
-      const done = ids.some((id) => onboardedIds.has(id))
-      if (!done && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
+      const pending = ids.some((id) => invitedIds.has(id))
+      if (pending && !notesMap[c.user_id]?.status_override) return { ...c, status: "invited" as Status }
       return c
     })
-  }, [baseDisplayClients, onboardedIds, notesMap])
+    // Invited clients are excluded from health snapshots, so add placeholder
+    // cards for anyone with login access sent who isn't in the list yet.
+    const knownIds = new Set(mapped.flatMap((c) => [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]))
+    const placeholders: ClientScore[] = pendingInvites
+      .filter((p) => !knownIds.has(p.user_id) && !knownIds.has(p.id))
+      .map((p) => ({
+        user_id: p.user_id || p.id,
+        full_name: p.full_name,
+        email: p.email,
+        phone: p.phone,
+        program: null,
+        program_name: p.program_name,
+        score: 0,
+        status: "invited" as Status,
+        signals: [{ label: "Login access sent — waiting on signup and onboarding", severity: "info" }],
+        arr_value: 0,
+        last_active_at: null,
+      }))
+    return [...mapped, ...placeholders]
+  }, [baseDisplayClients, pendingInvites, notesMap])
 
 
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
