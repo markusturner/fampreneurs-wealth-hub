@@ -114,7 +114,10 @@ export function DashboardStats() {
   const connectedAccounts = getConnectedAccountsData()
   const connectedLocalTotal = connectedAccounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0)
   const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
-  const combinedTotal = demoMode ? demoTotal : (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
+  const demoInvestmentValue = 1250000
+  const combinedTotal = demoMode
+    ? demoInvestmentValue + demoTotal
+    : (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
   const hasFinancialData = combinedTotal > 0
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
