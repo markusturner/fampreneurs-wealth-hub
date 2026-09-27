@@ -1341,6 +1341,18 @@ export function AccountIntegration() {
                         {account.provider} • {account.type}
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {(() => {
+                          const t = (account.type || account.account_type || '').toLowerCase()
+                          const isInvestment = t === 'brokerage' || t === 'investment'
+                          return (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] font-medium ${isInvestment ? 'text-blue-700 border-blue-300 bg-blue-50' : 'text-emerald-700 border-emerald-300 bg-emerald-50'}`}
+                            >
+                              {isInvestment ? 'Investment' : 'Cash & Bank'}
+                            </Badge>
+                          )
+                        })()}
                         <Badge variant="outline" className="text-[10px]">
                           {displayEntityName(account.owner_entity) || 'No entity assigned'}
                         </Badge>
