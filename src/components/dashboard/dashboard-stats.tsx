@@ -109,15 +109,6 @@ export function DashboardStats() {
     fetchCounts()
   }, [user])
 
-  const getConnectedAccountsData = () => {
-    if (!user) return []
-    const userKey = `connectedAccounts_${user.id}`
-    const deletedKey = `deletedAccounts_${user.id}`
-    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
-    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
-    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
-  }
-
   const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
   // Demo accounts already include the $1,250,000 brokerage, so the hero is just the account total
   const combinedTotal = demoMode
