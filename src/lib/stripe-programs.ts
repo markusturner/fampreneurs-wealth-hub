@@ -70,3 +70,6 @@ export const PROGRAMS: Program[] = [
 export const getProgramById = (id: ProgramId) => PROGRAMS.find(p => p.id === id);
 export const getProgramByName = (name: string) => PROGRAMS.find(p => p.name === name);
 export const isLitePriceId = (priceId: string) => LITE_PRICE_IDS.includes(priceId);
+
+// TruHeirs software-only subscription ($247/quarter). DFO software only, no community or content.
+export const TRUHEIRS_SOFTWARE_PRICE_ID = 'price_1UK7XfKKuJwlPZFrPydOa934';

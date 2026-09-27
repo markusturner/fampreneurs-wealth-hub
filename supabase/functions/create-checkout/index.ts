@@ -33,7 +33,7 @@ serve(async (req) => {
     let customerId: string | undefined;
 
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
+    if (authHeader && !(for_client && email)) {
       const token = authHeader.replace("Bearer ", "");
       const { data } = await supabaseClient.auth.getUser(token);
       if (data.user?.email) {
@@ -58,6 +58,7 @@ serve(async (req) => {
       allow_promotion_codes: true,
       metadata: {
         program_name: program_name || "",
+        ...(isSoftware ? { truheirs_software: "true", email: String(customerEmail || "") } : {}),
       },
     });
 
