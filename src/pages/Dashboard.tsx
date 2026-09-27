@@ -94,17 +94,6 @@ const Dashboard = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => setManualTutorialOpen(true)}
-            title="Watch Tutorial Video"
-          >
-            <Video className="h-5 w-5" />
-          </Button>
-        </div>
       </div>
 
       <div className="flex items-center justify-center gap-4">
