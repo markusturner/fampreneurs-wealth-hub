@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
-import { Loader2, Video } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { BackToWelcome } from '@/components/layout/BackToWelcome'
 import { FamilyToggleBar, type FamilyTab } from '@/components/layout/FamilyToggleBar'
 import { useUserRole } from "@/hooks/useUserRole"
@@ -16,7 +16,6 @@ import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
-import { Button } from "@/components/ui/button"
 import Community from '@/pages/Community'
 import Documents from '@/pages/Documents'
 import CalendarPage from '@/pages/Calendar'
@@ -94,17 +93,6 @@ const Dashboard = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => setManualTutorialOpen(true)}
-            title="Watch Tutorial Video"
-          >
-            <Video className="h-5 w-5" />
-          </Button>
-        </div>
       </div>
 
       <div className="flex items-center justify-center gap-4">
