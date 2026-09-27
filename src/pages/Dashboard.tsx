@@ -24,7 +24,6 @@ import Members from '@/pages/Members'
 import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
 import { OwnershipMap } from '@/components/dashboard/ownership-map'
 import { HandoffPanel } from '@/components/dashboard/handoff-panel'
-import { DfoDemoToggle } from '@/components/dashboard/dfo-demo-toggle'
 
 
 const Dashboard = () => {
@@ -96,7 +95,6 @@ const Dashboard = () => {
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
         <div className="flex items-center gap-2">
-          {(isAdminOrOwner || isOwner || profile?.is_admin) && <DfoDemoToggle />}
           <Button
             variant="ghost"
             size="icon"
