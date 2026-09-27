@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Upload, Download, FileText, Trash2, Eye, Search, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -189,6 +189,10 @@ export const DocumentManagement = () => {
       setLoading(false)
     }
   }, [user, demoMode])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.original_filename.toLowerCase().includes(searchTerm.toLowerCase())
