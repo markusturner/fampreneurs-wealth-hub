@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { isDfoDemo, useDfoDemo, DEMO_DFO_TRANSACTIONS } from '@/lib/dfo-demo'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ interface FinancialData {
 }
 
 export function FinancialReports() {
+  const dfoDemo = useDfoDemo()
   const { user } = useAuth()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,7 +56,7 @@ export function FinancialReports() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [user, selectedPeriod])
+  }, [user, selectedPeriod, dfoDemo])
 
 
   const fetchTransactions = async () => {

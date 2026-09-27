@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { isDfoDemo, useDfoDemo, DEMO_DFO_ACCOUNTS, DEMO_DFO_TRANSACTIONS } from '@/lib/dfo-demo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -85,6 +86,7 @@ interface TransactionFilter {
 }
 
 export function TransactionMonitoring() {
+  const dfoDemo = useDfoDemo()
   const { user } = useAuth()
   const { toast } = useToast()
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -126,7 +128,7 @@ export function TransactionMonitoring() {
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
     fetchTransactionCategories()
-  }, [user])
+  }, [user, dfoDemo])
 
   const fetchTransactionCategories = async () => {
     try {
