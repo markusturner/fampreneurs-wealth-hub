@@ -33,7 +33,7 @@ import {
   X,
   Edit
 } from 'lucide-react'
-import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL } from '@/lib/entities'
+import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, displayEntityName } from '@/lib/entities'
 import { isDfoDemo, useDfoDemo, DEMO_DFO_ACCOUNTS } from '@/lib/dfo-demo'
 
 
@@ -1342,7 +1342,7 @@ export function AccountIntegration() {
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <Badge variant="outline" className="text-[10px]">
-                          {account.owner_entity || 'No entity assigned'}
+                          {displayEntityName(account.owner_entity) || 'No entity assigned'}
                         </Badge>
                         <Badge
                           variant="outline"
@@ -1576,7 +1576,7 @@ export function AccountIntegration() {
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
                     {ENTITY_OPTIONS.map(opt => (
-                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      <SelectItem key={opt} value={opt}>{displayEntityName(opt)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
