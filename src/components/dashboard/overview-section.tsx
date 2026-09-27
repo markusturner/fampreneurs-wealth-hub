@@ -525,9 +525,9 @@ WEALTH BUILDING (After $10k+/month steady):
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="h-full">
       {/* Charts — one at a time to keep the page short */}
-      <Card>
+      <Card className="h-full">
         <CardContent className="p-4 sm:p-6">
           <Tabs defaultValue="performance">
             <TabsList className="mb-4">
