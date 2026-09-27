@@ -71,6 +71,7 @@ import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
+import { useDfoDemo, setDfoDemo } from '@/lib/dfo-demo'
 
 
 interface Investment {
@@ -299,6 +300,30 @@ export default function Community() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
+        {canDemo && (
+          <div className="flex items-center justify-end gap-2">
+            <span className="text-xs font-medium text-muted-foreground">View:</span>
+            <div className="inline-flex rounded-full border border-border bg-muted p-0.5">
+              <button
+                type="button"
+                onClick={() => setDfoDemo(false)}
+                className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${!demoMode ? 'bg-[#290a52] text-white' : 'text-muted-foreground'}`}
+              >
+                Live
+              </button>
+              <button
+                type="button"
+                onClick={() => setDfoDemo(true)}
+                className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${demoMode ? 'bg-[#ffb500] text-[#290a52]' : 'text-muted-foreground'}`}
+              >
+                Demo
+              </button>
+            </div>
+            {demoMode && (
+              <Badge variant="outline" className="text-[10px] border-[#ffb500] text-[#290a52]">Sample data - nothing is saved</Badge>
+            )}
+          </div>
+        )}
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
           {/* Responsive Tab Navigation */}
           <div className="w-full">
