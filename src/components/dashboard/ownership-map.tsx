@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { getProtectionLevel } from '@/lib/entities'
+import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Node {
   key: string
@@ -29,6 +30,7 @@ function classify(entity: string | null): Node['kind'] {
 
 export function OwnershipMap() {
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
   const [rows, setRows] = useState<{ entity: string | null; balance: number }[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -62,7 +64,10 @@ export function OwnershipMap() {
 
   const nodes = useMemo<Node[]>(() => {
     const map = new Map<string, Node>()
-    for (const r of rows) {
+    const visibleRows = demoMode
+      ? DEMO_DFO_ACCOUNTS.map(account => ({ entity: account.owner_entity, balance: account.balance }))
+      : rows
+    for (const r of visibleRows) {
       const label = r.entity || 'Personal Name'
       const existing = map.get(label)
       if (existing) {
@@ -73,9 +78,9 @@ export function OwnershipMap() {
       }
     }
     return Array.from(map.values()).sort((a, b) => b.value - a.value)
-  }, [rows])
+  }, [demoMode, rows])
 
-  if (loading) return <div className="h-64 rounded-xl bg-muted animate-pulse" />
+  if (loading && !demoMode) return <div className="h-64 rounded-xl bg-muted animate-pulse" />
 
   const W = 900
   const H = 520

@@ -3,9 +3,11 @@ import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, Us
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
+import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
 
 export function DashboardStats() {
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
   const [documentCount, setDocumentCount] = useState(0)
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
@@ -111,7 +113,8 @@ export function DashboardStats() {
 
   const connectedAccounts = getConnectedAccountsData()
   const connectedLocalTotal = connectedAccounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0)
-  const combinedTotal = (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
+  const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
+  const combinedTotal = demoMode ? demoTotal : (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
   const hasFinancialData = combinedTotal > 0
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -125,8 +128,8 @@ export function DashboardStats() {
   const hero = {
     title: "Total Portfolio Value",
     value: hasFinancialData ? formatCurrency(combinedTotal) : "$0",
-    change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
-    trend: portfolioData.dayChange >= 0 ? "up" : "down",
+    change: hasFinancialData ? formatCurrency(demoMode ? 12840 : portfolioData.dayChange) : "Connect accounts",
+    trend: demoMode || portfolioData.dayChange >= 0 ? "up" : "down",
     icon: DollarSign,
     description: hasFinancialData ? "Connected accounts & investments" : "Connect accounts to see your value",
   }
@@ -134,22 +137,22 @@ export function DashboardStats() {
   const stats = [
     {
       title: "Investments",
-      value: connectedAccountsCount > 0 ? `${portfolioData.activeInvestments + connectedAccountsCount}` : "0",
+      value: demoMode ? '4' : connectedAccountsCount > 0 ? `${portfolioData.activeInvestments + connectedAccountsCount}` : "0",
       icon: PieChart,
     },
     {
       title: "Office Members",
-      value: familyOfficeMemberCount.toString(),
+      value: demoMode ? '3' : familyOfficeMemberCount.toString(),
       icon: Users,
     },
     {
       title: "Family Members",
-      value: familyMemberCount.toString(),
+      value: demoMode ? '6' : familyMemberCount.toString(),
       icon: UserPlus,
     },
     {
       title: "Documents",
-      value: documentCount.toString(),
+      value: demoMode ? '18' : documentCount.toString(),
       icon: FileText,
     },
   ]
