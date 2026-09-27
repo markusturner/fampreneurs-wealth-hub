@@ -97,28 +97,6 @@ const Dashboard = () => {
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
         <div className="flex items-center gap-2">
-          {(isAdminOrOwner || isOwner) && (
-            <div className="inline-flex items-center rounded-full border border-border bg-muted p-0.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => { setDfoDemo(false); setActiveTab('office') }}
-                className={`h-7 rounded-full px-3 text-xs ${!demoMode ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : 'text-muted-foreground'}`}
-              >
-                Live
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => { setDfoDemo(true); setActiveTab('office') }}
-                className={`h-7 rounded-full px-3 text-xs ${demoMode ? 'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground' : 'text-muted-foreground'}`}
-              >
-                Demo
-              </Button>
-            </div>
-          )}
           <Button
             variant="ghost"
             size="icon"
@@ -143,6 +121,31 @@ const Dashboard = () => {
 
       <div className="py-2">
         <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
+        {(isAdminOrOwner || isOwner || profile?.is_admin) && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">Digital Family Office:</span>
+            <div className="inline-flex items-center rounded-full border border-border bg-muted p-0.5 shadow-sm">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDfoDemo(false)}
+                className={`h-7 rounded-full px-4 text-xs ${!demoMode ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : 'text-muted-foreground'}`}
+              >
+                Live
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDfoDemo(true)}
+                className={`h-7 rounded-full px-4 text-xs ${demoMode ? 'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground' : 'text-muted-foreground'}`}
+              >
+                Demo
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
 
