@@ -163,7 +163,7 @@ export function AccountIntegration() {
         clearInterval(mockInterval)
       }
     }
-  }, [realTimeUpdates, user])
+  }, [realTimeUpdates, user, dfoDemo])
 
   // Helper function to transform Supabase account data
   const transformAccount = (account: any): ConnectedAccount => ({
