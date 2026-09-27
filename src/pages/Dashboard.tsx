@@ -114,8 +114,10 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <AssetProtectionSection />
-          <OverviewSection />
-          <OwnershipMap />
+          <div className="grid gap-6 xl:grid-cols-2 items-start">
+            <OverviewSection />
+            <OwnershipMap />
+          </div>
         </>
       ) : activeTab === 'office' ? (
         <Community showDemoToggle={false} />
