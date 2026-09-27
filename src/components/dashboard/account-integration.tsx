@@ -1342,7 +1342,7 @@ export function AccountIntegration() {
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         {(() => {
-                          const t = (account.type || account.account_type || '').toLowerCase()
+                          const t = (account.type || account.account_subtype || '').toLowerCase()
                           const isInvestment = t === 'brokerage' || t === 'investment'
                           return (
                             <Badge
