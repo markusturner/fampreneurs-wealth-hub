@@ -200,19 +200,20 @@ export default function Community() {
   }
 
   const getTotalPortfolioValue = () => {
-    return investments.reduce((sum, inv) => sum + inv.total_value, 0)
+    return displayInvestments.reduce((sum, inv) => sum + inv.total_value, 0)
   }
 
   const getTotalDayChange = () => {
-    return investments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
+    return displayInvestments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
   }
 
   const getTotalCashBalance = () => {
-    return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
+    return displayInvestments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
   // Get user-specific accounts balance from localStorage and connected accounts
   const getConnectedAccounts = () => {
+    if (demoMode) return DEMO_ACCOUNTS
     if (!user) return []
     
     const userKey = `connectedAccounts_${user.id}`
