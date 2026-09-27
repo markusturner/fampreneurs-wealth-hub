@@ -33,6 +33,7 @@ const Dashboard = () => {
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
+  const location = useLocation()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<FamilyTab>(
@@ -89,8 +90,6 @@ const Dashboard = () => {
   if (!user) return null
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
-  const location = useLocation()
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       <div className="flex items-center justify-between gap-4">
