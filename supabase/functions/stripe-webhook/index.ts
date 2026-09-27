@@ -101,7 +101,7 @@ serve(async (req) => {
             await supabaseClient.from('profiles').update({ truheirs_access: true, software_only: true, truheirs_paid_until: paidUntil }).eq('user_id', prof.user_id);
             const { data: noteRow } = await supabaseClient.from('client_retention_notes').select('id').eq('user_id', prof.user_id).maybeSingle();
             if (noteRow?.id) await supabaseClient.from('client_retention_notes').update({ status_override: 'continuity' }).eq('id', noteRow.id);
-            else await supabaseClient.from('client_retention_notes').insert({ user_id: prof.user_id, status_override: 'continuity' });
+            else await supabaseClient.from('client_retention_notes').insert({ user_id: prof.user_id, note: '', status_override: 'continuity' });
             logStep("TruHeirs software subscription activated", { userId: prof.user_id, paidUntil });
           }
         }
