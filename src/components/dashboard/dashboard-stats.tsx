@@ -226,8 +226,8 @@ export function DashboardStats() {
         {/* Primary metric */}
         <div className="glass-card rounded-2xl p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 rounded-xl bg-primary">
-              <hero.icon className="h-4 w-4 text-primary-foreground" />
+            <div className="p-2 rounded-xl bg-primary/10">
+              <hero.icon className="h-4 w-4 text-primary" />
             </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               {hero.title}
