@@ -860,6 +860,7 @@ export default function ClientRetention() {
   // Non-Active = clients who were SENT login access (needs_profile_completion)
   // but have not signed up and finished onboarding yet. Everyone else keeps
   // their computed stage.
+  const TRUHEIRS_PAID_RE = /(continu\w*|renew\w*|paid|pays|paying|purchas\w*|bought|signed up for|subscrib\w*)[^.]{0,60}(truheirs|software|subscription)|(truheirs|software) subscription[^.]{0,40}(paid|renew|continu|active)/i
   const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   const [activeUnscored, setActiveUnscored] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   useEffect(() => {
@@ -972,6 +973,11 @@ export default function ClientRetention() {
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
       const pending = ids.some((id) => invitedIds.has(id))
       if (pending && !notesMap[c.user_id]?.status_override) return { ...c, full_name: c.email?.split(" · ")[0] || c.full_name, status: "invited" as Status }
+      // A note saying they (continued) paying the TruHeirs subscription moves them to Continuity
+      const entry = notesMap[c.user_id]
+      if (!entry?.status_override && (entry?.entries ?? []).some((e) => TRUHEIRS_PAID_RE.test(e.note || ""))) {
+        return { ...c, status: "continuity" as Status }
+      }
       return c
     })
     // Invited clients are excluded from health snapshots, so add placeholder
