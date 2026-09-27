@@ -225,7 +225,7 @@ export default function Documents() {
         .from('family_members')
         .select('id, full_name, governance_branch, trust_positions')
         .eq('added_by', user.id)
-        .eq('status', 'active');
+        .is('office_role', null);
       
       if (error) throw error;
       setDbFamilyMembers(data || []);
