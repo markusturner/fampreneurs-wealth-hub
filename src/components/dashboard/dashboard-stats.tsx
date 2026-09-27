@@ -145,17 +145,17 @@ export function DashboardStats() {
     },
     {
       title: "Office Members",
-      value: demoMode ? '3' : familyOfficeMemberCount.toString(),
+      value: familyOfficeMemberCount.toString(),
       icon: Users,
     },
     {
       title: "Family Members",
-      value: demoMode ? '6' : familyMemberCount.toString(),
+      value: familyMemberCount.toString(),
       icon: UserPlus,
     },
     {
       title: "Documents",
-      value: demoMode ? '18' : documentCount.toString(),
+      value: documentCount.toString(),
       icon: FileText,
     },
   ]
