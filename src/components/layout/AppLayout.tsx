@@ -65,18 +65,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed || subscriptionStatus.loading
   const isLite = subscriptionStatus.isLite && !isAdminOrOwner && !isOwner && profile?.truheirs_access !== true
 
-  // Program ended (and no TruHeirs subscription): block access and tell them why
-  const today = new Date().toISOString().slice(0, 10)
   const p: any = profile
-  const effectiveEnd: string | null = p?.contract_extension_date || p?.contract_due_date || null
-  const paidActive = !!p?.truheirs_paid_until && p.truheirs_paid_until >= today
-  const programEnded = !!p && !roleLoading && !isAdminOrOwner && !isOwner && !!effectiveEnd && effectiveEnd < today && !paidActive
-  useEffect(() => {
-    if (!programEnded) return
-    sessionStorage.setItem('access_block_reason', `Your program ended on ${effectiveEnd}. To keep using the TruHeirs software, please contact us to start your TruHeirs subscription ($247 per quarter).`)
-    supabase.auth.signOut().finally(() => { window.location.href = '/auth' })
-  }, [programEnded, effectiveEnd])
-
   // TruHeirs subscription is software only: no community or content
   const softwareOnly = p?.software_only === true && !isAdminOrOwner && !isOwner
   useEffect(() => {
