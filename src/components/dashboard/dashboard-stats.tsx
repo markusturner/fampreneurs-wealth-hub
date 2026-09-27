@@ -127,7 +127,7 @@ export function DashboardStats() {
       ? portfolioData.totalValue
       : liveAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
   const cashAndBank = demoMode
-    ? demoAccounts.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
+    ? demoAccounts.filter((a) => !isInvestmentAccount(a)).reduce((sum, account) => sum + account.balance, 0)
     : selectedTrust === 'all'
       ? accountsData.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
       : liveAccounts.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
