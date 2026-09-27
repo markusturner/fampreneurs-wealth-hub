@@ -43,10 +43,15 @@ export const DocumentManagement = () => {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !user) return
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Uploads are disabled in the demo." })
+      return
+    }
 
     setUploading(true)
     try {
@@ -135,7 +140,11 @@ export const DocumentManagement = () => {
 
   const loadDocuments = useCallback(async () => {
     if (!user) return
-    
+    if (demoMode) {
+      setDocuments(DEMO_DOCUMENTS)
+      return
+    }
+
     setLoading(true)
     try {
       const { data, error } = await supabase
