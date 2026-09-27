@@ -229,7 +229,6 @@ export function DashboardStats() {
             <div className="p-2 rounded-xl bg-primary/15">
               <hero.icon className="h-4 w-4 text-primary-foreground" />
             </div>
-            </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               {hero.title}
             </p>
