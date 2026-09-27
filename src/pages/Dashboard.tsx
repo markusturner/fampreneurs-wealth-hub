@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
-import { Loader2, Video } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { BackToWelcome } from '@/components/layout/BackToWelcome'
 import { FamilyToggleBar, type FamilyTab } from '@/components/layout/FamilyToggleBar'
 import { useUserRole } from "@/hooks/useUserRole"
