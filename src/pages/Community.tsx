@@ -72,6 +72,7 @@ import { TransactionMonitoring } from '@/components/dashboard/transaction-monito
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 import { useDfoDemo, setDfoDemo } from '@/lib/dfo-demo'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 
 interface Investment {
@@ -94,8 +95,13 @@ interface AssetAllocationData {
   color: string
 }
 
-export default function Community() {
+interface CommunityProps {
+  showDemoToggle?: boolean
+}
+
+export default function Community({ showDemoToggle = true }: CommunityProps) {
   const { user, profile } = useAuth()
+  const { isAdminOrOwner: canDemo } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [investments, setInvestments] = useState<Investment[]>([])
@@ -103,26 +109,11 @@ export default function Community() {
   const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
   const [loadingMembers, setLoadingMembers] = useState(true)
   const demoMode = useDfoDemo()
-  const [canDemo, setCanDemo] = useState(false)
 
   useEffect(() => {
     fetchInvestments()
     fetchFamilyOfficeMembers()
   }, [])
-
-  useEffect(() => {
-    checkDemoAccess()
-  }, [user?.id])
-
-  const checkDemoAccess = async () => {
-    if (!user?.id) return
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .in('role', ['admin', 'owner'])
-    setCanDemo((data || []).length > 0)
-  }
 
   const fetchFamilyOfficeMembers = async () => {
     if (!user?.id) {
@@ -303,7 +294,7 @@ export default function Community() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
-        {canDemo && (
+        {showDemoToggle && canDemo && (
           <div className="flex items-center justify-end gap-2">
             <span className="text-xs font-medium text-muted-foreground">View:</span>
             <div className="inline-flex rounded-full border border-border bg-muted p-0.5">

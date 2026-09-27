@@ -24,6 +24,7 @@ import Members from '@/pages/Members'
 import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
 import { OwnershipMap } from '@/components/dashboard/ownership-map'
 import { HandoffPanel } from '@/components/dashboard/handoff-panel'
+import { useDfoDemo, setDfoDemo } from '@/lib/dfo-demo'
 
 
 const Dashboard = () => {
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const location = useLocation()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
+  const demoMode = useDfoDemo()
   const [activeTab, setActiveTab] = useState<FamilyTab>(
     typeof window !== 'undefined' && window.location.pathname === '/handoff' ? 'handoff' : 'dashboard'
   )
@@ -94,15 +96,39 @@ const Dashboard = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 shrink-0"
-          onClick={() => setManualTutorialOpen(true)}
-          title="Watch Tutorial Video"
-        >
-          <Video className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {(isAdminOrOwner || isOwner) && (
+            <div className="inline-flex items-center rounded-full border border-border bg-muted p-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setDfoDemo(false); setActiveTab('office') }}
+                className={`h-7 rounded-full px-3 text-xs ${!demoMode ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : 'text-muted-foreground'}`}
+              >
+                Live
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setDfoDemo(true); setActiveTab('office') }}
+                className={`h-7 rounded-full px-3 text-xs ${demoMode ? 'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground' : 'text-muted-foreground'}`}
+              >
+                Demo
+              </Button>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={() => setManualTutorialOpen(true)}
+            title="Watch Tutorial Video"
+          >
+            <Video className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center justify-center gap-4">
@@ -128,7 +154,7 @@ const Dashboard = () => {
           <OverviewSection />
         </>
       ) : activeTab === 'office' ? (
-        <Community />
+        <Community showDemoToggle={false} />
       ) : activeTab === 'governance' ? (
         <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
           <div className="space-y-4">
