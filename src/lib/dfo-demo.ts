@@ -71,6 +71,42 @@ const daysAgo = (n: number) => {
   return d.toISOString().split('T')[0]
 }
 
+const demoNow = () => new Date().toISOString()
+
+export const DEMO_OFFICE_MEMBERS = [
+  { id: 'demo-m1', full_name: 'Sarah Mitchell', email: 'sarah@mitchelladvisory.com', phone: '(555) 210-3345', family_position: 'Family Office Team', office_role: 'Financial Advisor', relationship_to_family: 'Financial Advisor', trust_positions: null, status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-m2', full_name: 'David Chen, Esq.', email: 'dchen@chenlaw.com', phone: '(555) 884-1290', family_position: 'Family Office Team', office_role: 'Estate Attorney', relationship_to_family: 'Estate Attorney', trust_positions: null, status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-m3', full_name: 'Priya Patel, CPA', email: 'priya@patelcpa.com', phone: '(555) 302-7781', family_position: 'Family Office Team', office_role: 'Accountant', relationship_to_family: 'Accountant', trust_positions: null, status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+]
+
+export const DEMO_FAMILY_MEMBERS = [
+  { id: 'demo-f1', full_name: 'Mark Turner', email: 'mark@turnerfamily.com', phone: '(555) 101-2001', family_position: 'Head of Family', office_role: null, relationship_to_family: 'Self', trust_positions: ['Trustee'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-f2', full_name: 'Angela Turner', email: 'angela@turnerfamily.com', phone: '(555) 101-2002', family_position: 'Spouse', office_role: null, relationship_to_family: 'Spouse', trust_positions: ['Trustee'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-f3', full_name: 'Jordan Turner', email: 'jordan@turnerfamily.com', phone: '(555) 101-2003', family_position: 'Adult Child', office_role: null, relationship_to_family: 'Son', trust_positions: ['Beneficiary'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-f4', full_name: 'Maya Turner', email: 'maya@turnerfamily.com', phone: '(555) 101-2004', family_position: 'Adult Child', office_role: null, relationship_to_family: 'Daughter', trust_positions: ['Beneficiary'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-f5', full_name: 'Robert Turner Sr.', email: 'robert@turnerfamily.com', phone: '(555) 101-2005', family_position: 'Grandparent', office_role: null, relationship_to_family: 'Father', trust_positions: ['Protector'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+  { id: 'demo-f6', full_name: 'Elena Turner', email: 'elena@turnerfamily.com', phone: '(555) 101-2006', family_position: 'Grandchild', office_role: null, relationship_to_family: 'Granddaughter', trust_positions: ['Beneficiary'], status: 'active', is_invited: true, invitation_sent_at: demoNow(), joined_at: demoNow(), notes: null, added_by: 'demo', created_at: demoNow(), updated_at: demoNow() },
+]
+
+export const DEMO_DOCUMENTS = [
+  'Turner Family Trust Document.pdf', 'Business Trust Document.pdf', 'Tax-Exempt Trust Document.pdf',
+  'Power of Attorney.pdf', 'Family Constitution.pdf', 'Trademark Certificate.pdf',
+  'Family Trust EIN Letter.pdf', 'Business Trust EIN Letter.pdf', 'Tax-Exempt EIN Letter.pdf',
+  'Investment Policy Statement.pdf', 'Estate Plan Summary.pdf', 'Insurance Policies Bundle.pdf',
+  'Property Deeds.pdf', 'Operating Agreement - Legacy Holdings LLC.pdf', 'Buy-Sell Agreement.pdf',
+  'Legacy Video.mp4', 'The Life-Legacy Letter.pdf', 'Annual Meeting Minutes 2025.pdf',
+].map((name, i) => ({
+  id: `demo-d${i + 1}`,
+  original_filename: name,
+  encrypted_filename: `demo/${name}`,
+  mime_type: name.endsWith('.mp4') ? 'video/mp4' : 'application/pdf',
+  file_size: 500000 + i * 137000,
+  classification_level: i % 3 === 0 ? 'confidential' : i % 3 === 1 ? 'restricted' : 'internal',
+  created_at: demoNow(),
+  last_accessed: demoNow(),
+  access_count: (i % 5) + 1,
+}))
+
 export const DEMO_DFO_TRANSACTIONS = [
   { id: 'demo-t1', description: 'Client Invoice Payment', amount: 18500, transaction_date: daysAgo(1), category: 'Income', account_name: 'Business Operating', type: 'credit' },
   { id: 'demo-t2', description: 'Whole Foods Market', amount: -214.32, transaction_date: daysAgo(2), category: 'Groceries', account_name: 'Family Checking', type: 'debit' },

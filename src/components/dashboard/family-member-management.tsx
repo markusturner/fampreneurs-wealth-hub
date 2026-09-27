@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Users, UserPlus, Crown, User, Trash2, Send, Mail, Phone } from 'lucide-react'
+import { DEMO_OFFICE_MEMBERS, DEMO_FAMILY_MEMBERS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface FamilyMember {
   id: string
@@ -33,6 +34,7 @@ interface FamilyMember {
 export function FamilyMemberManagement() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const demoMode = useDfoDemo()
   const [members, setMembers] = useState<FamilyMember[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -47,8 +49,13 @@ export function FamilyMemberManagement() {
   })
 
   useEffect(() => {
+    if (demoMode) {
+      setMembers([...DEMO_OFFICE_MEMBERS, ...DEMO_FAMILY_MEMBERS] as unknown as FamilyMember[])
+      setLoading(false)
+      return
+    }
     fetchFamilyMembers()
-    
+
     // Set up realtime subscription for family_members changes
     const channel = supabase
       .channel('family_members_changes')
@@ -68,7 +75,7 @@ export function FamilyMemberManagement() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [demoMode])
 
   const fetchFamilyMembers = async () => {
     try {
@@ -92,6 +99,10 @@ export function FamilyMemberManagement() {
   }
 
   const handleAddMember = async () => {
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Adding members is disabled in the demo." })
+      return
+    }
     if (!user?.id || !newMember.full_name || !newMember.email) {
       toast({
         title: "Error",
@@ -150,6 +161,10 @@ export function FamilyMemberManagement() {
   }
 
   const handleRemoveMember = async (memberId: string) => {
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Removing members is disabled in the demo." })
+      return
+    }
     try {
       // Get the family member's email before deleting
       const memberToDelete = members.find(m => m.id === memberId)

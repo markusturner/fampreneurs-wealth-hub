@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Upload, Download, FileText, Trash2, Eye, Search, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { DEMO_DOCUMENTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Document {
   id: string
@@ -42,10 +43,15 @@ export const DocumentManagement = () => {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !user) return
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Uploads are disabled in the demo." })
+      return
+    }
 
     setUploading(true)
     try {
@@ -134,7 +140,11 @@ export const DocumentManagement = () => {
 
   const loadDocuments = useCallback(async () => {
     if (!user) return
-    
+    if (demoMode) {
+      setDocuments(DEMO_DOCUMENTS)
+      return
+    }
+
     setLoading(true)
     try {
       const { data, error } = await supabase
@@ -178,7 +188,11 @@ export const DocumentManagement = () => {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, demoMode])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.original_filename.toLowerCase().includes(searchTerm.toLowerCase())

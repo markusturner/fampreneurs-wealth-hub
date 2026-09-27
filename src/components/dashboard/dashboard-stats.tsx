@@ -3,7 +3,7 @@ import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, Us
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
-import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
+import { DEMO_DFO_ACCOUNTS, DEMO_OFFICE_MEMBERS, DEMO_FAMILY_MEMBERS, DEMO_DOCUMENTS, useDfoDemo } from '@/lib/dfo-demo'
 
 export function DashboardStats() {
   const { user } = useAuth()
@@ -145,17 +145,17 @@ export function DashboardStats() {
     },
     {
       title: "Office Members",
-      value: familyOfficeMemberCount.toString(),
+      value: demoMode ? String(DEMO_OFFICE_MEMBERS.length) : familyOfficeMemberCount.toString(),
       icon: Users,
     },
     {
       title: "Family Members",
-      value: familyMemberCount.toString(),
+      value: demoMode ? String(DEMO_FAMILY_MEMBERS.length) : familyMemberCount.toString(),
       icon: UserPlus,
     },
     {
       title: "Documents",
-      value: documentCount.toString(),
+      value: demoMode ? String(DEMO_DOCUMENTS.length) : documentCount.toString(),
       icon: FileText,
     },
   ]
