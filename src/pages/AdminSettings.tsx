@@ -102,7 +102,6 @@ export function AdminSettings() {
 
         {(isAdmin || isOwner) && (
           <TabsContent value="content" className="space-y-6">
-            <AdminTutorialVideoManager />
             <AdminUpgradeVideoManager />
             <AdminVideoManager
               settingKey="workspace_video_url"
