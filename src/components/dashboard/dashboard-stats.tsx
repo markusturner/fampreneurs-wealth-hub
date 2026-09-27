@@ -1,9 +1,17 @@
 import { Badge } from "@/components/ui/badge"
-import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
+import { Building2, Calendar, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
 import { DEMO_DFO_ACCOUNTS, DEMO_OFFICE_MEMBERS, DEMO_FAMILY_MEMBERS, DEMO_DOCUMENTS, useDfoDemo } from '@/lib/dfo-demo'
+import { displayEntityName } from "@/lib/entities"
+
+const DATE_RANGES = [
+  { value: 'mtd', label: 'Month-to-date', compare: 'last month' },
+  { value: 'qtd', label: 'Quarter-to-date', compare: 'last quarter' },
+  { value: 'ytd', label: 'Year-to-date', compare: 'last year' },
+  { value: 'l12m', label: 'Last 12 months', compare: 'the prior 12 months' },
+]
 
 export function DashboardStats() {
   const { user } = useAuth()
@@ -12,7 +20,9 @@ export function DashboardStats() {
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
   const [connectedAccountsCount, setConnectedAccountsCount] = useState(0)
-  const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
+  const [accountsData, setAccountsData] = useState<{ balance: number; account_type?: string; owner_entity?: string | null }[]>([])
+  const [selectedTrust, setSelectedTrust] = useState('all')
+  const [selectedRange, setSelectedRange] = useState('qtd')
   const financialAdvisorCount = familyOfficeMemberCount
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 0,
@@ -66,21 +76,14 @@ export function DashboardStats() {
         setConnectedAccountsCount(accountsCount)
       }
 
-      const { data: accountsData, error: accountsDataError } = await supabase
+      const { data: accountsDataResult, error: accountsDataError } = await supabase
         .from('connected_accounts')
-        .select('balance, account_type')
+        .select('balance, account_type, owner_entity')
         .eq('user_id', user.id)
 
-      if (!accountsDataError && accountsData) {
+      if (!accountsDataError && accountsDataResult) {
         // Cash & Bank only: exclude brokerage/investment accounts so they are not counted twice
-        const isInvestment = (a: any) => {
-          const t = (a.account_type || a.type || '').toLowerCase()
-          return t === 'brokerage' || t === 'investment'
-        }
-        const cashSum = accountsData
-          .filter((a: any) => !isInvestment(a))
-          .reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
-        setConnectedAccountsBalanceTotal(cashSum)
+        setAccountsData(accountsDataResult as any[])
       }
 
       const { data: portfolios, error: portfolioError } = await supabase
