@@ -91,6 +91,21 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const meta = session.metadata || {};
+      // TruHeirs software-only subscription: turn access back on, software only
+      if (meta.truheirs_software === 'true') {
+        const payEmail = (session.customer_details?.email || session.customer_email || meta.email || '').toLowerCase();
+        if (payEmail) {
+          const paidUntil = new Date(Date.now() + 92 * 86400000).toISOString().slice(0, 10);
+          const { data: prof } = await supabaseClient.from('profiles').select('user_id').ilike('email', payEmail).maybeSingle();
+          if (prof?.user_id) {
+            await supabaseClient.from('profiles').update({ truheirs_access: true, software_only: true, truheirs_paid_until: paidUntil }).eq('user_id', prof.user_id);
+            const { data: noteRow } = await supabaseClient.from('client_retention_notes').select('id').eq('user_id', prof.user_id).maybeSingle();
+            if (noteRow?.id) await supabaseClient.from('client_retention_notes').update({ status_override: 'continuity' }).eq('id', noteRow.id);
+            else await supabaseClient.from('client_retention_notes').insert({ user_id: prof.user_id, status_override: 'continuity' });
+            logStep("TruHeirs software subscription activated", { userId: prof.user_id, paidUntil });
+          }
+        }
+      }
       if (meta.signup_flow === 'true' && meta.email) {
         const email = meta.email as string;
         const firstName = (meta.first_name as string) || '';
