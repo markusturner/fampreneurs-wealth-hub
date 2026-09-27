@@ -861,11 +861,12 @@ export default function ClientRetention() {
   // but have not signed up and finished onboarding yet. Everyone else keeps
   // their computed stage.
   const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
+  const [activeUnscored, setActiveUnscored] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
     supabase
       .from("profiles")
-      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date")
+      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name")
       .eq("needs_profile_completion", true)
       .limit(5000)
       .then(async ({ data }) => {
@@ -876,6 +877,16 @@ export default function ClientRetention() {
           supabase.from("program_agreements").select("user_id").in("user_id", ids),
         ]) : [{ data: [] }, { data: [] }] as any
         const done = new Set([...(onb.data ?? []), ...(agr.data ?? [])].map((r: any) => r.user_id))
+        setActiveUnscored(rows
+          .filter((p) => done.has(p.user_id) || p.skip_onboarding || p.contract_start_date)
+          .map((p) => ({
+            id: p.id,
+            user_id: p.user_id,
+            full_name: p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.email || "Client",
+            email: p.email || "",
+            phone: p.phone ?? null,
+            program_name: p.program_name ?? null,
+          })))
         setPendingInvites(rows
           .filter((p) => !done.has(p.user_id) && !p.skip_onboarding && !p.contract_start_date)
           .map((p) => ({
@@ -981,8 +992,25 @@ export default function ClientRetention() {
         arr_value: 0,
         last_active_at: null,
       }))
-    return [...mapped, ...placeholders]
-  }, [baseDisplayClients, pendingInvites, notesMap])
+    placeholders.forEach((p) => knownIds.add(p.user_id))
+    // Active clients who finished onboarding but have no health score yet
+    const activePlaceholders: ClientScore[] = activeUnscored
+      .filter((p) => !knownIds.has(p.user_id) && !knownIds.has(p.id))
+      .map((p) => ({
+        user_id: p.user_id || p.id,
+        full_name: p.full_name,
+        email: p.email,
+        phone: p.phone,
+        program: null,
+        program_name: p.program_name,
+        score: 6,
+        status: ((notesMap[p.user_id]?.status_override as Status) || "stable") as Status,
+        signals: [{ label: "Waiting on first health check", severity: "info" }],
+        arr_value: 0,
+        last_active_at: null,
+      }))
+    return [...mapped, ...placeholders, ...activePlaceholders]
+  }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap])
 
 
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
