@@ -115,6 +115,7 @@ export function FinancialReports() {
       ]
 
       setTransactions(allTransactions)
+      setShowingDemoData(false)
       await processFinancialData(allTransactions)
     } catch (error) {
       console.error('Error fetching transactions:', error)
