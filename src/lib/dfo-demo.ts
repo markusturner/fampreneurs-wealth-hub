@@ -28,7 +28,7 @@ export const DEMO_DFO_ACCOUNTS = [
   { id: 'demo-a1', name: 'Family Checking', account_name: 'Family Checking', type: 'bank', account_type: 'bank', provider: 'Chase', balance: 48250, lastSync: new Date().toISOString(), status: 'connected', institution: 'Chase', owner_entity: 'Turner Family Trust' },
   { id: 'demo-a2', name: 'Brokerage Account', account_name: 'Brokerage Account', type: 'brokerage', account_type: 'brokerage', provider: 'Fidelity', balance: 1250000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Fidelity', owner_entity: 'Turner Family Trust' },
   { id: 'demo-a3', name: 'Crypto Wallet', account_name: 'Crypto Wallet', type: 'crypto', account_type: 'crypto', provider: 'Coinbase', balance: 145000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Coinbase', owner_entity: null },
-  { id: 'demo-a4', name: 'Business Operating', account_name: 'Business Operating', type: 'business', account_type: 'business', provider: 'Wells Fargo', balance: 212400, lastSync: new Date().toISOString(), status: 'connected', institution: 'Wells Fargo', owner_entity: 'Legacy Holdings LLC' },
+  { id: 'demo-a4', name: 'Business Operating', account_name: 'Business Operating', type: 'business', account_type: 'business', provider: 'Wells Fargo', balance: 1462400, lastSync: new Date().toISOString(), status: 'connected', institution: 'Wells Fargo', owner_entity: 'Legacy Holdings LLC' },
 ]
 
 export const DEMO_GOVERNANCE = {
