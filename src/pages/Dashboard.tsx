@@ -24,7 +24,7 @@ import Members from '@/pages/Members'
 import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
 import { OwnershipMap } from '@/components/dashboard/ownership-map'
 import { HandoffPanel } from '@/components/dashboard/handoff-panel'
-import { useDfoDemo, setDfoDemo } from '@/lib/dfo-demo'
+import { DfoDemoToggle } from '@/components/dashboard/dfo-demo-toggle'
 
 
 const Dashboard = () => {
@@ -37,7 +37,6 @@ const Dashboard = () => {
   const location = useLocation()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
-  const demoMode = useDfoDemo()
   const [activeTab, setActiveTab] = useState<FamilyTab>(
     typeof window !== 'undefined' && window.location.pathname === '/handoff' ? 'handoff' : 'dashboard'
   )
@@ -97,6 +96,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
         <div className="flex items-center gap-2">
+          {(isAdminOrOwner || isOwner || profile?.is_admin) && <DfoDemoToggle />}
           <Button
             variant="ghost"
             size="icon"
@@ -121,31 +121,6 @@ const Dashboard = () => {
 
       <div className="py-2">
         <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
-        {(isAdminOrOwner || isOwner || profile?.is_admin) && (
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">Digital Family Office:</span>
-            <div className="inline-flex items-center rounded-full border border-border bg-muted p-0.5 shadow-sm">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setDfoDemo(false)}
-                className={`h-7 rounded-full px-4 text-xs ${!demoMode ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : 'text-muted-foreground'}`}
-              >
-                Live
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setDfoDemo(true)}
-                className={`h-7 rounded-full px-4 text-xs ${demoMode ? 'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground' : 'text-muted-foreground'}`}
-              >
-                Demo
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
 
