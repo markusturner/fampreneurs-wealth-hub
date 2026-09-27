@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { AlertTriangle, ShieldCheck } from 'lucide-react'
-import { getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, type ProtectionLevel } from '@/lib/entities'
+import { getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, displayEntityName, type ProtectionLevel } from '@/lib/entities'
 import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Row {
@@ -118,7 +118,7 @@ export function AssetProtectionSection() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{r.account_name}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {r.owner_entity || 'No entity assigned'} • {currency(r.balance)}
+                      {displayEntityName(r.owner_entity) || 'No entity assigned'} • {currency(r.balance)}
                     </p>
                   </div>
                   <Badge variant="outline" className={`text-xs shrink-0 ${PROTECTION_CLASS[r.level]}`}>

@@ -126,8 +126,8 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <AssetProtectionSection />
-          <OwnershipMap />
           <OverviewSection />
+          <OwnershipMap />
         </>
       ) : activeTab === 'office' ? (
         <Community showDemoToggle={false} />
