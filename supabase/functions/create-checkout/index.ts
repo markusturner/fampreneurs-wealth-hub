@@ -18,7 +18,8 @@ serve(async (req) => {
   );
 
   try {
-    const { price_id, mode, email, program_name } = await req.json();
+    const { price_id, mode, email, program_name, for_client } = await req.json();
+    const isSoftware = price_id === "price_1UK7XfKKuJwlPZFrPydOa934";
 
     if (!price_id) throw new Error("price_id is required");
     if (!mode || !["subscription", "payment"].includes(mode)) throw new Error("Valid mode (subscription/payment) is required");
