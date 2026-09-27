@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Users, UserPlus, Crown, User, Trash2, Send, Mail, Phone } from 'lucide-react'
+import { DEMO_OFFICE_MEMBERS, DEMO_FAMILY_MEMBERS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface FamilyMember {
   id: string
@@ -33,6 +34,7 @@ interface FamilyMember {
 export function FamilyMemberManagement() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const demoMode = useDfoDemo()
   const [members, setMembers] = useState<FamilyMember[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
