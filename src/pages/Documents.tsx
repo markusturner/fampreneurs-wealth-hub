@@ -608,15 +608,17 @@ export default function Documents() {
     }
   }, [user?.id]);
 
-  const branchMembers = (branch: string, raw?: string) => {
+  const branchMembers = (branch: string) => {
+    const positionBranch: Record<string, string> = {
+      Chairman: 'family_council', 'Vice Chair': 'family_council', Secretary: 'family_council', Treasurer: 'family_council',
+      'Operations Lead': 'family_council', 'Council Member': 'family_council',
+      'Elder Advisor': 'council_elders', 'Elder Mentor': 'council_elders', 'Elder Mediator': 'council_elders',
+      'Voting Member': 'family_assembly',
+    };
     const assigned = (demoMode ? DEMO_FAMILY_MEMBERS : dbFamilyMembers)
-      .filter(member => member.governance_branch === branch && member.full_name?.trim())
+      .filter(member => (member.governance_branch || positionBranch[member.trust_positions?.[0] || '']) === branch && member.full_name?.trim())
       .map(member => ({ name: member.full_name, position: member.trust_positions?.[0] }));
-    // Preserve names entered in older constitutions until they are assigned in Members.
-    const legacy = demoMode ? [] : (raw || '').split('\n').map(name => name.trim()).filter(Boolean)
-      .filter(name => !assigned.some(member => member.name.toLowerCase() === name.toLowerCase()))
-      .map(name => ({ name, position: null as string | null }));
-    return [...assigned, ...legacy];
+    return assigned;
   };
 
 
@@ -1006,9 +1008,9 @@ export default function Documents() {
                   </p>
                   <div className="mb-4">
                     <div className="text-sm font-semibold mb-1">Members</div>
-                    {branchMembers('family_council', constitutionGovernance?.familyCouncilMembers).length ? (
+                    {branchMembers('family_council').length ? (
                       <ul className="text-xs text-muted-foreground space-y-1">
-                        {branchMembers('family_council', constitutionGovernance?.familyCouncilMembers).map((member, i) => (
+                        {branchMembers('family_council').map((member, i) => (
                           <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
                             <span>{member.name}</span>
                             {member.position && <span>{member.position}</span>}
@@ -1049,9 +1051,9 @@ export default function Documents() {
                   </p>
                   <div className="mb-4">
                     <div className="text-sm font-semibold mb-1">Members</div>
-                    {branchMembers('council_elders', constitutionGovernance?.councilOfEldersMembers).length ? (
+                    {branchMembers('council_elders').length ? (
                       <ul className="text-xs text-muted-foreground space-y-1">
-                        {branchMembers('council_elders', constitutionGovernance?.councilOfEldersMembers).map((member, i) => (
+                        {branchMembers('council_elders').map((member, i) => (
                           <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
                             <span>{member.name}</span>
                             {member.position && <span>{member.position}</span>}
@@ -1092,9 +1094,9 @@ export default function Documents() {
                   </p>
                   <div className="mb-4">
                     <div className="text-sm font-semibold mb-1">Members</div>
-                    {branchMembers('family_assembly', constitutionGovernance?.familyAssemblyMembers).length ? (
+                    {branchMembers('family_assembly').length ? (
                       <ul className="text-xs text-muted-foreground space-y-1">
-                        {branchMembers('family_assembly', constitutionGovernance?.familyAssemblyMembers).map((member, i) => (
+                        {branchMembers('family_assembly').map((member, i) => (
                           <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
                             <span>{member.name}</span>
                             {member.position && <span>{member.position}</span>}
