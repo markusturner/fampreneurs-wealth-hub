@@ -61,6 +61,7 @@ interface ConnectedAccount {
 }
 
 export function AccountIntegration() {
+  const dfoDemo = useDfoDemo()
   const { user } = useAuth()
   const { toast } = useToast()
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([])
