@@ -112,22 +112,35 @@ export function DashboardStats() {
     fetchCounts()
   }, [user])
 
-  const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
-  // Demo accounts already include the $1,250,000 brokerage, so the hero is just the account total
-  const combinedTotal = demoMode
-    ? demoTotal
-    : portfolioData.totalValue + connectedAccountsBalanceTotal
-  const hasFinancialData = combinedTotal > 0
-
-
-  const isDemoInvestment = (a: any) => {
-    const t = (a.type || '').toLowerCase()
+  const isInvestmentAccount = (a: any) => {
+    const t = (a.account_type || a.type || '').toLowerCase()
     return t === 'brokerage' || t === 'investment'
   }
-  const investmentValue = demoMode ? 1250000 : portfolioData.totalValue
+  const entityOf = (a: any) => a.owner_entity ?? 'Personal (No Entity)'
+  const matchesTrust = (a: any) => selectedTrust === 'all' || entityOf(a) === selectedTrust
+
+  const demoAccounts = DEMO_DFO_ACCOUNTS.filter(matchesTrust)
+  const liveAccounts = accountsData.filter(matchesTrust)
+  const investmentValue = demoMode
+    ? demoAccounts.filter(isDemoInvestment).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+    : selectedTrust === 'all'
+      ? portfolioData.totalValue
+      : liveAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
   const cashAndBank = demoMode
-    ? DEMO_DFO_ACCOUNTS.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
-    : connectedAccountsBalanceTotal
+    ? demoAccounts.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
+    : selectedTrust === 'all'
+      ? accountsData.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+      : liveAccounts.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+  // Hero value is always the sum of the two sections, so the numbers never double-count
+  const combinedTotal = investmentValue + cashAndBank
+  const hasFinancialData = combinedTotal > 0
+
+  const trustOptions = Array.from(
+    new Set(
+      (demoMode ? DEMO_DFO_ACCOUNTS : accountsData).map((a: any) => entityOf(a))
+    )
+  )
+  const selectedRangeMeta = DATE_RANGES.find((r) => r.value === selectedRange) || DATE_RANGES[1]
   const investmentTrend = demoMode || portfolioData.dayChangePercent >= 0 ? 'up' : 'down'
   const investmentChangeLabel = demoMode ? '+3% today' : `${Math.abs(portfolioData.dayChangePercent).toFixed(1)}% today`
 
