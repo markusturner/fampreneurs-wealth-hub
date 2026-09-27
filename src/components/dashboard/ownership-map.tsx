@@ -123,12 +123,6 @@ export function OwnershipMap() {
 
   return (
     <div className="space-y-2">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Ownership map</h2>
-        <p className="text-sm text-muted-foreground">
-          Each ring is a legal owner. Dashed lines are assets a court can reach.
-        </p>
-      </div>
 
       <Card>
         <CardContent className="p-2 sm:p-4">
