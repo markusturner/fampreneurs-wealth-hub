@@ -143,6 +143,13 @@ export function TransactionMonitoring() {
   }
 
   const fetchConnectedAccountsAndTransactions = async () => {
+    if (isDfoDemo()) {
+      setConnectedAccounts(DEMO_DFO_ACCOUNTS)
+      setTransactions(DEMO_DFO_TRANSACTIONS as unknown as Transaction[])
+      setUploadedStatements([])
+      setLoading(false)
+      return
+    }
     if (!user) return
 
     setLoading(true)

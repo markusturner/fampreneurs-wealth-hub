@@ -58,6 +58,14 @@ export function FinancialReports() {
 
 
   const fetchTransactions = async () => {
+    if (isDfoDemo()) {
+      setLoading(true)
+      setTransactions(DEMO_DFO_TRANSACTIONS as unknown as Transaction[])
+      await processFinancialData(DEMO_DFO_TRANSACTIONS as unknown as Transaction[])
+      setShowingDemoData(true)
+      setLoading(false)
+      return
+    }
     if (!user) return
 
     setLoading(true)
