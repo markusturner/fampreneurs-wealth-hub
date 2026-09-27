@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus } from "lucide-react"
+import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
@@ -68,12 +68,19 @@ export function DashboardStats() {
 
       const { data: accountsData, error: accountsDataError } = await supabase
         .from('connected_accounts')
-        .select('balance')
+        .select('balance, account_type')
         .eq('user_id', user.id)
 
       if (!accountsDataError && accountsData) {
-        const sum = accountsData.reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
-        setConnectedAccountsBalanceTotal(sum)
+        // Cash & Bank only: exclude brokerage/investment accounts so they are not counted twice
+        const isInvestment = (a: any) => {
+          const t = (a.account_type || a.type || '').toLowerCase()
+          return t === 'brokerage' || t === 'investment'
+        }
+        const cashSum = accountsData
+          .filter((a: any) => !isInvestment(a))
+          .reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+        setConnectedAccountsBalanceTotal(cashSum)
       }
 
       const { data: portfolios, error: portfolioError } = await supabase
@@ -102,23 +109,25 @@ export function DashboardStats() {
     fetchCounts()
   }, [user])
 
-  const getConnectedAccountsData = () => {
-    if (!user) return []
-    const userKey = `connectedAccounts_${user.id}`
-    const deletedKey = `deletedAccounts_${user.id}`
-    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
-    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
-    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
-  }
-
-  const connectedAccounts = getConnectedAccountsData()
-  const connectedLocalTotal = connectedAccounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0)
   const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
   // Demo accounts already include the $1,250,000 brokerage, so the hero is just the account total
   const combinedTotal = demoMode
     ? demoTotal
-    : (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
+    : portfolioData.totalValue + connectedAccountsBalanceTotal
   const hasFinancialData = combinedTotal > 0
+
+
+  const isDemoInvestment = (a: any) => {
+    const t = (a.type || '').toLowerCase()
+    return t === 'brokerage' || t === 'investment'
+  }
+  const investmentValue = demoMode ? 1250000 : portfolioData.totalValue
+  const cashAndBank = demoMode
+    ? DEMO_DFO_ACCOUNTS.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
+    : connectedAccountsBalanceTotal
+  const investmentTrend = demoMode || portfolioData.dayChangePercent >= 0 ? 'up' : 'down'
+  const investmentChangeLabel = demoMode ? '+3% today' : `${Math.abs(portfolioData.dayChangePercent).toFixed(1)}% today`
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -161,31 +170,83 @@ export function DashboardStats() {
   ]
 
   const TrendIcon = hero.trend === "up" ? ArrowUpRight : ArrowDownRight
+  const InvestmentTrendIcon = investmentTrend === "up" ? ArrowUpRight : ArrowDownRight
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {/* Primary metric */}
-      <div className="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-1">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <hero.icon className="h-4 w-4 text-primary" />
+    <div className="space-y-4">
+      {/* Top row: Total Portfolio Value + Investment Value + Cash & Bank */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Primary metric */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <hero.icon className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {hero.title}
+            </p>
           </div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            {hero.title}
-          </p>
+          <div className="text-3xl font-bold text-foreground">{hero.value}</div>
+          <div className="mt-2 flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+              <TrendIcon className="h-3 w-3 mr-0.5" />
+              {hero.change}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">{hero.description}</p>
         </div>
-        <div className="text-3xl font-bold text-foreground">{hero.value}</div>
-        <div className="mt-2 flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
-            <TrendIcon className="h-3 w-3 mr-0.5" />
-            {hero.change}
-          </Badge>
+
+        {/* Investment Value */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-accent/10">
+              <PieChart className="h-4 w-4 text-accent" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Investment Value
+            </p>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(investmentValue)}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+                <InvestmentTrendIcon className="h-3 w-3 mr-0.5" />
+                {investmentChangeLabel}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              vs {formatCurrency(investmentValue * 0.92)} last period
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">{hero.description}</p>
+
+        {/* Cash & Bank */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <CreditCard className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Cash & Bank
+            </p>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(cashAndBank)}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+                <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                +5% today
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              vs {formatCurrency(cashAndBank * 0.95)} last period
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Supporting metrics, quiet and compact */}
-      <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
