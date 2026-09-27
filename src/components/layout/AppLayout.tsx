@@ -12,9 +12,10 @@ import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2 } from "lucide-react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { FamilyToggleBar } from "./FamilyToggleBar"
+import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
 
 
-const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members']
+const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
 
 // Routes that require TruHeirs subscription (not accessible without it)
 const TRUHEIRS_ROUTES = [
@@ -182,8 +183,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Page content */}
         <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
           {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
-            <div className="sticky top-0 z-40 px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
+            <div className="sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
+              <div />
               <FamilyToggleBar />
+              <div className="flex justify-end">
+                {(isAdminOrOwner || isOwner || profile?.is_admin) && <DfoDemoToggle />}
+              </div>
             </div>
           )}
           {isTruHeirsRoute && !hasTruHeirsAccess ? (
