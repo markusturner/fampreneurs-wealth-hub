@@ -170,31 +170,83 @@ export function DashboardStats() {
   ]
 
   const TrendIcon = hero.trend === "up" ? ArrowUpRight : ArrowDownRight
+  const InvestmentTrendIcon = investmentTrend === "up" ? ArrowUpRight : ArrowDownRight
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {/* Primary metric */}
-      <div className="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-1">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <hero.icon className="h-4 w-4 text-primary" />
+    <div className="space-y-4">
+      {/* Top row: Total Portfolio Value + Investment Value + Cash & Bank */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Primary metric */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <hero.icon className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {hero.title}
+            </p>
           </div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            {hero.title}
-          </p>
+          <div className="text-3xl font-bold text-foreground">{hero.value}</div>
+          <div className="mt-2 flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+              <TrendIcon className="h-3 w-3 mr-0.5" />
+              {hero.change}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">{hero.description}</p>
         </div>
-        <div className="text-3xl font-bold text-foreground">{hero.value}</div>
-        <div className="mt-2 flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
-            <TrendIcon className="h-3 w-3 mr-0.5" />
-            {hero.change}
-          </Badge>
+
+        {/* Investment Value */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-accent/10">
+              <PieChart className="h-4 w-4 text-accent" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Investment Value
+            </p>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(investmentValue)}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+                <InvestmentTrendIcon className="h-3 w-3 mr-0.5" />
+                {investmentChangeLabel}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              vs {formatCurrency(investmentValue * 0.92)} last period
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">{hero.description}</p>
+
+        {/* Cash & Bank */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <CreditCard className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Cash & Bank
+            </p>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(cashAndBank)}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+                <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                +5% today
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              vs {formatCurrency(cashAndBank * 0.95)} last period
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Supporting metrics, quiet and compact */}
-      <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
