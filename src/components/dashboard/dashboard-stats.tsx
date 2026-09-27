@@ -68,12 +68,19 @@ export function DashboardStats() {
 
       const { data: accountsData, error: accountsDataError } = await supabase
         .from('connected_accounts')
-        .select('balance')
+        .select('balance, account_type')
         .eq('user_id', user.id)
 
       if (!accountsDataError && accountsData) {
-        const sum = accountsData.reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
-        setConnectedAccountsBalanceTotal(sum)
+        // Cash & Bank only: exclude brokerage/investment accounts so they are not counted twice
+        const isInvestment = (a: any) => {
+          const t = (a.account_type || a.type || '').toLowerCase()
+          return t === 'brokerage' || t === 'investment'
+        }
+        const cashSum = accountsData
+          .filter((a: any) => !isInvestment(a))
+          .reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+        setConnectedAccountsBalanceTotal(cashSum)
       }
 
       const { data: portfolios, error: portfolioError } = await supabase
