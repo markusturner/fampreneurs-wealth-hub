@@ -16,7 +16,6 @@ import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
-import { Button } from "@/components/ui/button"
 import Community from '@/pages/Community'
 import Documents from '@/pages/Documents'
 import CalendarPage from '@/pages/Calendar'
