@@ -6,7 +6,7 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3, Paperclip, Mic, Square, X } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3, Paperclip, Mic, Square, X, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
@@ -296,6 +296,21 @@ export default function Welcome() {
         .th-blob-sky { width:45vw; height:45vw; background:hsl(var(--accent)); opacity:0.22; bottom:-15%; right:-5%; animation: th-drift-3 18s ease-in-out infinite; }
       `}</style>
 
+
+      {(() => {
+        const pr: any = profile
+        const end: string | null = pr?.contract_extension_date || pr?.contract_due_date || null
+        if (!end) return null
+        const paid = !!pr?.truheirs_paid_until && pr.truheirs_paid_until >= new Date().toISOString().slice(0, 10)
+        const days = Math.ceil((new Date(`${end}T00:00:00`).getTime() - Date.now()) / 86400000)
+        if (paid || days > 30 || days < 0) return null
+        return (
+          <div role="alert" className="absolute top-4 left-4 sm:top-6 sm:left-8 z-20 max-w-[60vw] sm:max-w-sm flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs sm:text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>Your program ends in {days} day{days === 1 ? '' : 's'}. After it ends you will not be able to log in unless you start a TruHeirs subscription.</span>
+          </div>
+        )
+      })()}
 
       {/* Top-right utilities */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-3 z-20">

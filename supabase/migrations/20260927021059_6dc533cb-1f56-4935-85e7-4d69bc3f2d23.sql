@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.expire_ended_programs() FROM PUBLIC, anon, authenticated;

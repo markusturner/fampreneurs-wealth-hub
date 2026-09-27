@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client'
 import { useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
@@ -43,6 +44,8 @@ const LITE_BLOCKED_ROUTES = [
 ]
 
 
+const SOFTWARE_BLOCKED_PREFIXES = ['/community', '/workspace-community', '/classroom', '/courses', '/course/', '/sops', '/sop/', '/workspace-calendar', '/workspace-members', '/members', '/tutorial-videos']
+
 interface AppLayoutProps {
   children: React.ReactNode
 }
@@ -61,6 +64,15 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isTruHeirsRoute = TRUHEIRS_ROUTES.includes(location.pathname)
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed || subscriptionStatus.loading
   const isLite = subscriptionStatus.isLite && !isAdminOrOwner && !isOwner && profile?.truheirs_access !== true
+
+  const p: any = profile
+  // TruHeirs subscription is software only: no community or content
+  const softwareOnly = p?.software_only === true && !isAdminOrOwner && !isOwner
+  useEffect(() => {
+    if (softwareOnly && SOFTWARE_BLOCKED_PREFIXES.some((r) => location.pathname.startsWith(r))) {
+      navigate('/dashboard')
+    }
+  }, [softwareOnly, location.pathname, navigate])
 
   // Redirect Lite users away from blocked routes
   useEffect(() => {

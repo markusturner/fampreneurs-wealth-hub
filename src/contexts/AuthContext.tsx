@@ -82,6 +82,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       setProfile(data)
+
+      // Program ended with no TruHeirs subscription: sign out and explain why
+      const d: any = data
+      const today = new Date().toISOString().slice(0, 10)
+      const end: string | null = d?.contract_extension_date || d?.contract_due_date || null
+      const paid = !!d?.truheirs_paid_until && d.truheirs_paid_until >= today
+      if (d && !d.is_admin && end && end < today && !paid) {
+        const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', userId).in('role', ['admin', 'owner'])
+        if (!roles?.length) {
+          sessionStorage.setItem('access_block_reason', `Your program ended on ${end}, so your access is paused. To keep using the TruHeirs software, reach out to us to start your TruHeirs subscription ($247 per quarter).`)
+          await supabase.auth.signOut()
+          window.location.href = '/auth'
+          return
+        }
+      }
       
 
       // Initialize push notifications on native platforms

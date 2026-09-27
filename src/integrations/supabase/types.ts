@@ -4565,11 +4565,13 @@ export type Database = {
           program_name: string | null
           satisfaction_score: number | null
           skip_onboarding: boolean
+          software_only: boolean
           state: string | null
           street_address: string | null
           stripe_subscription_id: string | null
           testimonial_review: string | null
           truheirs_access: boolean
+          truheirs_paid_until: string | null
           trust_design_booked: boolean | null
           trustpilot_review_url: string | null
           updated_at: string
@@ -4622,11 +4624,13 @@ export type Database = {
           program_name?: string | null
           satisfaction_score?: number | null
           skip_onboarding?: boolean
+          software_only?: boolean
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
           testimonial_review?: string | null
           truheirs_access?: boolean
+          truheirs_paid_until?: string | null
           trust_design_booked?: boolean | null
           trustpilot_review_url?: string | null
           updated_at?: string
@@ -4679,11 +4683,13 @@ export type Database = {
           program_name?: string | null
           satisfaction_score?: number | null
           skip_onboarding?: boolean
+          software_only?: boolean
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
           testimonial_review?: string | null
           truheirs_access?: boolean
+          truheirs_paid_until?: string | null
           trust_design_booked?: boolean | null
           trustpilot_review_url?: string | null
           updated_at?: string
@@ -6239,6 +6245,7 @@ export type Database = {
       }
       cleanup_expired_verification_codes: { Args: never; Returns: undefined }
       cleanup_sensitive_audit_logs: { Args: never; Returns: undefined }
+      expire_ended_programs: { Args: never; Returns: undefined }
       generate_certificate_number: { Args: never; Returns: string }
       get_account_summary: { Args: { target_user_id?: string }; Returns: Json }
       get_admin_profile_data: {

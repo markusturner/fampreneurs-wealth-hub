@@ -18,7 +18,8 @@ serve(async (req) => {
   );
 
   try {
-    const { price_id, mode, email, program_name } = await req.json();
+    const { price_id, mode, email, program_name, for_client } = await req.json();
+    const isSoftware = price_id === "price_1UK7XfKKuJwlPZFrPydOa934";
 
     if (!price_id) throw new Error("price_id is required");
     if (!mode || !["subscription", "payment"].includes(mode)) throw new Error("Valid mode (subscription/payment) is required");
@@ -32,7 +33,7 @@ serve(async (req) => {
     let customerId: string | undefined;
 
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
+    if (authHeader && !(for_client && email)) {
       const token = authHeader.replace("Bearer ", "");
       const { data } = await supabaseClient.auth.getUser(token);
       if (data.user?.email) {
@@ -57,6 +58,7 @@ serve(async (req) => {
       allow_promotion_codes: true,
       metadata: {
         program_name: program_name || "",
+        ...(isSoftware ? { truheirs_software: "true", email: String(customerEmail || "") } : {}),
       },
     });
 

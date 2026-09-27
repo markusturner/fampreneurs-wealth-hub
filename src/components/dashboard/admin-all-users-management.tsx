@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { TruHeirsSubscriptionPanel } from './TruHeirsSubscriptionPanel'
 import { supabase } from '@/integrations/supabase/client'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
 import { computeContractEndDate, programDurationDays, todayISO } from '@/lib/contract-duration'
@@ -1759,6 +1760,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                           );
                         })()}
                       </div>
+                      <TruHeirsSubscriptionPanel user={detailUser as any} onChanged={() => fetchUsers(true)} />
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Notes</span>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(detailUser.user_id, (detailUser as any).admin_notes)}>
