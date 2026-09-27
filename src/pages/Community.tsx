@@ -101,7 +101,7 @@ export default function Community() {
   const [loading, setLoading] = useState(true)
   const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
   const [loadingMembers, setLoadingMembers] = useState(true)
-  const [demoMode, setDemoMode] = useState(false)
+  const demoMode = useDfoDemo()
   const [canDemo, setCanDemo] = useState(false)
 
   useEffect(() => {
@@ -119,26 +119,6 @@ export default function Community() {
       .in('role', ['admin', 'owner'])
     setCanDemo((data || []).length > 0)
   }
-
-  // Sample data shown in demo mode (never saved anywhere)
-  const DEMO_INVESTMENTS: Investment[] = [
-    { id: 'demo-1', user_id: 'demo', platform_id: 'brokerage', total_value: 1250000, cash_balance: 85000, day_change: 12400, day_change_percent: 1.0, positions: null, last_updated: null, created_at: '', updated_at: '' },
-    { id: 'demo-2', user_id: 'demo', platform_id: 'real-estate', total_value: 780000, cash_balance: 0, day_change: 0, day_change_percent: 0, positions: null, last_updated: null, created_at: '', updated_at: '' },
-    { id: 'demo-3', user_id: 'demo', platform_id: 'crypto', total_value: 145000, cash_balance: 12000, day_change: -2300, day_change_percent: -1.56, positions: null, last_updated: null, created_at: '', updated_at: '' },
-  ]
-  const DEMO_MEMBERS = [
-    { id: 'demo-m1', full_name: 'Alex Morgan', email: 'alex@example.com', office_role: 'Trustee', status: 'active' },
-    { id: 'demo-m2', full_name: 'Jordan Lee', email: 'jordan@example.com', office_role: 'Beneficiary', status: 'active' },
-    { id: 'demo-m3', full_name: 'Sam Carter', email: 'sam@example.com', office_role: 'Advisor', status: 'invited' },
-  ]
-  const DEMO_ACCOUNTS = [
-    { id: 'demo-a1', name: 'Family Checking', institution: 'Chase', balance: 48250, status: 'connected', type: 'Bank' },
-    { id: 'demo-a2', name: 'Brokerage Account', institution: 'Fidelity', balance: 1250000, status: 'connected', type: 'Brokerage' },
-    { id: 'demo-a3', name: 'Crypto Wallet', institution: 'Coinbase', balance: 145000, status: 'connected', type: 'Crypto' },
-  ]
-
-  const displayInvestments = demoMode ? DEMO_INVESTMENTS : investments
-  const displayMembers = demoMode ? DEMO_MEMBERS : familyOfficeMembers
 
   const fetchFamilyOfficeMembers = async () => {
     if (!user?.id) {
@@ -200,20 +180,19 @@ export default function Community() {
   }
 
   const getTotalPortfolioValue = () => {
-    return displayInvestments.reduce((sum, inv) => sum + inv.total_value, 0)
+    return investments.reduce((sum, inv) => sum + inv.total_value, 0)
   }
 
   const getTotalDayChange = () => {
-    return displayInvestments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
+    return investments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
   }
 
   const getTotalCashBalance = () => {
-    return displayInvestments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
+    return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
   // Get user-specific accounts balance from localStorage and connected accounts
   const getConnectedAccounts = () => {
-    if (demoMode) return DEMO_ACCOUNTS
     if (!user) return []
     
     const userKey = `connectedAccounts_${user.id}`
