@@ -26,6 +26,12 @@ export function getProtectionLevel(entity?: string | null): ProtectionLevel {
   return 'protected'
 }
 
+/** Never show the phrase "Living Trust" to clients. Values stay unchanged so saved records still match. */
+export function displayEntityName(entity?: string | null): string {
+  if (!entity) return ''
+  return entity.replace(/living trust/i, 'Trust').trim()
+}
+
 export const PROTECTION_LABEL: Record<ProtectionLevel, string> = {
   protected: 'Protected',
   limited: 'Limited protection',
