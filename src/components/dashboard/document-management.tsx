@@ -188,7 +188,7 @@ export const DocumentManagement = () => {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, demoMode])
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.original_filename.toLowerCase().includes(searchTerm.toLowerCase())
