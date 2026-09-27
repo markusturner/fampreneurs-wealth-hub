@@ -43,8 +43,8 @@ export function TruHeirsSubscriptionPanel({ user, onChanged }: Props) {
         .update({ truheirs_access: true, software_only: true, truheirs_paid_until: until } as any)
         .eq('user_id', user.user_id)
       if (error) throw error
-      const { data: existing } = await supabase.from('client_retention_notes').select('id').eq('user_id', user.user_id).maybeSingle()
-      if (existing?.id) await supabase.from('client_retention_notes').update({ status_override: 'continuity' }).eq('id', existing.id)
+      const { data: existing } = await supabase.from('client_retention_notes').select('user_id').eq('user_id', user.user_id).maybeSingle()
+      if (existing) await supabase.from('client_retention_notes').update({ status_override: 'continuity' }).eq('user_id', user.user_id)
       else await supabase.from('client_retention_notes').insert({ user_id: user.user_id, note: '', status_override: 'continuity' } as any)
       toast({ title: 'Payment logged', description: 'TruHeirs access is back on and they moved to Continuity.' })
       onChanged?.()
