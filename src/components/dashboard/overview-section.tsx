@@ -149,6 +149,11 @@ export function OverviewSection() {
     ? DEMO_DFO_ACCOUNTS
     : connectedAccountsData.length ? connectedAccountsData : getConnectedAccounts()
 
+  const isInvestmentAccount = (account: any) => {
+    const t = (account.account_type || account.type || '').toLowerCase()
+    return t === 'brokerage' || t === 'investment'
+  }
+
   const getAccountsBalance = () => {
     if (demoMode) return DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
     const connectedLocalTotal = connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
@@ -156,9 +161,15 @@ export function OverviewSection() {
     return user ? connectedAccountsBalanceTotal : connectedLocalTotal
   }
 
+  // Cash & Bank excludes brokerage/investment accounts so they are not counted twice
+  const getCashBalance = () => {
+    if (demoMode) return DEMO_DFO_ACCOUNTS.filter((a) => !isInvestmentAccount(a)).reduce((sum, account) => sum + account.balance, 0)
+    return connectedAccounts.filter((a: any) => !isInvestmentAccount(a)).reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+  }
+
   // Calculate combined totals for comprehensive overview
   const getTotalNetWorth = () => {
-    return (demoMode ? 1250000 : getTotalPortfolioValue()) + getAccountsBalance()
+    return (demoMode ? 1250000 : getTotalPortfolioValue()) + getCashBalance()
   }
 
   // Get active accounts count for current user
@@ -565,9 +576,9 @@ WEALTH BUILDING (After $10k+/month steady):
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getAccountsBalance())}</div>
+                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getCashBalance())}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  vs {formatCurrency(getAccountsBalance() * 0.95)} Last Period
+                  vs {formatCurrency(getCashBalance() * 0.95)} Last Period
                 </div>
               </div>
               <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
