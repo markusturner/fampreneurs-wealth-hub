@@ -1,9 +1,17 @@
 import { Badge } from "@/components/ui/badge"
-import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
+import { Building2, Calendar, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
 import { DEMO_DFO_ACCOUNTS, DEMO_OFFICE_MEMBERS, DEMO_FAMILY_MEMBERS, DEMO_DOCUMENTS, useDfoDemo } from '@/lib/dfo-demo'
+import { displayEntityName } from "@/lib/entities"
+
+const DATE_RANGES = [
+  { value: 'mtd', label: 'Month-to-date', compare: 'last month' },
+  { value: 'qtd', label: 'Quarter-to-date', compare: 'last quarter' },
+  { value: 'ytd', label: 'Year-to-date', compare: 'last year' },
+  { value: 'l12m', label: 'Last 12 months', compare: 'the prior 12 months' },
+]
 
 export function DashboardStats() {
   const { user } = useAuth()
@@ -12,7 +20,9 @@ export function DashboardStats() {
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
   const [connectedAccountsCount, setConnectedAccountsCount] = useState(0)
-  const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
+  const [accountsData, setAccountsData] = useState<{ balance: number; account_type?: string; owner_entity?: string | null }[]>([])
+  const [selectedTrust, setSelectedTrust] = useState('all')
+  const [selectedRange, setSelectedRange] = useState('qtd')
   const financialAdvisorCount = familyOfficeMemberCount
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 0,
@@ -66,21 +76,14 @@ export function DashboardStats() {
         setConnectedAccountsCount(accountsCount)
       }
 
-      const { data: accountsData, error: accountsDataError } = await supabase
+      const { data: accountsDataResult, error: accountsDataError } = await supabase
         .from('connected_accounts')
-        .select('balance, account_type')
+        .select('balance, account_type, owner_entity')
         .eq('user_id', user.id)
 
-      if (!accountsDataError && accountsData) {
+      if (!accountsDataError && accountsDataResult) {
         // Cash & Bank only: exclude brokerage/investment accounts so they are not counted twice
-        const isInvestment = (a: any) => {
-          const t = (a.account_type || a.type || '').toLowerCase()
-          return t === 'brokerage' || t === 'investment'
-        }
-        const cashSum = accountsData
-          .filter((a: any) => !isInvestment(a))
-          .reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
-        setConnectedAccountsBalanceTotal(cashSum)
+        setAccountsData(accountsDataResult as any[])
       }
 
       const { data: portfolios, error: portfolioError } = await supabase
@@ -109,22 +112,35 @@ export function DashboardStats() {
     fetchCounts()
   }, [user])
 
-  const demoTotal = DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
-  // Demo accounts already include the $1,250,000 brokerage, so the hero is just the account total
-  const combinedTotal = demoMode
-    ? demoTotal
-    : portfolioData.totalValue + connectedAccountsBalanceTotal
-  const hasFinancialData = combinedTotal > 0
-
-
-  const isDemoInvestment = (a: any) => {
-    const t = (a.type || '').toLowerCase()
+  const isInvestmentAccount = (a: any) => {
+    const t = (a.account_type || a.type || '').toLowerCase()
     return t === 'brokerage' || t === 'investment'
   }
-  const investmentValue = demoMode ? 1250000 : portfolioData.totalValue
+  const entityOf = (a: any) => a.owner_entity ?? 'Personal (No Entity)'
+  const matchesTrust = (a: any) => selectedTrust === 'all' || entityOf(a) === selectedTrust
+
+  const demoAccounts = DEMO_DFO_ACCOUNTS.filter(matchesTrust)
+  const liveAccounts = accountsData.filter(matchesTrust)
+  const investmentValue = demoMode
+    ? demoAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+    : selectedTrust === 'all'
+      ? portfolioData.totalValue
+      : liveAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
   const cashAndBank = demoMode
-    ? DEMO_DFO_ACCOUNTS.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
-    : connectedAccountsBalanceTotal
+    ? demoAccounts.filter((a) => !isInvestmentAccount(a)).reduce((sum, account) => sum + account.balance, 0)
+    : selectedTrust === 'all'
+      ? accountsData.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+      : liveAccounts.filter((a: any) => !isInvestmentAccount(a)).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+  // Hero value is always the sum of the two sections, so the numbers never double-count
+  const combinedTotal = investmentValue + cashAndBank
+  const hasFinancialData = combinedTotal > 0
+
+  const trustOptions = Array.from(
+    new Set(
+      (demoMode ? DEMO_DFO_ACCOUNTS : accountsData).map((a: any) => entityOf(a))
+    )
+  )
+  const selectedRangeMeta = DATE_RANGES.find((r) => r.value === selectedRange) || DATE_RANGES[1]
   const investmentTrend = demoMode || portfolioData.dayChangePercent >= 0 ? 'up' : 'down'
   const investmentChangeLabel = demoMode ? '+3% today' : `${Math.abs(portfolioData.dayChangePercent).toFixed(1)}% today`
 
@@ -138,7 +154,7 @@ export function DashboardStats() {
   }
 
   const hero = {
-    title: "Total Portfolio Value",
+    title: "Net Worth",
     value: hasFinancialData ? formatCurrency(combinedTotal) : "$0",
     change: hasFinancialData ? formatCurrency(demoMode ? 12840 : portfolioData.dayChange) : "Connect accounts",
     trend: demoMode || portfolioData.dayChange >= 0 ? "up" : "down",
@@ -174,7 +190,38 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-4">
-      {/* Top row: Total Portfolio Value + Investment Value + Cash & Bank */}
+      {/* Trust + date filters, above the value cards */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-primary" />
+          <select
+            value={selectedTrust}
+            onChange={(e) => setSelectedTrust(e.target.value)}
+            className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
+            aria-label="Filter by trust"
+          >
+            <option value="all">All Trusts</option>
+            {trustOptions.map((t) => (
+              <option key={t} value={t}>{displayEntityName(t) || t}</option>
+            ))}
+          </select>
+        </div>
+        <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-accent" />
+          <select
+            value={selectedRange}
+            onChange={(e) => setSelectedRange(e.target.value)}
+            className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
+            aria-label="Date range"
+          >
+            {DATE_RANGES.map((r) => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Top row: Net Worth + Investment Value + Cash & Bank */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Primary metric */}
         <div className="glass-card rounded-2xl p-5 sm:p-6">
@@ -215,7 +262,7 @@ export function DashboardStats() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              vs {formatCurrency(investmentValue * 0.92)} last period
+              vs {formatCurrency(investmentValue * 0.92)} {selectedRangeMeta.compare}
             </p>
           </div>
         </div>
@@ -223,8 +270,8 @@ export function DashboardStats() {
         {/* Cash & Bank */}
         <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <CreditCard className="h-4 w-4 text-primary" />
+            <div className="p-2 rounded-xl bg-success/10">
+              <CreditCard className="h-4 w-4 text-success" />
             </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Cash & Bank
@@ -239,7 +286,7 @@ export function DashboardStats() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              vs {formatCurrency(cashAndBank * 0.95)} last period
+              vs {formatCurrency(cashAndBank * 0.95)} {selectedRangeMeta.compare}
             </p>
           </div>
         </div>
