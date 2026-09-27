@@ -190,7 +190,38 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-4">
-      {/* Top row: Total Portfolio Value + Investment Value + Cash & Bank */}
+      {/* Trust + date filters, above the value cards */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-primary" />
+          <select
+            value={selectedTrust}
+            onChange={(e) => setSelectedTrust(e.target.value)}
+            className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
+            aria-label="Filter by trust"
+          >
+            <option value="all">All Trusts</option>
+            {trustOptions.map((t) => (
+              <option key={t} value={t}>{displayEntityName(t) || t}</option>
+            ))}
+          </select>
+        </div>
+        <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-accent" />
+          <select
+            value={selectedRange}
+            onChange={(e) => setSelectedRange(e.target.value)}
+            className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
+            aria-label="Date range"
+          >
+            {DATE_RANGES.map((r) => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Top row: Net Worth + Investment Value + Cash & Bank */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Primary metric */}
         <div className="glass-card rounded-2xl p-5 sm:p-6">
@@ -231,7 +262,7 @@ export function DashboardStats() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              vs {formatCurrency(investmentValue * 0.92)} last period
+              vs {formatCurrency(investmentValue * 0.92)} {selectedRangeMeta.compare}
             </p>
           </div>
         </div>
@@ -239,8 +270,8 @@ export function DashboardStats() {
         {/* Cash & Bank */}
         <div className="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <CreditCard className="h-4 w-4 text-primary" />
+            <div className="p-2 rounded-xl bg-success/10">
+              <CreditCard className="h-4 w-4 text-success" />
             </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Cash & Bank
@@ -255,7 +286,7 @@ export function DashboardStats() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              vs {formatCurrency(cashAndBank * 0.95)} last period
+              vs {formatCurrency(cashAndBank * 0.95)} {selectedRangeMeta.compare}
             </p>
           </div>
         </div>
