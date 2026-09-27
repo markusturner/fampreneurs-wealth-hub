@@ -578,7 +578,7 @@ WEALTH BUILDING (After $10k+/month steady):
               <div>
                 <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getCashBalance())}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  vs {formatCurrency(getAccountsBalance() * 0.95)} Last Period
+                  vs {formatCurrency(getCashBalance() * 0.95)} Last Period
                 </div>
               </div>
               <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
