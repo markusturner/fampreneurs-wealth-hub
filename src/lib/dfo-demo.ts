@@ -57,7 +57,7 @@ export const DEMO_GOVERNANCE = {
 export const DEMO_HANDOFF = {
   checkin_interval_days: 30,
   grace_period_days: 14,
-  last_checkin_at: daysAgo(8),
+  last_checkin_at: new Date(Date.now() - 8 * 86400000).toISOString(),
   successor_name: 'Jordan Turner',
   successor_email: 'jordan@example.com',
   successor_phone: '(555) 014-0284',

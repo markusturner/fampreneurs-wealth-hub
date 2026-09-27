@@ -20,6 +20,7 @@ import {
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { BusinessGoalsDialog } from '@/components/dashboard/business-goals-dialog'
+import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Investment {
   id: string
@@ -43,6 +44,7 @@ interface BusinessGoals {
 
 export function OverviewSection() {
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
   const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([])
@@ -143,9 +145,12 @@ export function OverviewSection() {
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
   }
 
-  const connectedAccounts = connectedAccountsData.length ? connectedAccountsData : getConnectedAccounts()
+  const connectedAccounts = demoMode
+    ? DEMO_DFO_ACCOUNTS
+    : connectedAccountsData.length ? connectedAccountsData : getConnectedAccounts()
 
   const getAccountsBalance = () => {
+    if (demoMode) return DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
     const connectedLocalTotal = connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
     // Use Supabase balance if user is authenticated, otherwise use localStorage
     return user ? connectedAccountsBalanceTotal : connectedLocalTotal
@@ -153,7 +158,7 @@ export function OverviewSection() {
 
   // Calculate combined totals for comprehensive overview
   const getTotalNetWorth = () => {
-    return getTotalPortfolioValue() + getAccountsBalance()
+    return (demoMode ? 1250000 : getTotalPortfolioValue()) + getAccountsBalance()
   }
 
   // Get active accounts count for current user
@@ -489,7 +494,7 @@ WEALTH BUILDING (After $10k+/month steady):
   const aiInsights = generateAIInsights()
   const totalNetWorth = getTotalNetWorth()
 
-  if ((connectedAccountsBalanceTotal === 0 && investments.length === 0 && connectedAccounts.length === 0)) {
+  if (!demoMode && (connectedAccountsBalanceTotal === 0 && investments.length === 0 && connectedAccounts.length === 0)) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -530,9 +535,9 @@ WEALTH BUILDING (After $10k+/month steady):
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getTotalPortfolioValue())}</div>
+                 <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(demoMode ? 1250000 : getTotalPortfolioValue())}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  vs {formatCurrency(getTotalPortfolioValue() * 0.92)} Last Period
+                   vs {formatCurrency((demoMode ? 1250000 : getTotalPortfolioValue()) * 0.92)} Last Period
                 </div>
               </div>
               <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${getTotalDayChange() >= 0 ? 'text-green-600 bg-green-500/10' : 'text-red-500 bg-red-500/10'}`}>
@@ -541,7 +546,7 @@ WEALTH BUILDING (After $10k+/month steady):
                 ) : (
                   <TrendingDown className="h-3 w-3" />
                 )}
-                {Math.abs(((getTotalDayChange() / (getTotalPortfolioValue() || 1)) * 100)).toFixed(0)}%
+                 {demoMode ? '3' : Math.abs(((getTotalDayChange() / (getTotalPortfolioValue() || 1)) * 100)).toFixed(0)}%
               </div>
             </div>
           </CardContent>
