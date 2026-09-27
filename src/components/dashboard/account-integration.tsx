@@ -34,6 +34,7 @@ import {
   Edit
 } from 'lucide-react'
 import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL } from '@/lib/entities'
+import { isDfoDemo, useDfoDemo, DEMO_DFO_ACCOUNTS } from '@/lib/dfo-demo'
 
 
 interface ConnectedAccount {
@@ -188,6 +189,11 @@ export function AccountIntegration() {
 
   const fetchConnectedAccounts = async () => {
     try {
+      if (isDfoDemo()) {
+        setAccounts(DEMO_DFO_ACCOUNTS as unknown as ConnectedAccount[])
+        setLoading(false)
+        return
+      }
       if (!user) {
         // Fall back to localStorage for non-authenticated users
         const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
