@@ -16,6 +16,7 @@ import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
 
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
+const DFO_DEMO_ROUTES = ['/dashboard', ...FAMILY_TOGGLE_ROUTES]
 
 // Routes that require TruHeirs subscription (not accessible without it)
 const TRUHEIRS_ROUTES = [
@@ -60,6 +61,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
+  const canUseDfoDemo = isAdminOrOwner || isOwner || profile?.is_admin === true
   
 
   const isTruHeirsRoute = TRUHEIRS_ROUTES.includes(location.pathname)
@@ -163,6 +165,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
+      {DFO_DEMO_ROUTES.includes(location.pathname) && canUseDfoDemo && (
+        <div className="fixed right-4 top-16 md:top-4 z-[70] rounded-full bg-background/95 shadow-md backdrop-blur-sm">
+          <DfoDemoToggle />
+        </div>
+      )}
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
@@ -183,12 +190,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Page content */}
         <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
           {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
-            <div className="sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
-              <div />
+            <div className="sticky top-0 z-40 flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
               <FamilyToggleBar />
-              <div className="flex justify-end">
-                {(isAdminOrOwner || isOwner || profile?.is_admin) && <DfoDemoToggle />}
-              </div>
             </div>
           )}
           {isTruHeirsRoute && !hasTruHeirsAccess ? (
