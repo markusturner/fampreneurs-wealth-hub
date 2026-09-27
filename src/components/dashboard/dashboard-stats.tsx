@@ -122,7 +122,7 @@ export function DashboardStats() {
   const demoAccounts = DEMO_DFO_ACCOUNTS.filter(matchesTrust)
   const liveAccounts = accountsData.filter(matchesTrust)
   const investmentValue = demoMode
-    ? demoAccounts.filter(isDemoInvestment).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+    ? demoAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
     : selectedTrust === 'all'
       ? portfolioData.totalValue
       : liveAccounts.filter(isInvestmentAccount).reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
@@ -154,7 +154,7 @@ export function DashboardStats() {
   }
 
   const hero = {
-    title: "Total Portfolio Value",
+    title: "Net Worth",
     value: hasFinancialData ? formatCurrency(combinedTotal) : "$0",
     change: hasFinancialData ? formatCurrency(demoMode ? 12840 : portfolioData.dayChange) : "Connect accounts",
     trend: demoMode || portfolioData.dayChange >= 0 ? "up" : "down",
