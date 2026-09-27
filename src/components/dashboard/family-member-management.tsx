@@ -49,8 +49,13 @@ export function FamilyMemberManagement() {
   })
 
   useEffect(() => {
+    if (demoMode) {
+      setMembers([...DEMO_OFFICE_MEMBERS, ...DEMO_FAMILY_MEMBERS] as unknown as FamilyMember[])
+      setLoading(false)
+      return
+    }
     fetchFamilyMembers()
-    
+
     // Set up realtime subscription for family_members changes
     const channel = supabase
       .channel('family_members_changes')
@@ -70,7 +75,7 @@ export function FamilyMemberManagement() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [demoMode])
 
   const fetchFamilyMembers = async () => {
     try {
