@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck, X, AtSign } from "lucide-react";
+import { BookOpen, Crown, Users, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { NavHeader } from "@/components/dashboard/nav-header";
@@ -14,7 +14,7 @@ import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-cod
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FamilyTreeVisualization } from "@/components/family-tree/FamilyTreeVisualization";
 import { FamilyTreeTextInput } from "@/components/family-tree/FamilyTreeTextInput";
@@ -22,11 +22,8 @@ import { DynamicFamilyTreeVisualization } from "@/components/family-tree/Dynamic
 import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab";
 import { GovernanceOnboardingModal } from "@/components/governance/GovernanceOnboardingModal";
 import { useGovernanceOnboarding } from "@/hooks/useGovernanceOnboarding";
-import { useMessageNotifications } from "@/hooks/useMessageNotifications";
 import { useFamilyTree } from "@/hooks/useFamilyTree";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DEMO_GOVERNANCE, useDfoDemo } from '@/lib/dfo-demo';
+import { DEMO_FAMILY_MEMBERS, DEMO_GOVERNANCE, useDfoDemo } from '@/lib/dfo-demo';
 const familyEducationModules = [{
   title: "Trust Education",
   description: "Learn the fundamentals of trusts, asset protection, and legacy planning",
@@ -71,9 +68,6 @@ export default function Documents() {
     user,
     profile
   } = useAuth();
-  
-  // Initialize message notifications
-  useMessageNotifications();
   
   // Load family tree from database
   const { familyMembers, loading: familyTreeLoading } = useFamilyTree();
@@ -150,14 +144,7 @@ export default function Documents() {
     name: '',
     duration: ''
   }]);
-  const [showMessagesDialog, setShowMessagesDialog] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [showMentionPopover, setShowMentionPopover] = useState(false);
-  const [mentionSearch, setMentionSearch] = useState('');
-  const [cursorPosition, setCursorPosition] = useState(0);
-  const [dbFamilyMembers, setDbFamilyMembers] = useState<any[]>([]);
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const [dbFamilyMembers, setDbFamilyMembers] = useState<Array<{ id: string; full_name: string; governance_branch: string | null; trust_positions: string[] | null }>>([]);
   const [showFamilyDocuments, setShowFamilyDocuments] = useState(false);
   const [constitutionData, setConstitutionData] = useState<any>(null);
   
@@ -198,7 +185,6 @@ export default function Documents() {
     loadFamilyValues();
     loadDbFamilyMembers();
     loadConstitutionData();
-    loadMessages();
   }, [user, isAdmin]);
 
   const loadConstitutionData = () => {
@@ -237,107 +223,30 @@ export default function Documents() {
     try {
       const { data, error } = await supabase
         .from('family_members')
-        .select('id, full_name, relationship_to_family')
+        .select('id, full_name, governance_branch, trust_positions')
         .eq('added_by', user.id)
         .eq('status', 'active');
       
       if (error) throw error;
-      console.log('Loaded family members for mentions:', data);
       setDbFamilyMembers(data || []);
     } catch (error) {
       console.error('Error loading family members:', error);
     }
   };
 
-  const loadMessages = async () => {
-    if (!user?.id) return;
-    
-    try {
-      // Fetch messages from database
-      const { data: messagesData, error } = await supabase
-        .from('family_messages')
-        .select('id, content, sender_id, created_at')
-        .order('created_at', { ascending: true })
-        .limit(50);
-      
-      if (error) throw error;
-      
-      // Get sender profiles
-      if (messagesData && messagesData.length > 0) {
-        const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, first_name, last_name')
-          .in('user_id', senderIds);
-        
-        const profileMap = new Map(
-          (profiles || []).map(p => [
-            p.user_id, 
-            p.display_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown'
-          ])
-        );
-        
-        const formattedMessages = messagesData.map(m => ({
-          id: m.id,
-          content: m.content,
-          sender_id: m.sender_id,
-          sender_name: profileMap.get(m.sender_id) || 'Unknown',
-          created_at: m.created_at
-        }));
-        
-        setMessages(formattedMessages);
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    }
-  };
-
-  // Real-time subscription for new messages
   useEffect(() => {
     if (!user?.id) return;
-
-    const channel = supabase
-      .channel('family-messages-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'family_messages'
-        },
-        async (payload) => {
-          console.log('New message received:', payload);
-          const newMsg = payload.new as any;
-          
-          // Don't add if it's our own message (already added locally)
-          if (newMsg.sender_id === user.id) return;
-          
-          // Get sender profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name, first_name, last_name')
-            .eq('user_id', newMsg.sender_id)
-            .single();
-          
-          const senderName = profile?.display_name || 
-            `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 
-            'Unknown';
-          
-          setMessages(prev => [...prev, {
-            id: newMsg.id,
-            content: newMsg.content,
-            sender_id: newMsg.sender_id,
-            sender_name: senderName,
-            created_at: newMsg.created_at
-          }]);
-        }
-      )
+    const channel = supabase.channel(`constitution-members-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'family_members', filter: `added_by=eq.${user.id}` }, loadDbFamilyMembers)
       .subscribe();
-
+    const onMemberChange = () => loadDbFamilyMembers();
+    window.addEventListener('familyMemberAdded', onMemberChange);
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('familyMemberAdded', onMemberChange);
     };
   }, [user?.id]);
+
   const fetchAvailableCodes = async () => {
     try {
       const {
@@ -676,136 +585,6 @@ export default function Documents() {
     setBusinessCourses(prev => prev.filter((_, i) => i !== index));
     toast.success('Course deleted successfully!');
   };
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !user?.id) return;
-    
-    try {
-      // Extract mentions from message
-      const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
-      const mentions = [...newMessage.matchAll(mentionRegex)].map(match => match[1]);
-      
-      // Find mentioned member IDs for targeted notifications
-      const mentionedMemberIds = mentions
-        .map(mentionName => {
-          const member = dbFamilyMembers.find(m => 
-            m.full_name?.toLowerCase().includes(mentionName.toLowerCase())
-          );
-          return member?.id;
-        })
-        .filter(Boolean);
-      
-      // Insert message into the database
-      const { data: insertedData, error } = await supabase
-        .from('family_messages')
-        .insert({
-          content: newMessage,
-          sender_id: user.id
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error sending message:', error);
-        toast.error('Failed to send message');
-        return;
-      }
-
-      // Send email notifications - if mentions exist, notify only mentioned users, otherwise notify all
-      if (insertedData) {
-        supabase.functions.invoke('notify-message-email', {
-          body: {
-            messageId: insertedData.id,
-            messageContent: newMessage,
-            senderId: user.id,
-            recipientId: mentionedMemberIds.length > 0 ? mentionedMemberIds[0] : null // null = broadcast to all
-          }
-        }).catch(err => console.error('Error sending message notification:', err));
-      }
-
-      // Update local state for immediate UI feedback
-      const message = {
-        id: insertedData?.id || Date.now().toString(),
-        content: newMessage,
-        sender_id: user?.id,
-        sender_name: profile?.display_name || 'You',
-        created_at: new Date().toISOString()
-      };
-      setMessages([...messages, message]);
-      setNewMessage('');
-      
-      const notifyText = mentionedMemberIds.length > 0 
-        ? `Message sent to ${mentions.join(', ')}`
-        : 'Message sent to all family members';
-      toast.success(notifyText);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    }
-  };
-
-  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const position = e.target.selectionStart || 0;
-    
-    setNewMessage(value);
-    setCursorPosition(position);
-    
-    // Check if user typed @ symbol
-    const textBeforeCursor = value.substring(0, position);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
-    if (lastAtIndex !== -1) {
-      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-      if (!textAfterAt.includes(' ')) {
-        setMentionSearch(textAfterAt);
-        setShowMentionPopover(true);
-      } else {
-        setShowMentionPopover(false);
-      }
-    } else {
-      setShowMentionPopover(false);
-    }
-  };
-
-  const insertMention = (memberName: string) => {
-    const textBeforeCursor = newMessage.substring(0, cursorPosition);
-    const textAfterCursor = newMessage.substring(cursorPosition);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
-    const newText = 
-      newMessage.substring(0, lastAtIndex) + 
-      `@${memberName} ` + 
-      textAfterCursor;
-    
-    setNewMessage(newText);
-    setShowMentionPopover(false);
-    setMentionSearch('');
-    
-    // Focus back on input
-    setTimeout(() => {
-      messageInputRef.current?.focus();
-    }, 0);
-  };
-
-  const filteredDbMembers = mentionSearch 
-    ? dbFamilyMembers.filter(member =>
-        member.full_name?.toLowerCase().includes(mentionSearch.toLowerCase())
-      )
-    : dbFamilyMembers;
-
-  const renderMessageContent = (content: string) => {
-    const parts = content.split(/(@\w+)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('@')) {
-        return (
-          <span key={index} className="font-semibold text-primary">
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
   // Load governance onboarding data
   const [storedGovernanceData, setGovernanceData] = useState<any>(null);
   const governanceData = demoMode ? DEMO_GOVERNANCE : storedGovernanceData;
@@ -829,8 +608,16 @@ export default function Documents() {
     }
   }, [user?.id]);
 
-  const parseMembers = (raw?: string): string[] =>
-    (raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const branchMembers = (branch: string, raw?: string) => {
+    const assigned = (demoMode ? DEMO_FAMILY_MEMBERS : dbFamilyMembers)
+      .filter(member => member.governance_branch === branch && member.full_name?.trim())
+      .map(member => ({ name: member.full_name, position: member.trust_positions?.[0] }));
+    // Preserve names entered in older constitutions until they are assigned in Members.
+    const legacy = demoMode ? [] : (raw || '').split('\n').map(name => name.trim()).filter(Boolean)
+      .filter(name => !assigned.some(member => member.name.toLowerCase() === name.toLowerCase()))
+      .map(name => ({ name, position: null as string | null }));
+    return [...assigned, ...legacy];
+  };
 
 
   // Vote helper functions (after governanceData is defined)
@@ -1217,16 +1004,19 @@ export default function Documents() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Responsible for implementing family policies, managing day-to-day operations, and executing strategic decisions.
                   </p>
-                  {parseMembers(constitutionGovernance?.familyCouncilMembers).length > 0 && (
-                    <div className="mb-4">
-                      <div className="text-sm font-semibold mb-1">Members:</div>
-                      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4">
-                        {parseMembers(constitutionGovernance?.familyCouncilMembers).map((m, i) => (
-                          <li key={i}>• {m}</li>
+                  <div className="mb-4">
+                    <div className="text-sm font-semibold mb-1">Members</div>
+                    {branchMembers('family_council', constitutionGovernance?.familyCouncilMembers).length ? (
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        {branchMembers('family_council', constitutionGovernance?.familyCouncilMembers).map((member, i) => (
+                          <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
+                            <span>{member.name}</span>
+                            {member.position && <span>{member.position}</span>}
+                          </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
+                    ) : <p className="text-xs text-muted-foreground">No members assigned</p>}
+                  </div>
                   <div className="space-y-2">
                     <div className="text-sm">
                       <strong>Key Responsibilities:</strong>
@@ -1257,16 +1047,19 @@ export default function Documents() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Provides wisdom, oversight, and resolution of disputes. Ensures family values and traditions are preserved.
                   </p>
-                  {parseMembers(constitutionGovernance?.councilOfEldersMembers).length > 0 && (
-                    <div className="mb-4">
-                      <div className="text-sm font-semibold mb-1">Members:</div>
-                      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4">
-                        {parseMembers(constitutionGovernance?.councilOfEldersMembers).map((m, i) => (
-                          <li key={i}>• {m}</li>
+                  <div className="mb-4">
+                    <div className="text-sm font-semibold mb-1">Members</div>
+                    {branchMembers('council_elders', constitutionGovernance?.councilOfEldersMembers).length ? (
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        {branchMembers('council_elders', constitutionGovernance?.councilOfEldersMembers).map((member, i) => (
+                          <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
+                            <span>{member.name}</span>
+                            {member.position && <span>{member.position}</span>}
+                          </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
+                    ) : <p className="text-xs text-muted-foreground">No members assigned</p>}
+                  </div>
                   <div className="space-y-2">
                     <div className="text-sm">
                       <strong>Key Responsibilities:</strong>
@@ -1297,16 +1090,19 @@ export default function Documents() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Democratic voice of all family members. Creates policies, approves budgets, and makes major decisions through voting.
                   </p>
-                  {parseMembers(constitutionGovernance?.familyAssemblyMembers).length > 0 && (
-                    <div className="mb-4">
-                      <div className="text-sm font-semibold mb-1">Members:</div>
-                      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4">
-                        {parseMembers(constitutionGovernance?.familyAssemblyMembers).map((m, i) => (
-                          <li key={i}>• {m}</li>
+                  <div className="mb-4">
+                    <div className="text-sm font-semibold mb-1">Members</div>
+                    {branchMembers('family_assembly', constitutionGovernance?.familyAssemblyMembers).length ? (
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        {branchMembers('family_assembly', constitutionGovernance?.familyAssemblyMembers).map((member, i) => (
+                          <li key={`${member.name}-${i}`} className="flex flex-wrap justify-between gap-x-2">
+                            <span>{member.name}</span>
+                            {member.position && <span>{member.position}</span>}
+                          </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
+                    ) : <p className="text-xs text-muted-foreground">No members assigned</p>}
+                  </div>
                   <div className="space-y-2">
                     <div className="text-sm">
                       <strong>Key Responsibilities:</strong>
@@ -1560,11 +1356,7 @@ export default function Documents() {
             </Button>
             
             
-            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1 relative" onClick={() => setShowMessagesDialog(true)}>
-              <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
-              <span className="text-xs sm:text-sm font-medium text-center">Messages</span>
-              <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] px-1.5 py-0 h-5 bg-amber-100 text-amber-700 border-amber-300">β</Badge>
-            </Button>
+
           </div>
         </section>
 
@@ -1700,140 +1492,6 @@ export default function Documents() {
             </DialogContent>
           </Dialog>}
 
-
-        {/* Family Messages Dialog */}
-        <Dialog open={showMessagesDialog} onOpenChange={setShowMessagesDialog}>
-          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                Family Messages
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Communicate securely with family members
-              </DialogDescription>
-              
-              {/* Family Members with Access */}
-              <div className="flex flex-col gap-2 pt-3 border-t mt-2">
-                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  Members ({dbFamilyMembers.length})
-                </p>
-                {dbFamilyMembers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    No family members added yet. Add members in the Members tab.
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {dbFamilyMembers.slice(0, 6).map((member) => (
-                      <div key={member.id} className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs">
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-[8px]">
-                            {member.full_name?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="max-w-[80px] truncate">{member.full_name}</span>
-                      </div>
-                    ))}
-                    {dbFamilyMembers.length > 6 && (
-                      <div className="flex items-center px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                        +{dbFamilyMembers.length - 6} more
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </DialogHeader>
-            
-            <div className="flex-1 space-y-3 sm:space-y-4 overflow-hidden">
-              <div className="flex-1 overflow-y-auto max-h-[50vh] sm:max-h-[400px] space-y-2 sm:space-y-3 p-3 sm:p-4 border rounded-lg bg-muted/20">
-                {messages.length === 0 ? <div className="text-center text-muted-foreground py-6 sm:py-8">
-                    <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-xs sm:text-sm">No messages yet. Start the conversation!</p>
-                  </div> : messages.map(message => {
-                const isOwnMessage = message.sender_id === user?.id;
-                return <div key={message.id} className={`flex items-start gap-2 sm:gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold text-white ${isOwnMessage ? 'bg-primary' : 'bg-blue-500'}`}>
-                          {message.sender_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
-                          <div className={`p-2 sm:p-3 rounded-lg ${isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
-                            <p className="text-xs sm:text-sm">{renderMessageContent(message.content)}</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.sender_name} • {new Date(message.created_at).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>;
-              })}
-              </div>
-              
-              <div className="relative flex gap-2 p-1">
-                <Popover open={showMentionPopover} onOpenChange={setShowMentionPopover}>
-                  <PopoverTrigger asChild>
-                    <div className="flex-1 relative">
-                      <Input 
-                        ref={messageInputRef}
-                        value={newMessage} 
-                        onChange={handleMessageInputChange}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' && !e.shiftKey && !showMentionPopover) {
-                            e.preventDefault();
-                            sendMessage();
-                          }
-                        }} 
-                        placeholder="Type @ to mention someone..." 
-                        className="flex-1 text-sm pr-8" 
-                      />
-                      <AtSign className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-64 p-2" 
-                    align="start"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground px-2 py-1">
-                        Mention a family member
-                      </p>
-                      {filteredDbMembers.length === 0 ? (
-                        <div className="px-2 py-3 text-xs text-muted-foreground text-center">
-                          No members found
-                        </div>
-                      ) : (
-                        filteredDbMembers.map((member) => (
-                          <button
-                            key={member.id}
-                            onClick={() => insertMention(member.full_name || '')}
-                            className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent text-left text-sm"
-                          >
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs">
-                                {member.full_name?.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{member.full_name}</p>
-                              {member.relationship_to_family && (
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {member.relationship_to_family}
-                                </p>
-                              )}
-                            </div>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                <Button onClick={sendMessage} disabled={!newMessage.trim()} size="sm" className="px-3 sm:px-4">
-                  Send
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Family Documents Dialog */}
         <Dialog open={showFamilyDocuments} onOpenChange={setShowFamilyDocuments}>
