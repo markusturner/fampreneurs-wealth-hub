@@ -193,7 +193,7 @@ export function DashboardStats() {
       {/* Trust + date filters, above the value cards */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-primary" />
+          <Building2 className="h-4 w-4 text-primary-foreground" />
           <select
             value={selectedTrust}
             onChange={(e) => setSelectedTrust(e.target.value)}
