@@ -99,6 +99,10 @@ export function FamilyMemberManagement() {
   }
 
   const handleAddMember = async () => {
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Adding members is disabled in the demo." })
+      return
+    }
     if (!user?.id || !newMember.full_name || !newMember.email) {
       toast({
         title: "Error",
@@ -157,6 +161,10 @@ export function FamilyMemberManagement() {
   }
 
   const handleRemoveMember = async (memberId: string) => {
+    if (demoMode) {
+      toast({ title: "Demo mode", description: "Removing members is disabled in the demo." })
+      return
+    }
     try {
       // Get the family member's email before deleting
       const memberToDelete = members.find(m => m.id === memberId)

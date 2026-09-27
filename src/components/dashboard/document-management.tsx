@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { DEMO_DOCUMENTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Document {
   id: string
