@@ -6,16 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { Checkbox } from '@/components/ui/checkbox'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  PieChart, 
-  Wallet, 
+import {
   BarChart3,
   Target,
   AlertTriangle,
-  BrainCircuit,
-  CreditCard
+  BrainCircuit
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
@@ -531,65 +526,6 @@ WEALTH BUILDING (After $10k+/month steady):
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Market Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="overflow-hidden">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-accent/10 flex items-center justify-center">
-                  <PieChart className="h-3.5 w-3.5 text-accent" />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">Investment Value</span>
-              </div>
-              <span className="text-xs text-muted-foreground">Last 30 days</span>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                 <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(demoMode ? 1250000 : getTotalPortfolioValue())}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                   vs {formatCurrency((demoMode ? 1250000 : getTotalPortfolioValue()) * 0.92)} Last Period
-                </div>
-              </div>
-              <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${getTotalDayChange() >= 0 ? 'text-green-600 bg-green-500/10' : 'text-red-500 bg-red-500/10'}`}>
-                {getTotalDayChange() >= 0 ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
-                 {demoMode ? '3' : Math.abs(((getTotalDayChange() / (getTotalPortfolioValue() || 1)) * 100)).toFixed(0)}%
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CreditCard className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">Cash & Bank</span>
-              </div>
-              <span className="text-xs text-muted-foreground">Last 30 days</span>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getCashBalance())}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  vs {formatCurrency(getCashBalance() * 0.95)} Last Period
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
-                <TrendingUp className="h-3 w-3" />
-                5%
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Charts — one at a time to keep the page short */}
       <Card>
         <CardContent className="p-4 sm:p-6">
