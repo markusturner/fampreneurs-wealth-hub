@@ -122,6 +122,12 @@ export default function Auth() {
           />
         </div>
 
+        {blockReason && (
+          <div role="alert" className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <p className="font-semibold mb-0.5">Access paused</p>
+            <p>{blockReason}</p>
+          </div>
+        )}
         <form onSubmit={handleSignIn} className="space-y-4">
           <input
             id="signin-email"
