@@ -149,6 +149,11 @@ export function OverviewSection() {
     ? DEMO_DFO_ACCOUNTS
     : connectedAccountsData.length ? connectedAccountsData : getConnectedAccounts()
 
+  const isInvestmentAccount = (account: any) => {
+    const t = (account.account_type || account.type || '').toLowerCase()
+    return t === 'brokerage' || t === 'investment'
+  }
+
   const getAccountsBalance = () => {
     if (demoMode) return DEMO_DFO_ACCOUNTS.reduce((sum, account) => sum + account.balance, 0)
     const connectedLocalTotal = connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
@@ -156,9 +161,15 @@ export function OverviewSection() {
     return user ? connectedAccountsBalanceTotal : connectedLocalTotal
   }
 
+  // Cash & Bank excludes brokerage/investment accounts so they are not counted twice
+  const getCashBalance = () => {
+    if (demoMode) return DEMO_DFO_ACCOUNTS.filter((a) => !isInvestmentAccount(a)).reduce((sum, account) => sum + account.balance, 0)
+    return connectedAccounts.filter((a: any) => !isInvestmentAccount(a)).reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+  }
+
   // Calculate combined totals for comprehensive overview
   const getTotalNetWorth = () => {
-    return (demoMode ? 1250000 : getTotalPortfolioValue()) + getAccountsBalance()
+    return (demoMode ? 1250000 : getTotalPortfolioValue()) + getCashBalance()
   }
 
   // Get active accounts count for current user
