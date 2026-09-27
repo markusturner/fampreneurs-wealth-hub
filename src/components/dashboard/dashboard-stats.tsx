@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus } from "lucide-react"
+import { DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, CreditCard } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
@@ -124,8 +124,20 @@ export function DashboardStats() {
   // Demo accounts already include the $1,250,000 brokerage, so the hero is just the account total
   const combinedTotal = demoMode
     ? demoTotal
-    : (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
+    : portfolioData.totalValue + connectedAccountsBalanceTotal
   const hasFinancialData = combinedTotal > 0
+
+  const isDemoInvestment = (a: any) => {
+    const t = (a.type || '').toLowerCase()
+    return t === 'brokerage' || t === 'investment'
+  }
+  const investmentValue = demoMode ? 1250000 : portfolioData.totalValue
+  const cashAndBank = demoMode
+    ? DEMO_DFO_ACCOUNTS.filter((a) => !isDemoInvestment(a)).reduce((sum, account) => sum + account.balance, 0)
+    : connectedAccountsBalanceTotal
+  const investmentTrend = demoMode || portfolioData.dayChangePercent >= 0 ? 'up' : 'down'
+  const investmentChangeLabel = demoMode ? '+3% today' : `${Math.abs(portfolioData.dayChangePercent).toFixed(1)}% today`
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
