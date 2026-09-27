@@ -26,6 +26,7 @@ import { useMessageNotifications } from "@/hooks/useMessageNotifications";
 import { useFamilyTree } from "@/hooks/useFamilyTree";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DEMO_GOVERNANCE, useDfoDemo } from '@/lib/dfo-demo';
 const familyEducationModules = [{
   title: "Trust Education",
   description: "Learn the fundamentals of trusts, asset protection, and legacy planning",
@@ -64,6 +65,7 @@ const heritageResources = [{
 }];
 
 export default function Documents() {
+  const demoMode = useDfoDemo();
   const navigate = useNavigate();
   const {
     user,
@@ -805,7 +807,8 @@ export default function Documents() {
     });
   };
   // Load governance onboarding data
-  const [governanceData, setGovernanceData] = useState<any>(null);
+  const [storedGovernanceData, setGovernanceData] = useState<any>(null);
+  const governanceData = demoMode ? DEMO_GOVERNANCE : storedGovernanceData;
   const [governanceLoading, setGovernanceLoading] = useState(true);
   const [constitutionGovernance, setConstitutionGovernance] = useState<any>(null);
   

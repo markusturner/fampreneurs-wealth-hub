@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { AlertTriangle, ShieldCheck } from 'lucide-react'
 import { getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, type ProtectionLevel } from '@/lib/entities'
+import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
 
 interface Row {
   id: string
@@ -21,6 +22,7 @@ const currency = (n: number) =>
 
 export function AssetProtectionSection() {
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -57,12 +59,20 @@ export function AssetProtectionSection() {
     return () => { cancelled = true; supabase.removeChannel(channel) }
   }, [user?.id])
 
-  const total = rows.reduce((s, r) => s + r.balance, 0)
-  const protectedValue = rows.filter(r => r.level === 'protected').reduce((s, r) => s + r.balance, 0)
+  const visibleRows: Row[] = demoMode ? DEMO_DFO_ACCOUNTS.map(account => ({
+    id: account.id,
+    account_name: account.account_name,
+    account_type: account.account_type,
+    balance: account.balance,
+    owner_entity: account.owner_entity,
+    level: getProtectionLevel(account.owner_entity),
+  })) : rows
+  const total = visibleRows.reduce((s, r) => s + r.balance, 0)
+  const protectedValue = visibleRows.filter(r => r.level === 'protected').reduce((s, r) => s + r.balance, 0)
   const pct = total > 0 ? Math.round((protectedValue / total) * 100) : 0
-  const attention = rows.filter(r => r.level !== 'protected')
+  const attention = visibleRows.filter(r => r.level !== 'protected')
 
-  if (loading) {
+  if (loading && !demoMode) {
     return <div className="h-32 rounded-xl bg-muted animate-pulse" />
   }
 
@@ -84,7 +94,7 @@ export function AssetProtectionSection() {
           </div>
           <Progress value={pct} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {rows.filter(r => r.level === 'protected').length} of {rows.length} accounts are titled inside a protective entity.
+             {visibleRows.filter(r => r.level === 'protected').length} of {visibleRows.length} accounts are titled inside a protective entity.
           </p>
         </CardContent>
       </Card>
@@ -97,7 +107,7 @@ export function AssetProtectionSection() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {rows.length === 0 ? (
+          {visibleRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">Add accounts in the Family Office to see protection gaps.</p>
           ) : attention.length === 0 ? (
             <p className="text-sm text-muted-foreground">Every account is assigned to a protective entity. Nice work.</p>

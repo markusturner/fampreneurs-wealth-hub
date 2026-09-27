@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { CheckCircle2, Clock, HeartHandshake, Loader2, ShieldCheck } from 'lucide-react'
+import { DEMO_HANDOFF, useDfoDemo } from '@/lib/dfo-demo'
 
 const CHECKLIST = [
   { key: 'documents', label: 'Core legal documents uploaded' },
@@ -48,6 +49,7 @@ const daysBetween = (a: Date, b: Date) => Math.floor((a.getTime() - b.getTime())
 
 export function HandoffPanel() {
   const { user } = useAuth()
+  const demoMode = useDfoDemo()
   const { toast } = useToast()
   const [settings, setSettings] = useState<Settings>(DEFAULTS)
   const [loading, setLoading] = useState(true)
@@ -77,8 +79,14 @@ export function HandoffPanel() {
     })()
   }, [user?.id])
 
+  const visibleSettings = demoMode ? DEMO_HANDOFF : settings
+
   const save = async (next: Partial<Settings>, message?: string) => {
     if (!user?.id) return
+    if (demoMode) {
+      if (message) toast({ title: 'Demo changes are not saved' })
+      return
+    }
     const merged = { ...settings, ...next }
     setSettings(merged)
     setSaving(true)
@@ -94,18 +102,18 @@ export function HandoffPanel() {
   }
 
   const stats = useMemo(() => {
-    const last = new Date(settings.last_checkin_at)
+    const last = new Date(visibleSettings.last_checkin_at)
     const since = Math.max(daysBetween(new Date(), last), 0)
-    const due = Math.max(settings.checkin_interval_days - since, 0)
-    const overdue = since > settings.checkin_interval_days
-    const releaseIn = Math.max(settings.checkin_interval_days + settings.grace_period_days - since, 0)
+    const due = Math.max(visibleSettings.checkin_interval_days - since, 0)
+    const overdue = since > visibleSettings.checkin_interval_days
+    const releaseIn = Math.max(visibleSettings.checkin_interval_days + visibleSettings.grace_period_days - since, 0)
     return { since, due, overdue, releaseIn, last }
-  }, [settings])
+  }, [visibleSettings])
 
-  const doneCount = CHECKLIST.filter(i => settings.checklist[i.key]).length
+  const doneCount = CHECKLIST.filter(i => visibleSettings.checklist[i.key]).length
   const readiness = Math.round((doneCount / CHECKLIST.length) * 100)
 
-  if (loading) return <div className="h-64 rounded-xl bg-muted animate-pulse" />
+  if (loading && !demoMode) return <div className="h-64 rounded-xl bg-muted animate-pulse" />
 
   return (
     <div className="space-y-4">
@@ -121,17 +129,17 @@ export function HandoffPanel() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><HeartHandshake className="h-3 w-3" /> Next check-in</p>
             <p className="text-2xl font-bold mt-1">{stats.overdue ? 'Overdue' : `in ${stats.due}d`}</p>
-            <p className="text-xs text-muted-foreground">Every {settings.checkin_interval_days} days</p>
+            <p className="text-xs text-muted-foreground">Every {visibleSettings.checkin_interval_days} days</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Release status</p>
             <p className="text-2xl font-bold mt-1">
-              {settings.release_enabled ? (stats.releaseIn === 0 ? 'Ready' : `${stats.releaseIn}d`) : 'Off'}
+              {visibleSettings.release_enabled ? (stats.releaseIn === 0 ? 'Ready' : `${stats.releaseIn}d`) : 'Off'}
             </p>
             <p className="text-xs text-muted-foreground">
-              {settings.release_enabled ? `Grace period ${settings.grace_period_days} days` : 'Enable below'}
+              {visibleSettings.release_enabled ? `Grace period ${visibleSettings.grace_period_days} days` : 'Enable below'}
             </p>
           </CardContent>
         </Card>
@@ -155,7 +163,7 @@ export function HandoffPanel() {
               <div className="space-y-1.5">
                 <Label>Successor name</Label>
                 <Input
-                  value={settings.successor_name}
+                   value={visibleSettings.successor_name}
                   onChange={e => setSettings(s => ({ ...s, successor_name: e.target.value }))}
                   placeholder="Full name"
                 />
@@ -164,7 +172,7 @@ export function HandoffPanel() {
                 <Label>Successor email</Label>
                 <Input
                   type="email"
-                  value={settings.successor_email}
+                   value={visibleSettings.successor_email}
                   onChange={e => setSettings(s => ({ ...s, successor_email: e.target.value }))}
                   placeholder="name@email.com"
                 />
@@ -172,7 +180,7 @@ export function HandoffPanel() {
               <div className="space-y-1.5">
                 <Label>Successor phone</Label>
                 <Input
-                  value={settings.successor_phone}
+                   value={visibleSettings.successor_phone}
                   onChange={e => setSettings(s => ({ ...s, successor_phone: e.target.value }))}
                   placeholder="(555) 555-5555"
                 />
@@ -180,7 +188,7 @@ export function HandoffPanel() {
               <div className="space-y-1.5">
                 <Label>Check-in every</Label>
                 <Select
-                  value={String(settings.checkin_interval_days)}
+                   value={String(visibleSettings.checkin_interval_days)}
                   onValueChange={v => setSettings(s => ({ ...s, checkin_interval_days: Number(v) }))}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -195,7 +203,7 @@ export function HandoffPanel() {
               <div className="space-y-1.5">
                 <Label>Grace period</Label>
                 <Select
-                  value={String(settings.grace_period_days)}
+                   value={String(visibleSettings.grace_period_days)}
                   onValueChange={v => setSettings(s => ({ ...s, grace_period_days: Number(v) }))}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -214,7 +222,7 @@ export function HandoffPanel() {
                 <p className="text-xs text-muted-foreground">Notify your successor after the grace period ends.</p>
               </div>
               <Switch
-                checked={settings.release_enabled}
+                 checked={visibleSettings.release_enabled}
                 onCheckedChange={v => setSettings(s => ({ ...s, release_enabled: v }))}
               />
             </div>
@@ -240,7 +248,7 @@ export function HandoffPanel() {
               {CHECKLIST.map(item => (
                 <label key={item.key} className="flex items-center gap-3 rounded-lg border p-2.5 cursor-pointer hover:bg-muted/50">
                   <Checkbox
-                    checked={!!settings.checklist[item.key]}
+                     checked={!!visibleSettings.checklist[item.key]}
                     onCheckedChange={v =>
                       save({ checklist: { ...settings.checklist, [item.key]: !!v } })
                     }

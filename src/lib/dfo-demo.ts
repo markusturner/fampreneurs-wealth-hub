@@ -25,11 +25,45 @@ export function useDfoDemo() {
 }
 
 export const DEMO_DFO_ACCOUNTS = [
-  { id: 'demo-a1', name: 'Family Checking', type: 'bank', provider: 'Chase', balance: 48250, lastSync: new Date().toISOString(), status: 'connected', institution: 'Chase' },
-  { id: 'demo-a2', name: 'Brokerage Account', type: 'brokerage', provider: 'Fidelity', balance: 1250000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Fidelity' },
-  { id: 'demo-a3', name: 'Crypto Wallet', type: 'crypto', provider: 'Coinbase', balance: 145000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Coinbase' },
-  { id: 'demo-a4', name: 'Business Operating', type: 'business', provider: 'Wells Fargo', balance: 212400, lastSync: new Date().toISOString(), status: 'connected', institution: 'Wells Fargo' },
+  { id: 'demo-a1', name: 'Family Checking', account_name: 'Family Checking', type: 'bank', account_type: 'bank', provider: 'Chase', balance: 48250, lastSync: new Date().toISOString(), status: 'connected', institution: 'Chase', owner_entity: 'Turner Family Living Trust' },
+  { id: 'demo-a2', name: 'Brokerage Account', account_name: 'Brokerage Account', type: 'brokerage', account_type: 'brokerage', provider: 'Fidelity', balance: 1250000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Fidelity', owner_entity: 'Turner Family Living Trust' },
+  { id: 'demo-a3', name: 'Crypto Wallet', account_name: 'Crypto Wallet', type: 'crypto', account_type: 'crypto', provider: 'Coinbase', balance: 145000, lastSync: new Date().toISOString(), status: 'connected', institution: 'Coinbase', owner_entity: null },
+  { id: 'demo-a4', name: 'Business Operating', account_name: 'Business Operating', type: 'business', account_type: 'business', provider: 'Wells Fargo', balance: 212400, lastSync: new Date().toISOString(), status: 'connected', institution: 'Wells Fargo', owner_entity: 'Legacy Holdings LLC' },
 ]
+
+export const DEMO_GOVERNANCE = {
+  constitutionName: 'The Turner Family Constitution',
+  familyConstitution: 'A shared framework for protecting our family, building lasting wealth, and preparing each generation to lead.',
+  constitutionDate: '2025-01-15',
+  coreValues: ['Faith', 'Family', 'Stewardship', 'Education', 'Service'],
+  visionStatement: 'Build a united family that creates opportunity and protects its legacy for generations.',
+  missionStatement: 'Make thoughtful decisions together, develop future leaders, and use our resources to strengthen our family and community.',
+  wealthPhilosophy: 'Wealth is a tool for freedom, service, education, and responsible ownership. We preserve principal while investing for long-term growth.',
+  foundingStory: 'Our family legacy began with entrepreneurship, discipline, and a commitment to create opportunities for the next generation.',
+  legacyMilestones: [
+    { year: '2008', note: 'Founded the family operating business.' },
+    { year: '2021', note: 'Created the family trust and estate plan.' },
+    { year: '2025', note: 'Established the family council and constitution.' },
+  ],
+  quorumPercentage: 75,
+  ownershipEligibility: 'Ownership is limited to direct descendants and approved family trusts. Owners must complete annual education and sign the family agreement.',
+  familyCouncil: { members: ['Mark Turner', 'Angela Turner', 'Jordan Turner'], cadence: 'Quarterly' },
+  educationOverview: 'Every family member completes annual financial, trust, and leadership education.',
+  participationGuidelines: 'Members attend quarterly meetings, prepare before votes, and disclose conflicts of interest.',
+  philanthropyThesis: 'We support youth education, entrepreneurship, and stable housing in our community.',
+  grantmakingPolicy: 'The council reviews grants each quarter and approves them by majority vote.',
+}
+
+export const DEMO_HANDOFF = {
+  checkin_interval_days: 30,
+  grace_period_days: 14,
+  last_checkin_at: daysAgo(8),
+  successor_name: 'Jordan Turner',
+  successor_email: 'jordan@example.com',
+  successor_phone: '(555) 014-0284',
+  release_enabled: true,
+  checklist: { documents: true, accounts: true, successor: true, instructions: true, family_meeting: false, access: false },
+}
 
 const daysAgo = (n: number) => {
   const d = new Date()
