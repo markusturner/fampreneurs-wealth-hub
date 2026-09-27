@@ -122,10 +122,10 @@ export function OwnershipMap() {
   })
 
   return (
-    <div className="space-y-2">
+    <div className="h-full">
 
-      <Card>
-        <CardContent className="p-2 sm:p-4">
+      <Card className="h-full">
+        <CardContent className="flex h-full flex-col justify-between p-2 sm:p-4">
           {placed.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
               Assign entities to your accounts in the Family Office to see your ownership map.

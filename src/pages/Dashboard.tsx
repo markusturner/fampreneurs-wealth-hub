@@ -114,7 +114,7 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <AssetProtectionSection />
-          <div className="grid gap-6 xl:grid-cols-2 items-start">
+          <div className="grid gap-6 xl:grid-cols-2 items-stretch">
             <OverviewSection />
             <OwnershipMap />
           </div>
