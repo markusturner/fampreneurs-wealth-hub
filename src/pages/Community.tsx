@@ -108,8 +108,11 @@ export default function Community() {
   useEffect(() => {
     fetchInvestments()
     fetchFamilyOfficeMembers()
-    checkDemoAccess()
   }, [])
+
+  useEffect(() => {
+    checkDemoAccess()
+  }, [user?.id])
 
   const checkDemoAccess = async () => {
     if (!user?.id) return
