@@ -33,14 +33,18 @@ function loadTellerScript(): Promise<void> {
       return
     }
     const script = document.createElement('script')
-    script.src = 'https://cdn.teller.io/connect/2.0.0/teller-connect.js'
+    script.src = 'https://cdn.teller.io/connect/connect.js'
     script.async = true
     script.setAttribute('data-teller-connect', 'true')
     script.onload = () => {
       scriptLoaded = true
       resolve()
     }
-    script.onerror = () => reject(new Error('Failed to load Teller Connect'))
+    script.onerror = () => {
+      scriptLoading = null
+      script.remove()
+      reject(new Error('Failed to load Teller Connect'))
+    }
     document.head.appendChild(script)
   })
   return scriptLoading
