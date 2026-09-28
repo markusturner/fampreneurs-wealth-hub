@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
+import { Loader2, CheckCircle2, Plus, Trash2, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -165,6 +165,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [hasPrevious, setHasPrevious] = useState(false)
+  const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({})
   const storageKey = `asset-inventory-draft-${user?.id ?? "anon"}`
 
   const [beneficiaries, setBeneficiaries] = useState<TableRow[]>(createEmptyRows(4, keys(COLS.beneficiaries)))
@@ -238,6 +239,23 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     businessInterests: setBusinessInterests,
   }
 
+  // Decrypt any encrypted SSN values coming back from the database
+  const decryptSsns = async (rows: TableRow[]): Promise<TableRow[]> => {
+    return Promise.all(rows.map(async (row) => {
+      const val = row?.ssn
+      if (typeof val === "string" && val.startsWith("enc:")) {
+        try {
+          const { data, error } = await supabase.rpc("decrypt_ssn", { p_value: val })
+          if (!error && typeof data === "string") return { ...row, ssn: data }
+        } catch (e) {
+          console.error("Failed to decrypt SSN", e)
+        }
+        return { ...row, ssn: "" }
+      }
+      return row
+    }))
+  }
+
   // Restore saved draft (local first, otherwise the last submitted version)
   useEffect(() => {
     let active = true
@@ -270,7 +288,11 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
         const record = await fetchLatestSubmission(user.id, "asset_inventory")
         if (active && record) {
           setHasPrevious(true)
-          if (!hasLocal && record.form_data) applyData(record.form_data)
+          if (!hasLocal && record.form_data) {
+            const data = { ...record.form_data }
+            if (Array.isArray(data.beneficiaries)) data.beneficiaries = await decryptSsns(data.beneficiaries)
+            if (active) applyData(data)
+          }
           if (!hasLocal && record.submitter_name) setSubmitterName(record.submitter_name)
         }
       }
@@ -327,10 +349,19 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
     setSubmitting(true)
     try {
+      // Encrypt SSNs before they are stored
+      const encryptedBeneficiaries = await Promise.all(beneficiaries.map(async (row) => {
+        const val = row?.ssn
+        if (typeof val === "string" && val.trim() && !val.startsWith("enc:")) {
+          const { data, error } = await supabase.rpc("encrypt_ssn", { p_value: val })
+          if (!error && typeof data === "string") return { ...row, ssn: data }
+        }
+        return row
+      }))
       const { id, updated } = await saveTrustSubmission({
         userId: user.id,
         trustType: "asset_inventory",
-        formData,
+        formData: { ...formData, beneficiaries: encryptedBeneficiaries },
         submitterName: submitterName.trim(),
       })
       setHasPrevious(true)
@@ -365,12 +396,33 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
             {columns.map(col => (
               <div key={col.key}>
                 {idx === 0 && <Label className="text-xs text-muted-foreground mb-1 block">{col.label}</Label>}
-                <Input
-                  value={row[col.key] || ""}
-                  onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
-                  className="h-8 text-xs"
-                  placeholder={col.label}
-                />
+                {col.key === "ssn" ? (
+                  <div className="relative">
+                    <Input
+                      type={visibleSsn[`${idx}`] ? "text" : "password"}
+                      value={row[col.key] || ""}
+                      onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
+                      className="h-8 text-xs pr-8"
+                      placeholder={col.label}
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVisibleSsn(prev => ({ ...prev, [`${idx}`]: !prev[`${idx}`] }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={visibleSsn[`${idx}`] ? "Hide Social Security number" : "Show Social Security number"}
+                    >
+                      {visibleSsn[`${idx}`] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                ) : (
+                  <Input
+                    value={row[col.key] || ""}
+                    onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
+                    className="h-8 text-xs"
+                    placeholder={col.label}
+                  />
+                )}
               </div>
             ))}
             <div className={idx === 0 ? "pt-5" : ""}>
