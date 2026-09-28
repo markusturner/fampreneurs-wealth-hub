@@ -128,8 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     try {
-      const { data: { session }, error } = await supabase.auth.setSession({
-        access_token: '',
+      const { data: { session }, error } = await supabase.auth.refreshSession({
         refresh_token: backup.refresh_token,
       })
       if (error || !session) {
