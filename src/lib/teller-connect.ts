@@ -106,6 +106,13 @@ export async function openTellerConnect(
     })
 
     handle.open()
+    // Make sure Teller's window can be clicked even if another popup left the page locked
+    setTimeout(() => {
+      document.body.style.pointerEvents = ''
+      document.querySelectorAll<HTMLIFrameElement>('iframe[src*="teller.io"]').forEach((f) => {
+        f.style.pointerEvents = 'auto'
+      })
+    }, 100)
   } catch (err) {
     console.error('Error opening Teller Connect:', err)
     onError('Could not open the bank connection window')
