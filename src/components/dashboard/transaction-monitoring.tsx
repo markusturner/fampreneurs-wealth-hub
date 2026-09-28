@@ -896,19 +896,38 @@ export function TransactionMonitoring() {
                 return
               }
 
-              // Only sync accounts that have Plaid linkage
-              const eligibleAccounts = connectedAccounts.filter((a) => a.external_account_id && a.provider === 'plaid')
-              if (eligibleAccounts.length === 0) {
-                toast({ title: "No eligible accounts", description: "Reconnect bank accounts to enable syncing" })
+              // Sync accounts that have bank linkage: Teller first, then older Plaid ones
+              const tellerAccounts = connectedAccounts.filter((a) => a.provider === 'teller')
+              const plaidAccounts = connectedAccounts.filter((a) => a.external_account_id && a.provider === 'plaid')
+              if (tellerAccounts.length === 0 && plaidAccounts.length === 0) {
+                toast({ title: "No eligible accounts", description: "Connect bank accounts to enable syncing" })
                 return
               }
 
               try {
                 let totalAdded = 0
                 let skipped = 0
+                let fulfilled = 0
+                let failed = 0
 
+                // Teller accounts sync in one call
+                if (tellerAccounts.length > 0) {
+                  const { data, error } = await supabase.functions.invoke('teller-sync', { body: {} })
+                  if (error) {
+                    failed += 1
+                    console.error('teller-sync error:', error)
+                  } else {
+                    fulfilled += tellerAccounts.length
+                    totalAdded += (data as any)?.transactions_added || 0
+                    if ((data as any)?.errors?.length) {
+                      console.error('teller-sync account errors:', (data as any).errors)
+                    }
+                  }
+                }
+
+                // Plaid accounts sync one by one
                 const results = await Promise.allSettled(
-                  eligibleAccounts.map(async (account) => {
+                  plaidAccounts.map(async (account) => {
                     // The edge function expects the connected_accounts.id, not the Plaid account_id
                     const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
                       body: { account_id: account.id }
@@ -934,8 +953,9 @@ export function TransactionMonitoring() {
                   })
                 )
 
-                const fulfilled = results.filter(r => r.status === 'fulfilled').length
-                const failed = results.length - fulfilled
+                const plaidFulfilled = results.filter(r => r.status === 'fulfilled').length
+                fulfilled += plaidFulfilled
+                failed += results.length - plaidFulfilled
 
                 await fetchConnectedAccountsAndTransactions()
 

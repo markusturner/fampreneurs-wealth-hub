@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, displayEntityName } from '@/lib/entities'
 import { isDfoDemo, useDfoDemo, DEMO_DFO_ACCOUNTS } from '@/lib/dfo-demo'
+import { openTellerConnect } from '@/lib/teller-connect'
 
 
 interface ConnectedAccount {
@@ -73,7 +74,6 @@ export function AccountIntegration() {
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
-  const [linkToken, setLinkToken] = useState<string | null>(null)
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null)
   const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set())
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
@@ -237,101 +237,7 @@ export function AccountIntegration() {
     }
   }
 
-  // Plaid Link Token Creation
-  const createLinkToken = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to connect your accounts",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const { data, error } = await supabase.functions.invoke('plaid-link-token', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (error) {
-        console.error('Error creating link token:', error)
-        toast({
-          title: "Error", 
-          description: "Failed to initialize Plaid connection",
-          variant: "destructive",
-        })
-        return
-      }
-
-      setLinkToken(data.link_token)
-    } catch (error) {
-      console.error('Error creating link token:', error)
-      toast({
-        title: "Error",
-        description: "Failed to initialize Plaid connection",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Plaid Link Success Handler
-  const { open, ready } = usePlaidLink({
-    token: linkToken,
-    onSuccess: async (public_token: string) => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
-
-        const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
-          body: { public_token },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
-
-        if (error) {
-          console.error('Error exchanging token:', error)
-          toast({
-            title: "Error",
-            description: "Failed to connect accounts",
-            variant: "destructive",
-          })
-          return
-        }
-
-        toast({
-          title: "Success!",
-          description: data.message,
-        })
-
-        // Refresh accounts list
-        await fetchConnectedAccounts()
-        setShowAddDialog(false)
-        setLinkToken(null)
-      } catch (error) {
-        console.error('Error in Plaid success handler:', error)
-        toast({
-          title: "Error",
-          description: "Failed to save connected accounts",
-          variant: "destructive",
-        })
-      }
-    },
-    onExit: () => {
-      setLinkToken(null)
-    },
-  })
-
-  // Auto-open Plaid Link when token is ready (new connections)
-  useEffect(() => {
-    if (linkToken && ready) {
-      setShowAddDialog(false)
-      open()
-    }
-  }, [linkToken, ready, open])
+  // Update-mode Plaid Link for upgrading existing items (older Plaid connections)
 
   // Update-mode Plaid Link for upgrading existing items
   const { open: openUpdate, ready: readyUpdate } = usePlaidLink({
@@ -596,14 +502,23 @@ export function AccountIntegration() {
 
     setLoading(true)
     try {
-      // Invoke edge function to refresh balances from Plaid, then reload from DB
-      const { error } = await supabase.functions.invoke('plaid-refresh-accounts', {
-        body: {}
-      })
+      // Refresh balances and transactions: Teller accounts first, then any older Plaid ones
+      const tellerResult = await supabase.functions.invoke('teller-sync', { body: {} })
+      if (tellerResult.error) {
+        console.error('teller-sync error:', tellerResult.error)
+        throw tellerResult.error
+      }
 
-      if (error) {
-        console.error('plaid-refresh-accounts error:', error)
-        throw error
+      const hasPlaidAccounts = accounts.some((acc) => acc.provider === 'plaid')
+      if (hasPlaidAccounts) {
+        const { error } = await supabase.functions.invoke('plaid-refresh-accounts', {
+          body: {}
+        })
+
+        if (error) {
+          console.error('plaid-refresh-accounts error:', error)
+          throw error
+        }
       }
 
       await fetchConnectedAccounts()
@@ -633,7 +548,40 @@ export function AccountIntegration() {
     ))
 
     try {
-      if (user && account.provider === 'plaid') {
+      if (user && account.provider === 'teller') {
+        // Pull live balances and recent transactions via Teller
+        const { data, error } = await supabase.functions.invoke('teller-sync', {
+          body: { account_id: accountId },
+        })
+
+        if (error) {
+          console.error('Error syncing Teller account:', error)
+          toast({
+            title: "Sync Failed",
+            description: "Failed to sync transactions",
+            variant: "destructive"
+          })
+
+          // Revert status
+          setAccounts(prev => prev.map(acc =>
+            acc.id === accountId ? { ...acc, status: 'connected' } : acc
+          ))
+          return
+        }
+
+        if ((data as any)?.errors?.length) {
+          toast({
+            title: 'Sync Partially Failed',
+            description: (data as any).errors[0],
+            variant: 'destructive'
+          })
+        } else {
+          toast({
+            title: "Transactions Synced",
+            description: (data as any)?.message || 'Account synced',
+          })
+        }
+      } else if (user && account.provider === 'plaid') {
         // Refresh latest balances for this account first
         await supabase.functions.invoke('plaid-refresh-accounts', { body: { account_id: accountId } })
         await fetchConnectedAccounts()
@@ -814,15 +762,24 @@ export function AccountIntegration() {
   }
  
    const handleConnectRealAccount = async (accountType: string) => {
-    if (accountType === 'plaid') {
-      if (!linkToken) {
-        await createLinkToken()
-      }
-      // Open Plaid Link immediately if token is ready
-      if (linkToken && ready) {
-        setShowAddDialog(false)
-        open()
-      }
+    if (accountType === 'teller') {
+      setShowAddDialog(false)
+      openTellerConnect(
+        (result) => {
+          toast({
+            title: "Connected",
+            description: result.message,
+          })
+          fetchConnectedAccounts()
+        },
+        (message) => {
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive",
+          })
+        },
+      )
     } else {
       // Fallback to mock account creation
       const mockAccount: ConnectedAccount = {
@@ -932,14 +889,14 @@ export function AccountIntegration() {
                     <Button
                       variant="outline"
                       className="w-full justify-start"
-                      onClick={() => handleConnectRealAccount('plaid')}
+                      onClick={() => handleConnectRealAccount('teller')}
                       disabled={loading}
                     >
                       <Building2 className="w-4 h-4 mr-2" />
-                      Connect via Plaid
+                      Connect Bank Account
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Securely connect bank and brokerage accounts
+                      Securely connect bank and brokerage accounts with live transactions
                     </p>
                   </div>
                 </div>
