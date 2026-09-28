@@ -196,7 +196,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
+        <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'pb-20 md:pb-0'}`}>
           {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
             <div className="sticky top-0 z-40 flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
               <FamilyToggleBar />
