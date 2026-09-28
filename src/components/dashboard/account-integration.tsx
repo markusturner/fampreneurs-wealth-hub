@@ -502,14 +502,23 @@ export function AccountIntegration() {
 
     setLoading(true)
     try {
-      // Invoke edge function to refresh balances from Plaid, then reload from DB
-      const { error } = await supabase.functions.invoke('plaid-refresh-accounts', {
-        body: {}
-      })
+      // Refresh balances and transactions: Teller accounts first, then any older Plaid ones
+      const tellerResult = await supabase.functions.invoke('teller-sync', { body: {} })
+      if (tellerResult.error) {
+        console.error('teller-sync error:', tellerResult.error)
+        throw tellerResult.error
+      }
 
-      if (error) {
-        console.error('plaid-refresh-accounts error:', error)
-        throw error
+      const hasPlaidAccounts = accounts.some((acc) => acc.provider === 'plaid')
+      if (hasPlaidAccounts) {
+        const { error } = await supabase.functions.invoke('plaid-refresh-accounts', {
+          body: {}
+        })
+
+        if (error) {
+          console.error('plaid-refresh-accounts error:', error)
+          throw error
+        }
       }
 
       await fetchConnectedAccounts()
@@ -539,7 +548,40 @@ export function AccountIntegration() {
     ))
 
     try {
-      if (user && account.provider === 'plaid') {
+      if (user && account.provider === 'teller') {
+        // Pull live balances and recent transactions via Teller
+        const { data, error } = await supabase.functions.invoke('teller-sync', {
+          body: { account_id: accountId },
+        })
+
+        if (error) {
+          console.error('Error syncing Teller account:', error)
+          toast({
+            title: "Sync Failed",
+            description: "Failed to sync transactions",
+            variant: "destructive"
+          })
+
+          // Revert status
+          setAccounts(prev => prev.map(acc =>
+            acc.id === accountId ? { ...acc, status: 'connected' } : acc
+          ))
+          return
+        }
+
+        if ((data as any)?.errors?.length) {
+          toast({
+            title: 'Sync Partially Failed',
+            description: (data as any).errors[0],
+            variant: 'destructive'
+          })
+        } else {
+          toast({
+            title: "Transactions Synced",
+            description: (data as any)?.message || 'Account synced',
+          })
+        }
+      } else if (user && account.provider === 'plaid') {
         // Refresh latest balances for this account first
         await supabase.functions.invoke('plaid-refresh-accounts', { body: { account_id: accountId } })
         await fetchConnectedAccounts()
@@ -720,15 +762,24 @@ export function AccountIntegration() {
   }
  
    const handleConnectRealAccount = async (accountType: string) => {
-    if (accountType === 'plaid') {
-      if (!linkToken) {
-        await createLinkToken()
-      }
-      // Open Plaid Link immediately if token is ready
-      if (linkToken && ready) {
-        setShowAddDialog(false)
-        open()
-      }
+    if (accountType === 'teller') {
+      setShowAddDialog(false)
+      openTellerConnect(
+        (result) => {
+          toast({
+            title: "Connected",
+            description: result.message,
+          })
+          fetchConnectedAccounts()
+        },
+        (message) => {
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive",
+          })
+        },
+      )
     } else {
       // Fallback to mock account creation
       const mockAccount: ConnectedAccount = {
