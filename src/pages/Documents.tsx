@@ -1318,9 +1318,9 @@ export default function Documents() {
         </section>
 
         {/* Quick Actions & Resources */}
-        <section className="space-y-4">
-          <div className="text-center px-2">
-            <h2 className="text-lg sm:text-xl font-bold mb-2">Quick Actions</h2>
+        <section id="const-actions" className="scroll-mt-20 space-y-4">
+          <div className="border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1">Quick Actions</h2>
           </div>
           
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
