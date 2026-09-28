@@ -396,12 +396,33 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
             {columns.map(col => (
               <div key={col.key}>
                 {idx === 0 && <Label className="text-xs text-muted-foreground mb-1 block">{col.label}</Label>}
-                <Input
-                  value={row[col.key] || ""}
-                  onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
-                  className="h-8 text-xs"
-                  placeholder={col.label}
-                />
+                {col.key === "ssn" ? (
+                  <div className="relative">
+                    <Input
+                      type={visibleSsn[`${idx}`] ? "text" : "password"}
+                      value={row[col.key] || ""}
+                      onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
+                      className="h-8 text-xs pr-8"
+                      placeholder={col.label}
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVisibleSsn(prev => ({ ...prev, [`${idx}`]: !prev[`${idx}`] }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={visibleSsn[`${idx}`] ? "Hide Social Security number" : "Show Social Security number"}
+                    >
+                      {visibleSsn[`${idx}`] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                ) : (
+                  <Input
+                    value={row[col.key] || ""}
+                    onChange={e => updateRow(rows, setRows, idx, col.key, e.target.value)}
+                    className="h-8 text-xs"
+                    placeholder={col.label}
+                  />
+                )}
               </div>
             ))}
             <div className={idx === 0 ? "pt-5" : ""}>
