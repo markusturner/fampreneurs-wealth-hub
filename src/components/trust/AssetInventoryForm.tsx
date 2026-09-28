@@ -349,10 +349,19 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     }
     setSubmitting(true)
     try {
+      // Encrypt SSNs before they are stored
+      const encryptedBeneficiaries = await Promise.all(beneficiaries.map(async (row) => {
+        const val = row?.ssn
+        if (typeof val === "string" && val.trim() && !val.startsWith("enc:")) {
+          const { data, error } = await supabase.rpc("encrypt_ssn", { p_value: val })
+          if (!error && typeof data === "string") return { ...row, ssn: data }
+        }
+        return row
+      }))
       const { id, updated } = await saveTrustSubmission({
         userId: user.id,
         trustType: "asset_inventory",
-        formData,
+        formData: { ...formData, beneficiaries: encryptedBeneficiaries },
         submitterName: submitterName.trim(),
       })
       setHasPrevious(true)
