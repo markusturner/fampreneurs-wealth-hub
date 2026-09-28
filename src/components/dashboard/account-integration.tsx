@@ -889,14 +889,14 @@ export function AccountIntegration() {
                     <Button
                       variant="outline"
                       className="w-full justify-start"
-                      onClick={() => handleConnectRealAccount('plaid')}
+                      onClick={() => handleConnectRealAccount('teller')}
                       disabled={loading}
                     >
                       <Building2 className="w-4 h-4 mr-2" />
-                      Connect via Plaid
+                      Connect Bank Account
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Securely connect bank and brokerage accounts
+                      Securely connect bank and brokerage accounts with live transactions
                     </p>
                   </div>
                 </div>
