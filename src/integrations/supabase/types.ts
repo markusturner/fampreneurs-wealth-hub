@@ -6275,6 +6275,8 @@ export type Database = {
       }
       cleanup_expired_verification_codes: { Args: never; Returns: undefined }
       cleanup_sensitive_audit_logs: { Args: never; Returns: undefined }
+      decrypt_ssn: { Args: { p_value: string }; Returns: string }
+      encrypt_ssn: { Args: { p_value: string }; Returns: string }
       expire_ended_programs: { Args: never; Returns: undefined }
       generate_certificate_number: { Args: never; Returns: string }
       get_account_summary: { Args: { target_user_id?: string }; Returns: Json }
