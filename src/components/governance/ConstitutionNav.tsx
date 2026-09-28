@@ -32,7 +32,7 @@ export function ConstitutionNav() {
   return (
     <>
       {/* Mobile: sticky pill row */}
-      <nav className="lg:hidden sticky top-0 z-20 -mx-4 mb-6 bg-background/90 backdrop-blur px-4 py-2 border-b border-border">
+      <nav className="lg:hidden sticky top-14 z-20 -mx-4 mb-6 bg-background/90 backdrop-blur px-4 py-2 border-b border-border">
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
           {CONSTITUTION_SECTIONS.map(s => (
             <button
