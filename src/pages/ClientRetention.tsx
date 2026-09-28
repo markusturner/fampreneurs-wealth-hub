@@ -153,6 +153,8 @@ function outreachTopic(c: ClientScore): string {
 // Check-in milestones counted from the contract start date set in Admin > Users
 const MILESTONES = [30, 45, 60, 75]
 
+const PAUSED_IDS = new Set<string>()
+
 function milestoneBadge(startDate?: string | null): { label: string; due: boolean } | null {
   if (!startDate) return null
   const start = new Date(startDate)
@@ -752,12 +754,14 @@ export default function ClientRetention() {
   const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at, phone")
+      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at, phone, subscription_paused")
     if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
     const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
     const profiles: PartnerProfile[] = []
+    PAUSED_IDS.clear()
     ;(data ?? []).forEach((r: any) => {
+      if (r.subscription_paused) { if (r.id) PAUSED_IDS.add(r.id); if (r.user_id) PAUSED_IDS.add(r.user_id) }
       if (r.contract_start_date) {
         // Health results can identify clients by profile ID or auth user ID.
         if (r.id) map[r.id] = r.contract_start_date
@@ -2135,6 +2139,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
         <p className="mt-1 line-clamp-2 text-xs leading-4 text-muted-foreground">{outreachTopic(client)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-1">
           {client.program && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{programShortLabel(client.program)}</span>}
+          {PAUSED_IDS.has(client.user_id) && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">Paused</span>}
           {client.is_partner_household && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Partners</span>}
           {client.status === "expansion_ready" && upsellInfo(client) && <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Upsell → {upsellInfo(client)?.target}</span>}
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
