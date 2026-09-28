@@ -97,7 +97,7 @@ const Dashboard = () => {
 
       <div className="flex items-center justify-center gap-4">
         <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Digital Family Office Dashboard</h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Your financial overview, key metrics, and recent activity at a glance.
           </p>
