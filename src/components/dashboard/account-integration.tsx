@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL, displayEntityName } from '@/lib/entities'
 import { isDfoDemo, useDfoDemo, DEMO_DFO_ACCOUNTS } from '@/lib/dfo-demo'
+import { openTellerConnect } from '@/lib/teller-connect'
 
 
 interface ConnectedAccount {
@@ -73,7 +74,6 @@ export function AccountIntegration() {
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
-  const [linkToken, setLinkToken] = useState<string | null>(null)
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null)
   const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set())
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
