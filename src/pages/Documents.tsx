@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Crown, Users, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { ConstitutionNav } from "@/components/governance/ConstitutionNav";
 import { Progress } from "@/components/ui/progress";
 import { NavHeader } from "@/components/dashboard/nav-header";
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin";
@@ -685,14 +686,17 @@ export default function Documents() {
           )}
         </div>
 
+        <div className="lg:grid lg:grid-cols-[190px_minmax(0,1fr)] lg:gap-10">
+        <ConstitutionNav />
+        <div className="space-y-14 min-w-0">
         {/* Identity & Core Documents Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <div className="text-center px-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2 flex-wrap">
-              <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
+        <section id="const-identity" className="scroll-mt-20 space-y-5">
+          <div className="px-0 border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 flex items-center gap-2 flex-wrap">
+              <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               Identity & Core Documents
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground">
               The foundation of your family's values and principles
             </p>
           </div>
@@ -837,13 +841,13 @@ export default function Documents() {
         </section>
 
         {/* Governance & Authority Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <div className="text-center px-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Scale className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+        <section id="const-governance" className="scroll-mt-20 space-y-5">
+          <div className="px-0 border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 flex items-center gap-2">
+              <Scale className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               Governance & Authority
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Decision-making processes and organizational structure
             </p>
           </div>
@@ -982,7 +986,7 @@ export default function Documents() {
           )}
 
           {/* Three Branches of Family Governance */}
-          <div className="space-y-6">
+          <div id="const-branches" className="scroll-mt-20 space-y-6">
             <div>
               <h3 className="text-xl font-semibold">Three Branches of Family Governance</h3>
               <p className="text-sm text-muted-foreground">
@@ -1124,13 +1128,13 @@ export default function Documents() {
         </section>
 
         {/* Legacy & Development Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <div className="text-center px-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+        <section id="const-legacy" className="scroll-mt-20 space-y-5">
+          <div className="px-0 border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               Legacy & Development
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground">
               Education, philanthropy, and future planning
             </p>
           </div>
@@ -1252,13 +1256,13 @@ export default function Documents() {
         </section>
 
         {/* Family Education & Courses Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <div className="text-center px-2">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
+        <section id="const-education" className="scroll-mt-20 space-y-5">
+          <div className="px-0 border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               Family Education & Courses
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground">
               Comprehensive education programs for family business success
             </p>
           </div>
@@ -1314,9 +1318,9 @@ export default function Documents() {
         </section>
 
         {/* Quick Actions & Resources */}
-        <section className="space-y-4">
-          <div className="text-center px-2">
-            <h2 className="text-lg sm:text-xl font-bold mb-2">Quick Actions</h2>
+        <section id="const-actions" className="scroll-mt-20 space-y-4">
+          <div className="border-b border-border pb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1">Quick Actions</h2>
           </div>
           
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -1361,6 +1365,9 @@ export default function Documents() {
 
           </div>
         </section>
+
+        </div>
+        </div>
 
         {/* Family Secret Codes - Admin Only */}
         {isAdmin && (

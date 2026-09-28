@@ -43,6 +43,7 @@ import AdminSettings from "./pages/AdminSettings";
 import ClientMetrics from "./pages/ClientMetrics";
 import ClientRetention from "./pages/ClientRetention";
 import SurveyPublic from "./pages/SurveyPublic";
+import HandoffAccept from "./pages/HandoffAccept";
 import NotFound from "./pages/NotFound";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
@@ -159,6 +160,7 @@ function AppWithNotifications() {
         <Route path="/client-retention" element={<WithLayout><ClientRetention /></WithLayout>} />
         <Route path="/survey" element={<SurveyPublic />} />
         <Route path="/survey/:surveyId" element={<SurveyPublic />} />
+        <Route path="/handoff/accept/:token" element={<HandoffAccept />} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
