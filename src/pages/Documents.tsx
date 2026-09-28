@@ -1319,7 +1319,7 @@ export default function Documents() {
             <h2 className="text-lg sm:text-xl font-bold mb-2">Quick Actions</h2>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="relative">
               <Button 
                 variant="outline" 
