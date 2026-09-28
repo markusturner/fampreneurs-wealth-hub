@@ -20,25 +20,36 @@ interface TellerConnectHandle {
 let scriptLoaded = false
 let scriptLoading: Promise<void> | null = null
 
+function getTellerConnect() {
+  return (window as typeof window & { TellerConnect?: { setup: (config: TellerConnectConfig) => TellerConnectHandle } }).TellerConnect
+}
+
 function loadTellerScript(): Promise<void> {
-  if (scriptLoaded) return Promise.resolve()
+  if (scriptLoaded || getTellerConnect()) {
+    scriptLoaded = true
+    return Promise.resolve()
+  }
   if (scriptLoading) return scriptLoading
   scriptLoading = new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-teller-connect]') as HTMLScriptElement | null
     if (existing) {
-      existing.addEventListener('load', () => {
-        scriptLoaded = true
-        resolve()
-      })
-      return
+      // A script left behind by a page refresh or hot reload has already fired
+      // its load event. Remove it instead of waiting forever for another event.
+      existing.remove()
     }
     const script = document.createElement('script')
     script.src = 'https://cdn.teller.io/connect/connect.js'
     script.async = true
     script.setAttribute('data-teller-connect', 'true')
     script.onload = () => {
-      scriptLoaded = true
-      resolve()
+      if (getTellerConnect()) {
+        scriptLoaded = true
+        resolve()
+        return
+      }
+      scriptLoading = null
+      script.remove()
+      reject(new Error('Teller Connect did not initialize'))
     }
     script.onerror = () => {
       scriptLoading = null
@@ -68,7 +79,7 @@ export async function openTellerConnect(
       return
     }
 
-    const TellerConnect = (window as any).TellerConnect
+    const TellerConnect = getTellerConnect()
     if (!TellerConnect) {
       onError('Bank connection is not ready, please try again')
       return
