@@ -8,8 +8,7 @@ export const TELLER_ENVIRONMENT = 'development'
 interface TellerConnectConfig {
   applicationId: string
   environment: string
-  certificatePublicKeyPath?: string
-  onSuccess: (enrollment: { accessToken: string; user: { id: string } }) => void
+  onSuccess: (enrollment: { accessToken: string; user: { id: string }; enrollment: { id: string } }) => void
   onFailure: (failure: { code: string; message: string }) => void
   onExit?: () => void
 }
@@ -74,8 +73,7 @@ export async function openTellerConnect(
     const handle: TellerConnectHandle = TellerConnect.setup({
       applicationId: TELLER_APPLICATION_ID,
       environment: TELLER_ENVIRONMENT,
-      certificatePublicKeyPath: '/teller-public-key.pem',
-      onSuccess: async (enrollment: { accessToken: string; user: { id: string } }) => {
+      onSuccess: async (enrollment: { accessToken: string; user: { id: string }; enrollment: { id: string } }) => {
         try {
           const { data, error } = await supabase.functions.invoke('teller-enroll', {
             body: { access_token: enrollment.accessToken, teller_user_id: enrollment.user?.id },
