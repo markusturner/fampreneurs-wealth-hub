@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react"
+import { Loader2, CheckCircle2, Plus, Trash2, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -165,6 +165,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [hasPrevious, setHasPrevious] = useState(false)
+  const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({})
   const storageKey = `asset-inventory-draft-${user?.id ?? "anon"}`
 
   const [beneficiaries, setBeneficiaries] = useState<TableRow[]>(createEmptyRows(4, keys(COLS.beneficiaries)))
