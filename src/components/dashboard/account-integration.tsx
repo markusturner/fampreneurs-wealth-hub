@@ -764,6 +764,10 @@ export function AccountIntegration() {
    const handleConnectRealAccount = async (accountType: string) => {
     if (accountType === 'teller') {
       setShowAddDialog(false)
+      // Wait for the popup to fully close so it doesn't block Teller's window
+      await new Promise((r) => setTimeout(r, 350))
+      document.body.style.pointerEvents = ''
+      document.body.removeAttribute('data-scroll-locked')
       openTellerConnect(
         (result) => {
           toast({
