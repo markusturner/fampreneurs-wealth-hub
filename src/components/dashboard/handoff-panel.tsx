@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { CheckCircle2, Clock, HeartHandshake, Loader2, ShieldCheck } from 'lucide-react'
 import { DEMO_HANDOFF, useDfoDemo } from '@/lib/dfo-demo'
+import { HandoffSuccessors } from './handoff-successors'
 
 const CHECKLIST = [
   { key: 'documents', label: 'Core legal documents uploaded' },
@@ -117,6 +118,7 @@ export function HandoffPanel() {
 
   return (
     <div className="space-y-4">
+      <HandoffSuccessors />
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4">
