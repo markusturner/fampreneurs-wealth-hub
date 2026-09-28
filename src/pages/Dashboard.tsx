@@ -90,7 +90,7 @@ const Dashboard = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-x-clip">
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
       </div>
