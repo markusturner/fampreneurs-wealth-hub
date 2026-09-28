@@ -18,9 +18,9 @@ const currency = (n: number) =>
 
 const KIND_STYLE: Record<Node['kind'], { stroke: string; fill: string; text: string }> = {
   trust: {
-    stroke: 'hsl(var(--primary))',
-    fill: 'hsl(var(--primary) / 0.07)',
-    text: 'hsl(var(--primary))',
+    stroke: '#ffb500',
+    fill: 'rgba(255, 181, 0, 0.12)',
+    text: '#ffb500',
   },
   entity: {
     stroke: 'hsl(var(--accent))',
@@ -209,7 +209,7 @@ export function OwnershipMap() {
           )}
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-4 border-t pt-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Trust owned</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#ffb500' }} /> Trust owned</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent" /> Entity owned</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-destructive" /> Personal name, exposed</span>
           </div>
