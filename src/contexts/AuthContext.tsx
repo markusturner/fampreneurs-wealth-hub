@@ -240,8 +240,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     )
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session. When the stored session is gone but a backup
+    // exists (the client's own token refresh can fail during init, before the
+    // auth listener above registers, so the SIGNED_OUT event may never be seen),
+    // attempt the silent restore before giving up and dropping the user on the
+    // sign-in page.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        try {
+          const raw = localStorage.getItem(SESSION_BACKUP_KEY)
+          if (raw) {
+            const backup = JSON.parse(raw) as { refresh_token?: string }
+            if (backup?.refresh_token) {
+              const attempt = tryRestoreSession()
+              const timeout = new Promise((resolve) => setTimeout(resolve, 8000))
+              await Promise.race([attempt, timeout])
+              const { data: { session: after } } = await supabase.auth.getSession()
+              session = after
+            }
+          }
+        } catch {
+          // Ignore malformed backups; fall through to the signed-out state.
+        }
+      }
       setSession(session)
       setUser(session?.user ?? null)
 
