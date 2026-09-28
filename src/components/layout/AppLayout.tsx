@@ -77,6 +77,14 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [softwareOnly, location.pathname, navigate])
 
+  // Paused accounts keep their data but can only reach the billing page to resume
+  const isPaused = p?.subscription_paused === true && !isAdminOrOwner && !isOwner
+  useEffect(() => {
+    if (isPaused && location.pathname !== '/profile-settings') {
+      navigate('/profile-settings')
+    }
+  }, [isPaused, location.pathname, navigate])
+
   // Redirect Lite users away from blocked routes
   useEffect(() => {
     if (isLite && LITE_BLOCKED_ROUTES.includes(location.pathname)) {
