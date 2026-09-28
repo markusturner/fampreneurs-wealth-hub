@@ -49,7 +49,22 @@ export default function AssetInventoryPreview() {
       }
       const row: any = data?.[0]
       if (row) {
-        setFormData(row.form_data)
+        const fd = row.form_data
+        if (Array.isArray(fd?.beneficiaries)) {
+          fd.beneficiaries = await Promise.all(fd.beneficiaries.map(async (r: any) => {
+            if (typeof r?.ssn === "string" && r.ssn.startsWith("enc:")) {
+              try {
+                const { data: dec, error: decErr } = await supabase.rpc("decrypt_ssn", { p_value: r.ssn })
+                if (!decErr && typeof dec === "string") return { ...r, ssn: dec }
+              } catch (e) {
+                console.error("Failed to decrypt SSN", e)
+              }
+              return { ...r, ssn: "" }
+            }
+            return r
+          }))
+        }
+        setFormData(fd)
         setSubmitterName(row.submitter_name || "")
         setSubmittedAt(row.created_at)
       }
