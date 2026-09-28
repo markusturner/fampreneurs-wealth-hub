@@ -239,6 +239,23 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
     businessInterests: setBusinessInterests,
   }
 
+  // Decrypt any encrypted SSN values coming back from the database
+  const decryptSsns = async (rows: TableRow[]): Promise<TableRow[]> => {
+    return Promise.all(rows.map(async (row) => {
+      const val = row?.ssn
+      if (typeof val === "string" && val.startsWith("enc:")) {
+        try {
+          const { data, error } = await supabase.rpc("decrypt_ssn", { p_value: val })
+          if (!error && typeof data === "string") return { ...row, ssn: data }
+        } catch (e) {
+          console.error("Failed to decrypt SSN", e)
+        }
+        return { ...row, ssn: "" }
+      }
+      return row
+    }))
+  }
+
   // Restore saved draft (local first, otherwise the last submitted version)
   useEffect(() => {
     let active = true
