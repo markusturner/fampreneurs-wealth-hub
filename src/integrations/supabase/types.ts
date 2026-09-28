@@ -2802,6 +2802,30 @@ export type Database = {
         }
         Relationships: []
       }
+      family_report_log: {
+        Row: {
+          id: string
+          net_worth: number | null
+          quarter: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          net_worth?: number | null
+          quarter: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          net_worth?: number | null
+          quarter?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       family_secret_codes: {
         Row: {
           access_level: string
@@ -4558,6 +4582,7 @@ export type Database = {
           needs_profile_completion: boolean | null
           occupation: string | null
           partner_group_id: string | null
+          paused_at: string | null
           phone: string | null
           profile_photo_uploaded: boolean
           program_cash_collected: number | null
@@ -4569,6 +4594,7 @@ export type Database = {
           state: string | null
           street_address: string | null
           stripe_subscription_id: string | null
+          subscription_paused: boolean
           testimonial_review: string | null
           truheirs_access: boolean
           truheirs_paid_until: string | null
@@ -4617,6 +4643,7 @@ export type Database = {
           needs_profile_completion?: boolean | null
           occupation?: string | null
           partner_group_id?: string | null
+          paused_at?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_cash_collected?: number | null
@@ -4628,6 +4655,7 @@ export type Database = {
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
+          subscription_paused?: boolean
           testimonial_review?: string | null
           truheirs_access?: boolean
           truheirs_paid_until?: string | null
@@ -4676,6 +4704,7 @@ export type Database = {
           needs_profile_completion?: boolean | null
           occupation?: string | null
           partner_group_id?: string | null
+          paused_at?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_cash_collected?: number | null
@@ -4687,6 +4716,7 @@ export type Database = {
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
+          subscription_paused?: boolean
           testimonial_review?: string | null
           truheirs_access?: boolean
           truheirs_paid_until?: string | null
