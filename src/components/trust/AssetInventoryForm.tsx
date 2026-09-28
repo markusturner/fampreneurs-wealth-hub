@@ -288,7 +288,11 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
         const record = await fetchLatestSubmission(user.id, "asset_inventory")
         if (active && record) {
           setHasPrevious(true)
-          if (!hasLocal && record.form_data) applyData(record.form_data)
+          if (!hasLocal && record.form_data) {
+            const data = { ...record.form_data }
+            if (Array.isArray(data.beneficiaries)) data.beneficiaries = await decryptSsns(data.beneficiaries)
+            if (active) applyData(data)
+          }
           if (!hasLocal && record.submitter_name) setSubmitterName(record.submitter_name)
         }
       }
