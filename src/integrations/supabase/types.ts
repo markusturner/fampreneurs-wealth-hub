@@ -3504,6 +3504,63 @@ export type Database = {
         }
         Relationships: []
       }
+      handoff_successors: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deadline: string
+          email: string
+          id: string
+          last_reminder_at: string | null
+          name: string
+          opened_at: string | null
+          owner_id: string
+          progress: number
+          reminders_sent: number
+          role: string | null
+          status: string
+          steps: Json
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deadline: string
+          email: string
+          id?: string
+          last_reminder_at?: string | null
+          name: string
+          opened_at?: string | null
+          owner_id: string
+          progress?: number
+          reminders_sent?: number
+          role?: string | null
+          status?: string
+          steps?: Json
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string
+          email?: string
+          id?: string
+          last_reminder_at?: string | null
+          name?: string
+          opened_at?: string | null
+          owner_id?: string
+          progress?: number
+          reminders_sent?: number
+          role?: string | null
+          status?: string
+          steps?: Json
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       individual_coaching_sessions: {
         Row: {
           client_id: string | null
