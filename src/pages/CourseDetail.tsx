@@ -82,10 +82,10 @@ import { CSS } from '@dnd-kit/utilities'
 // Drop indicator line component
 function DropIndicatorLine() {
   return (
-    <div className="relative h-0 w-full z-20">
-      <div className="absolute left-3 right-3 top-0 h-[2px] rounded-full" style={{ backgroundColor: '#2eb2ff' }}>
-        <div className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full" style={{ backgroundColor: '#2eb2ff' }} />
-        <div className="absolute -right-1 -top-[3px] w-2 h-2 rounded-full" style={{ backgroundColor: '#2eb2ff' }} />
+    <div className="relative h-1 w-full z-20" aria-hidden="true">
+      <div className="absolute left-3 right-3 top-0 h-1 rounded-full bg-accent shadow-sm">
+        <div className="absolute -left-1 -top-0.5 w-2 h-2 rounded-full bg-accent" />
+        <div className="absolute -right-1 -top-0.5 w-2 h-2 rounded-full bg-accent" />
       </div>
     </div>
   )
@@ -176,6 +176,7 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
         style={style}
         className={cn(
           'flex items-start gap-2 w-full transition-colors group border-l-2',
+          isDragging && 'bg-accent/15 border-accent shadow-sm',
           isSelected
             ? 'bg-secondary/10 border-secondary'
             : 'hover:bg-accent/40 border-transparent'
@@ -185,10 +186,12 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
           <div
             {...attributes}
             {...listeners}
-            className="flex items-center justify-center pt-3 pl-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            className="flex h-10 w-8 shrink-0 touch-none select-none items-center justify-center cursor-grab active:cursor-grabbing text-accent opacity-70 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             onClick={e => e.stopPropagation()}
+            title="Drag lesson"
+            aria-label={`Drag ${lesson.title}`}
           >
-            <GripVertical className="h-3 w-3 text-muted-foreground" />
+            <GripVertical className="h-5 w-5" />
           </div>
         )}
         <div
@@ -306,6 +309,7 @@ export default function CourseDetail() {
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
   const [activeDragLessonId, setActiveDragLessonId] = useState<string | null>(null)
   const [overLessonId, setOverLessonId] = useState<string | null>(null)
+  const [lessonDropPosition, setLessonDropPosition] = useState<'before' | 'after'>('before')
   const [dragType, setDragType] = useState<'lesson' | 'module' | null>(null)
   const [activeDragModuleId, setActiveDragModuleId] = useState<string | null>(null)
   const [overModuleId, setOverModuleId] = useState<string | null>(null)
@@ -371,7 +375,7 @@ export default function CourseDetail() {
     setOverLessonId(null)
     setDragType(null)
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over) return
 
     const lessonId = active.id as string
     // Find source module
@@ -388,6 +392,11 @@ export default function CourseDetail() {
     if (destModByLesson) {
       destModId = destModByLesson.id
       destIndex = destModByLesson.lessons.findIndex(l => l.id === overId)
+      const activeTop = active.rect.current.translated?.top
+      const overMidpoint = over.rect.top + over.rect.height / 2
+      if (typeof activeTop === 'number' && activeTop + active.rect.current.initial.height / 2 > overMidpoint) {
+        destIndex += 1
+      }
     } else if (overId.startsWith('droppable-module-') || overId.startsWith('module-drag-')) {
       // Dropped on a module (header or empty zone): append to end
       destModId = overId.replace('droppable-module-', '').replace('module-drag-', '')
@@ -400,11 +409,9 @@ export default function CourseDetail() {
     // Same module reorder
     if (srcMod.id === destModId) {
       const srcIndex = srcMod.lessons.findIndex(l => l.id === lessonId)
-      if (srcIndex === destIndex) return
-      // Reorder within module
-      const reordered = [...srcMod.lessons]
-      const [moved] = reordered.splice(srcIndex, 1)
-      reordered.splice(destIndex, 0, moved)
+      const adjustedIndex = destIndex > srcIndex ? destIndex - 1 : destIndex
+      if (srcIndex === adjustedIndex) return
+      const reordered = arrayMove(srcMod.lessons, srcIndex, adjustedIndex)
       // Optimistic update
       setModules(prev => prev.map(m => m.id === srcMod.id ? { ...m, lessons: reordered } : m))
       // Persist
@@ -417,9 +424,10 @@ export default function CourseDetail() {
       const realSrcModId = srcMod.id === '__uncategorized' ? null : srcMod.id
 
       // Optimistic update
-      const lesson = srcMod.lessons.find(l => l.id === lessonId)!
+      const lesson = srcMod.lessons.find(l => l.id === lessonId)
+      const destMod = modules.find(m => m.id === destModId)
+      if (!lesson || !destMod) return
       const newSrcLessons = srcMod.lessons.filter(l => l.id !== lessonId)
-      const destMod = modules.find(m => m.id === destModId)!
       const newDestLessons = [...destMod.lessons]
       newDestLessons.splice(destIndex, 0, { ...lesson, module_id: realDestModId })
 
@@ -430,7 +438,7 @@ export default function CourseDetail() {
       }))
 
       // Open destination module
-      setOpenModules(prev => { const next = new Set(prev); next.add(destModId!); return next })
+      setOpenModules(prev => { const next = new Set(prev); next.add(destModId); return next })
 
       // Persist: update module_id and order
       await supabase.from('course_videos').update({ module_id: realDestModId, order_index: destIndex } as any).eq('id', lessonId)
