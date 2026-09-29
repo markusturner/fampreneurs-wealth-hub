@@ -871,6 +871,14 @@ export default function CourseDetail() {
               setOverModuleId(overId?.startsWith('module-drag-') ? overId.replace('module-drag-', '') : null)
             }
           }}
+           onDragMove={(e) => {
+             if (String(e.active.id).startsWith('module-drag-') || !e.over || String(e.over.id).startsWith('module-drag-')) return
+             const activeTop = e.active.rect.current.translated?.top
+             if (typeof activeTop === 'number') {
+               const midpoint = e.over.rect.top + e.over.rect.height / 2
+               setLessonDropPosition(activeTop + (e.active.rect.current.initial?.height ?? 0) / 2 > midpoint ? 'after' : 'before')
+             }
+           }}
           onDragEnd={(e) => {
              if (String(e.active.id).startsWith('module-drag-')) {
               handleModuleDragEnd(e)
