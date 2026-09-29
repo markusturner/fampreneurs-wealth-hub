@@ -4,7 +4,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { displayEntityName, getStructureLayer, type StructureLayer } from '@/lib/entities'
 import { DEMO_DFO_ACCOUNTS, useDfoDemo } from '@/lib/dfo-demo'
-import { Building2 } from 'lucide-react'
+import { Building2, Maximize2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface Node { label: string; value: number; count: number }
 
@@ -67,6 +69,7 @@ export function OwnershipMap() {
   const demoMode = useDfoDemo()
   const [rows, setRows] = useState<{ entity: string | null; balance: number }[]>([])
   const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -111,10 +114,8 @@ export function OwnershipMap() {
   const personal = layers.personal[0]
   const hasAny = Object.values(layers).some(l => l.length)
 
-  return (
-    <div className="h-full">
-      <Card className="h-full">
-        <CardContent className="flex h-full flex-col justify-between gap-3 p-3 sm:p-4">
+  const body = (
+    <>
           {!hasAny ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
               Assign owners to your accounts in the Family Office to see your structure.
@@ -194,8 +195,23 @@ export function OwnershipMap() {
             ))}
             <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm border border-dashed border-destructive" /> Personal</span>
           </div>
+    </>
+  )
+
+  return (
+    <div className="h-full">
+      <Card className="h-full">
+        <CardContent className="relative flex h-full flex-col justify-between gap-3 p-3 sm:p-4">
+          <Button size="icon" variant="ghost" className="absolute right-2 top-2 z-10 h-8 w-8" onClick={() => setExpanded(true)} aria-label="Enlarge map"><Maximize2 className="h-4 w-4" /></Button>
+          {body}
         </CardContent>
       </Card>
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-w-[95vw] w-[1200px] max-h-[92vh] overflow-auto">
+          <DialogTitle>Ownership Map</DialogTitle>
+          <div className="flex flex-col gap-4 [&_.min-w-\[520px\]]:scale-100 text-base">{body}</div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
