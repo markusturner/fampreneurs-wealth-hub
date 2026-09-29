@@ -23,11 +23,12 @@ export async function sendEmail(to: string, subject: string, html: string) {
   if (!res.ok) throw new Error(`Email failed [${res.status}]: ${await res.text()}`);
 }
 
-export const inviteHtml = (name: string, ownerName: string, role: string, deadline: string, url: string, reminder = 0) => `
+export const inviteHtml = (name: string, ownerName: string, role: string, deadline: string, url: string, reminder = 0, steps: string[] = []) => `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#290a52">
   <h2>Hi ${name},</h2>
   <p>${reminder ? `Reminder ${reminder} of 3: ` : ""}${ownerName} has named you as a successor${role ? ` (${role})` : ""} in their TruHeirs Digital Family Office.</p>
   <p>Please complete your handoff steps by <b>${deadline}</b>.</p>
+  ${steps.length ? `<p><b>Your steps:</b></p><ol style="padding-left:20px">${steps.map((t) => `<li style="margin:4px 0">${String(t).replace(/</g, "&lt;")}</li>`).join("")}</ol>` : ""}
   <p style="text-align:center;margin:28px 0"><a href="${url}" style="background:#ffb500;color:#290a52;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Start my handoff</a></p>
   <p style="font-size:13px;color:#666">Questions? Just reply to this email.</p>
 </div>`;

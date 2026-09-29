@@ -24,7 +24,7 @@ serve(async (req) => {
     const base = typeof origin === "string" && origin.startsWith("http") ? origin : "https://truheirs.app";
     const link = `${base}/handoff/accept/${s.token}`;
     const deadline = new Date(s.deadline + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    await sendEmail(s.email.trim(), `${ownerName} named you as a successor`, inviteHtml(s.name, ownerName, s.role || "", deadline, link));
+    await sendEmail(s.email.trim(), `${ownerName} named you as a successor`, inviteHtml(s.name, ownerName, s.role || "", deadline, link, 0, Array.isArray(s.step_list) ? s.step_list : []));
     await admin.from("handoff_successors").update({ status: s.status === "completed" ? "completed" : s.status === "overdue" ? "overdue" : s.status }).eq("id", id);
     return json({ ok: true });
   } catch (e) {

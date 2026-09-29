@@ -4,6 +4,9 @@ import { corsHeaders, HANDOFF_STEPS } from "../_shared/handoff-email.ts";
 
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+const stepsFor = (s: any) => Array.isArray(s.step_list) && s.step_list.length
+  ? s.step_list.map((label: string, i: number) => ({ key: `s${i}`, label: String(label) }))
+  : HANDOFF_STEPS;
 const UUID = /^[0-9a-f-]{36}$/i;
 
 serve(async (req) => {
@@ -16,10 +19,11 @@ serve(async (req) => {
     if (!s) return json({ error: "This link is no longer valid" }, 404);
 
     if (steps && typeof steps === "object") {
+      const list = stepsFor(s);
       const clean: Record<string, boolean> = {};
-      for (const st of HANDOFF_STEPS) clean[st.key] = !!steps[st.key];
+      for (const st of list) clean[st.key] = !!steps[st.key];
       const done = Object.values(clean).filter(Boolean).length;
-      const progress = Math.round((done / HANDOFF_STEPS.length) * 100);
+      const progress = Math.round((done / list.length) * 100);
       const completed = progress === 100;
       const status = completed ? "completed" : s.status === "overdue" ? "overdue" : "in_progress";
       await admin.from("handoff_successors").update({
@@ -35,7 +39,7 @@ serve(async (req) => {
     const { data: p } = await admin.from("profiles").select("full_name, display_name").eq("user_id", s.owner_id).maybeSingle();
     return json({
       name: s.name, role: s.role, deadline: s.deadline, status: s.status, progress: s.progress,
-      steps: s.steps || {}, stepList: HANDOFF_STEPS, ownerName: p?.full_name || p?.display_name || "Your family",
+      steps: s.steps || {}, stepList: stepsFor(s), ownerName: p?.full_name || p?.display_name || "Your family",
     });
   } catch (e) {
     console.error(e);
