@@ -3519,6 +3519,7 @@ export type Database = {
           reminders_sent: number
           role: string | null
           status: string
+          step_list: Json
           steps: Json
           token: string
           updated_at: string
@@ -3537,6 +3538,7 @@ export type Database = {
           reminders_sent?: number
           role?: string | null
           status?: string
+          step_list?: Json
           steps?: Json
           token?: string
           updated_at?: string
@@ -3555,6 +3557,7 @@ export type Database = {
           reminders_sent?: number
           role?: string | null
           status?: string
+          step_list?: Json
           steps?: Json
           token?: string
           updated_at?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.handoff_successors ADD COLUMN IF NOT EXISTS step_list jsonb NOT NULL DEFAULT '[]'::jsonb;

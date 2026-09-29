@@ -60,6 +60,8 @@ import {
 import {
   DndContext,
   closestCenter,
+  pointerWithin,
+  type CollisionDetection,
   PointerSensor,
   useSensor,
   useSensors,
@@ -352,6 +354,18 @@ export default function CourseDetail() {
     setRenamingModuleId(null)
   }
 
+  const courseCollision: CollisionDetection = (args) => {
+    const isModule = String(args.active.id).startsWith('module-drag-')
+    const mods = args.droppableContainers.filter(c => String(c.id).startsWith('module-drag-'))
+    if (isModule) return closestCenter({ ...args, droppableContainers: mods })
+    const lessons = args.droppableContainers.filter(c => !String(c.id).startsWith('module-drag-'))
+    const hitLesson = pointerWithin({ ...args, droppableContainers: lessons })
+    if (hitLesson.length) return hitLesson
+    const hitMod = pointerWithin({ ...args, droppableContainers: mods })
+    if (hitMod.length) return hitMod
+    return closestCenter({ ...args, droppableContainers: lessons })
+  }
+
   const handleLessonDragEnd = async (event: DragEndEvent) => {
     setActiveDragLessonId(null)
     setOverLessonId(null)
@@ -374,9 +388,9 @@ export default function CourseDetail() {
     if (destModByLesson) {
       destModId = destModByLesson.id
       destIndex = destModByLesson.lessons.findIndex(l => l.id === overId)
-    } else if (overId.startsWith('droppable-module-')) {
-      // Dropped on a module droppable zone
-      destModId = overId.replace('droppable-module-', '')
+    } else if (overId.startsWith('droppable-module-') || overId.startsWith('module-drag-')) {
+      // Dropped on a module (header or empty zone): append to end
+      destModId = overId.replace('droppable-module-', '').replace('module-drag-', '')
       const destMod = modules.find(m => m.id === destModId)
       destIndex = destMod ? destMod.lessons.length : 0
     }
@@ -824,7 +838,7 @@ export default function CourseDetail() {
       <ScrollArea className="flex-1">
         <DndContext
           sensors={dndSensors}
-          collisionDetection={closestCenter}
+          collisionDetection={courseCollision}
           onDragStart={(e) => {
             const id = e.active.id as string
             // Determine if dragging a module or a lesson

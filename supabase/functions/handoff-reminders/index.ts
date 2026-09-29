@@ -32,7 +32,7 @@ serve(async (req) => {
       if (now < due) continue;
       const link = `https://truheirs.app/handoff/accept/${s.token}`;
       const dl = new Date(s.deadline + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-      await sendEmail(s.email.trim(), `Reminder: your handoff is due ${dl}`, inviteHtml(s.name, ownerName, s.role || "", dl, link, s.reminders_sent + 1));
+      await sendEmail(s.email.trim(), `Reminder: your handoff is due ${dl}`, inviteHtml(s.name, ownerName, s.role || "", dl, link, s.reminders_sent + 1, Array.isArray(s.step_list) ? s.step_list : []));
       await admin.from("handoff_successors").update({ reminders_sent: s.reminders_sent + 1, last_reminder_at: new Date().toISOString() }).eq("id", s.id);
       reminders++;
     } catch (e) { console.error(s.id, e); }
