@@ -10,11 +10,12 @@ import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useDfoDemo } from '@/lib/dfo-demo'
-import { Loader2, Mail, Plus, Trash2, Crown } from 'lucide-react'
+import { Loader2, Mail, Plus, Trash2, Crown, X, CheckCircle2, Circle } from 'lucide-react'
 
 interface Successor {
   id: string; name: string; email: string; role: string | null; deadline: string
   status: string; progress: number; reminders_sent: number; created_at: string
+  step_list?: string[]; steps?: Record<string, boolean>
 }
 
 const STATUS: Record<string, { label: string; className: string }> = {
@@ -26,7 +27,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
 }
 
 const DEMO: Successor[] = [
-  { id: 'd1', name: 'Jordan Turner', email: 'jordan@example.com', role: 'Chairman', deadline: '2026-10-30', status: 'in_progress', progress: 60, reminders_sent: 1, created_at: '' },
+  { id: 'd1', name: 'Jordan Turner', email: 'jordan@example.com', role: 'Chairman', deadline: '2026-10-30', status: 'in_progress', progress: 67, reminders_sent: 1, created_at: '', step_list: ['Review the Family Trust documents', 'Meet with the trust attorney', 'Take over the business bank login'], steps: { s0: true, s1: true } },
   { id: 'd2', name: 'Maya Turner', email: 'maya@example.com', role: 'Treasurer', deadline: '2026-10-15', status: 'completed', progress: 100, reminders_sent: 0, created_at: '' },
   { id: 'd3', name: 'Chris Turner', email: 'chris@example.com', role: 'Trustee', deadline: '2026-09-20', status: 'overdue', progress: 20, reminders_sent: 3, created_at: '' },
 ]
@@ -38,6 +39,7 @@ export function HandoffSuccessors() {
   const { toast } = useToast()
   const [list, setList] = useState<Successor[]>([])
   const [form, setForm] = useState({ name: '', email: '', role: '', deadline: '' })
+  const [steps, setSteps] = useState<string[]>([''])
   const [busy, setBusy] = useState<string | null>(null)
   const canEdit = !isFamilyOfficeOnly
 
@@ -60,12 +62,12 @@ export function HandoffSuccessors() {
     }
     setBusy('add')
     const { data, error } = await supabase.from('handoff_successors' as any).insert({
-      owner_id: user.id, name: form.name.trim(), email: form.email.trim(), role: form.role.trim() || null, deadline: form.deadline,
+      owner_id: user.id, name: form.name.trim(), email: form.email.trim(), role: form.role.trim() || null, deadline: form.deadline, step_list: steps.map(t => t.trim()).filter(Boolean),
     }).select('id').single()
     if (error) { setBusy(null); return toast({ title: 'Could not save', description: error.message, variant: 'destructive' }) }
     try { await invite((data as any).id); toast({ title: `Handoff email sent to ${form.name}` }) }
     catch (e) { toast({ title: 'Saved, but the email failed', description: (e as Error).message, variant: 'destructive' }) }
-    setForm({ name: '', email: '', role: '', deadline: '' })
+    setForm({ name: '', email: '', role: '', deadline: '' }); setSteps([''])
     setBusy(null); load()
   }
 
@@ -103,6 +105,17 @@ export function HandoffSuccessors() {
                 {busy === 'add' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />} Send handoff
               </Button>
             </div>
+            <div className="mt-4 space-y-2">
+              <Label>Steps for this successor</Label>
+              {steps.map((t, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-5 text-right">{i + 1}.</span>
+                  <Input value={t} placeholder="What do they need to do?" onChange={e => setSteps(a => a.map((x, j) => j === i ? e.target.value : x))} />
+                  <Button size="icon" variant="ghost" aria-label="Remove step" onClick={() => setSteps(a => a.length > 1 ? a.filter((_, j) => j !== i) : [''])}><X className="h-4 w-4" /></Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={() => setSteps(a => [...a, ''])}><Plus className="h-4 w-4 mr-1" /> Add step</Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -118,7 +131,8 @@ export function HandoffSuccessors() {
           ) : rows.map(s => {
             const st = STATUS[s.status] || STATUS.sent
             return (
-              <div key={s.id} className="rounded-lg border p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+              <div key={s.id} className="rounded-lg border p-3 space-y-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{s.name}{s.role ? <span className="text-muted-foreground font-normal"> - {s.role}</span> : null}</p>
                   <p className="text-xs text-muted-foreground truncate">{s.email} · Due {new Date(s.deadline + 'T00:00:00').toLocaleDateString()}{s.reminders_sent ? ` · ${s.reminders_sent} reminder${s.reminders_sent > 1 ? 's' : ''} sent` : ''}</p>
@@ -133,6 +147,20 @@ export function HandoffSuccessors() {
                     <Button size="icon" variant="ghost" onClick={() => remove(s)} aria-label="Remove"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 )}
+              </div>
+              {!!s.step_list?.length && (
+                <ul className="space-y-1 border-t pt-2">
+                  {s.step_list.map((t, i) => {
+                    const done = !!s.steps?.[`s${i}`]
+                    return (
+                      <li key={i} className="flex items-center gap-2 text-xs">
+                        {done ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> : <Circle className="h-3.5 w-3.5 text-muted-foreground" />}
+                        <span className={done ? 'line-through text-muted-foreground' : ''}>{t}</span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
               </div>
             )
           })}
