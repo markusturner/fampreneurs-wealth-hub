@@ -859,20 +859,32 @@ export default function CourseDetail() {
             }
           }}
           onDragOver={(e) => {
-            if (dragType === 'lesson') {
-              setOverLessonId(e.over?.id as string || null)
-            } else if (dragType === 'module') {
+             if (e.active.id !== e.over?.id && !String(e.active.id).startsWith('module-drag-')) {
+               setOverLessonId(e.over?.id as string || null)
+               if (e.over && !String(e.over.id).startsWith('module-drag-')) {
+                 const activeTop = e.active.rect.current.translated?.top
+                 const midpoint = e.over.rect.top + e.over.rect.height / 2
+                 setLessonDropPosition(typeof activeTop === 'number' && activeTop + e.active.rect.current.initial.height / 2 > midpoint ? 'after' : 'before')
+               }
+             } else if (String(e.active.id).startsWith('module-drag-')) {
               const overId = e.over?.id as string || null
               setOverModuleId(overId?.startsWith('module-drag-') ? overId.replace('module-drag-', '') : null)
             }
           }}
           onDragEnd={(e) => {
-            if (dragType === 'module') {
+             if (String(e.active.id).startsWith('module-drag-')) {
               handleModuleDragEnd(e)
             } else {
               handleLessonDragEnd(e)
             }
           }}
+           onDragCancel={() => {
+             setActiveDragLessonId(null)
+             setActiveDragModuleId(null)
+             setOverLessonId(null)
+             setOverModuleId(null)
+             setDragType(null)
+           }}
         >
         <SortableContext items={modules.filter(m => m.id !== '__uncategorized').map(m => `module-drag-${m.id}`)} strategy={verticalListSortingStrategy}>
         <div className="py-2">
@@ -898,7 +910,7 @@ export default function CourseDetail() {
                     </div>
                   </div>
                 )}
-                <div ref={(el) => { moduleRefs.current[mod.id] = el }} className="scroll-mt-20">
+                <div ref={(el) => { moduleRefs.current[mod.id] = el }} className={cn('scroll-mt-20', dragType === 'lesson' && overLessonId === `module-drag-${mod.id}` && activeDragLessonId && 'bg-accent/10 ring-2 ring-inset ring-accent rounded-sm')}>
                 <Collapsible open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
 
                 {renamingModuleId === mod.id ? (
@@ -971,8 +983,8 @@ export default function CourseDetail() {
                           globalIdx={globalIdx}
                           isSelected={selectedLesson?.id === lesson.id}
                           isAdminOrOwner={isAdminOrOwner}
-                          showDropBefore={isOver}
-                          showDropAfter={false}
+                          showDropBefore={isOver && lessonDropPosition === 'before'}
+                          showDropAfter={isOver && lessonDropPosition === 'after'}
                           isLocked={lessonLocked}
                           lockTooltip={lockText ? `Available to ${lockText}` : undefined}
                           onSelect={handleSelectLesson}
@@ -985,7 +997,7 @@ export default function CourseDetail() {
                   {mod.lessons.length === 0 && isAdminOrOwner && (
                     <div
                       data-droppable-module={mod.id}
-                      className="px-4 py-3 text-[10px] text-muted-foreground text-center italic border border-dashed border-border/50 mx-3 my-1 rounded"
+                       className={cn('px-4 py-3 text-[10px] text-muted-foreground text-center italic border border-dashed border-border/50 mx-3 my-1 rounded', dragType === 'lesson' && overLessonId === `module-drag-${mod.id}` && 'border-accent bg-accent/15 text-foreground')}
                     >
                       Drop lessons here
                     </div>
@@ -1024,7 +1036,7 @@ export default function CourseDetail() {
             const lesson = modules.flatMap(m => m.lessons).find(l => l.id === activeDragLessonId)
             if (!lesson) return null
             return (
-              <div className="bg-background border border-border rounded-md shadow-lg px-4 py-2 text-xs font-medium opacity-90" style={{ color: '#290a52' }}>
+               <div className="bg-background border-2 border-accent rounded-md shadow-lg px-4 py-2 text-xs font-medium text-foreground pointer-events-none">
                 {lesson.title}
               </div>
             )
@@ -1738,7 +1750,7 @@ export default function CourseDetail() {
 
         {/* Left sidebar */}
         <div className="w-72 border-r border-border bg-card flex flex-col shrink-0">
-          <ModuleList />
+          {ModuleList()}
         </div>
 
         {/* Center content */}
@@ -1773,7 +1785,7 @@ export default function CourseDetail() {
         {mobileView === 'modules' ? (
           /* Module list fills the screen */
           <div className="flex-1 overflow-hidden bg-card">
-            <ModuleList />
+            {ModuleList()}
           </div>
         ) : (
           /* Lesson detail + right sidebar info stacked */
