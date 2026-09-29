@@ -394,7 +394,7 @@ export default function CourseDetail() {
       destIndex = destModByLesson.lessons.findIndex(l => l.id === overId)
       const activeTop = active.rect.current.translated?.top
       const overMidpoint = over.rect.top + over.rect.height / 2
-      if (typeof activeTop === 'number' && activeTop + active.rect.current.initial.height / 2 > overMidpoint) {
+      if (typeof activeTop === 'number' && activeTop + (active.rect.current.initial?.height ?? 0) / 2 > overMidpoint) {
         destIndex += 1
       }
     } else if (overId.startsWith('droppable-module-') || overId.startsWith('module-drag-')) {
@@ -864,7 +864,7 @@ export default function CourseDetail() {
                if (e.over && !String(e.over.id).startsWith('module-drag-')) {
                  const activeTop = e.active.rect.current.translated?.top
                  const midpoint = e.over.rect.top + e.over.rect.height / 2
-                 setLessonDropPosition(typeof activeTop === 'number' && activeTop + e.active.rect.current.initial.height / 2 > midpoint ? 'after' : 'before')
+                 setLessonDropPosition(typeof activeTop === 'number' && activeTop + (e.active.rect.current.initial?.height ?? 0) / 2 > midpoint ? 'after' : 'before')
                }
              } else if (String(e.active.id).startsWith('module-drag-')) {
               const overId = e.over?.id as string || null
