@@ -2088,6 +2088,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dfo_usage_events: {
+        Row: {
+          created_at: string
+          id: string
+          seconds: number
+          section: string
+          sub_section: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seconds?: number
+          section: string
+          sub_section?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seconds?: number
+          section?: string
+          sub_section?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string

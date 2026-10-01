@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
+import { DfoUsageMetrics } from '@/components/dashboard/dfo-usage-metrics'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, BarChart3, Loader2 } from 'lucide-react'
@@ -38,7 +39,10 @@ export function ClientMetrics() {
       </div>
 
       {allowed ? (
-        <AdminAnalyticsOverview />
+        <>
+          <AdminAnalyticsOverview />
+          <DfoUsageMetrics />
+        </>
       ) : rolesLoading ? (
         <div className="flex items-center justify-center gap-2 py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
