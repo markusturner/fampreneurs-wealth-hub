@@ -1059,12 +1059,15 @@ export default function ClientRetention() {
   }, [trend])
 
   // Auto-fill status selector when selection changes (notes are append-only, draft starts empty)
+  // Only reset the note box when a different client is opened, never on background refreshes
   useEffect(() => {
-    if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
-    const entry = selected ? notesMap[selected.user_id] : null
+    const entry = selectedId ? notesMapRef.current[selectedId] : null
     setNoteDraft("")
     setNoteFiles([])
     setStatusDraft((entry?.status_override as Status) ?? "auto")
+  }, [selectedId])
+  useEffect(() => {
+    if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
   }, [selectedId, selected?.draft])
 
   // Read uploaded photos/documents and turn them into text the AI can score
