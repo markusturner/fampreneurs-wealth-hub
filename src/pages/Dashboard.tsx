@@ -23,6 +23,7 @@ import Members from '@/pages/Members'
 import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
 import { OwnershipMap } from '@/components/dashboard/ownership-map'
 import { HandoffPanel } from '@/components/dashboard/handoff-panel'
+import { useDfoUsageTracking } from '@/hooks/useDfoUsageTracking'
 
 
 const Dashboard = () => {
@@ -40,6 +41,7 @@ const Dashboard = () => {
   )
 
   const [govTab, setGovTab] = useState<'constitution' | 'calendar' | 'members'>('constitution')
+  useDfoUsageTracking(user?.id, activeTab, activeTab === 'governance' ? govTab : null)
 
 
   // Only show tutorial if user actually has TruHeirs access

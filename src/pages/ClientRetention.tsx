@@ -872,7 +872,7 @@ export default function ClientRetention() {
     supabase
       .from("profiles")
       .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name")
-      .eq("needs_profile_completion", true)
+      .or("needs_profile_completion.eq.true,display_name.eq.Invited User")
       .limit(5000)
       .then(async ({ data }) => {
         const rows = (data ?? []) as any[]
@@ -882,8 +882,10 @@ export default function ClientRetention() {
           supabase.from("program_agreements").select("user_id").in("user_id", ids),
         ]) : [{ data: [] }, { data: [] }] as any
         const done = new Set([...(onb.data ?? []), ...(agr.data ?? [])].map((r: any) => r.user_id))
+        // Placeholder "Invited User" profiles never signed up, so only finished onboarding counts
+        const isActive = (p: any) => done.has(p.user_id) || (p.display_name !== "Invited User" && (p.skip_onboarding || p.contract_start_date))
         setActiveUnscored(rows
-          .filter((p) => done.has(p.user_id) || p.skip_onboarding || p.contract_start_date)
+          .filter(isActive)
           .map((p) => ({
             id: p.id,
             user_id: p.user_id,
@@ -893,7 +895,7 @@ export default function ClientRetention() {
             program_name: p.program_name ?? null,
           })))
         setPendingInvites(rows
-          .filter((p) => !done.has(p.user_id) && !p.skip_onboarding && !p.contract_start_date)
+          .filter((p) => !isActive(p))
           .map((p) => ({
             id: p.id,
             user_id: p.user_id,
@@ -1037,7 +1039,15 @@ export default function ClientRetention() {
     } catch {}
   }, [baseDisplayClients, loading, boardOrder, startDates])
 
-  const selected = useMemo(() => displayClients.find((c) => c.user_id === selectedId) ?? null, [displayClients, selectedId])
+  // Keep the popup open through background refreshes: if the client briefly
+  // drops out of the list while data reloads, keep showing the last copy.
+  const lastSelectedRef = useRef<ClientScore | null>(null)
+  const selected = useMemo(() => {
+    if (!selectedId) { lastSelectedRef.current = null; return null }
+    const found = displayClients.find((c) => c.user_id === selectedId || (c.linked_users ?? []).some((l) => l.user_id === selectedId))
+    if (found) lastSelectedRef.current = found
+    return found ?? (lastSelectedRef.current?.user_id === selectedId ? lastSelectedRef.current : null)
+  }, [displayClients, selectedId])
 
   // Zoom the trend chart to the actual range so real movement is visible
   const trendDomain = useMemo<[number, number]>(() => {
