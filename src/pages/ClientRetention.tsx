@@ -554,7 +554,6 @@ export default function ClientRetention() {
     })
 
     setClients(merged)
-    setSelectedId((prev) => (prev && merged.some((c) => c.user_id === prev) ? prev : null))
     return merged
   }
 
@@ -646,7 +645,6 @@ export default function ClientRetention() {
     after: ClientScore | undefined,
     reason: string,
   ) => {
-    if (!before && !after) return
     const row = {
       user_id: userId,
       prev_score: before?.score ?? null,
@@ -661,7 +659,7 @@ export default function ClientRetention() {
       .insert(row)
       .select("id, user_id, prev_score, new_score, prev_status, new_status, reason, created_at")
       .single()
-    if (error || !data) return
+    if (error || !data) { console.error("History save failed", error); toast.error("History entry could not be saved"); return }
     setHistoryMap((prev) => ({ ...prev, [userId]: [data as HistoryRec, ...(prev[userId] ?? [])] }))
   }
 
@@ -1183,9 +1181,9 @@ export default function ClientRetention() {
       }
       const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      const before = clients.find((c) => c.user_id === selected.user_id)
+      const before = clients.find((c) => c.user_id === selected.user_id) ?? selected
       const updated = applyClients(clients, nextMap)
-      const after = updated.find((c) => c.user_id === selected.user_id)
+      const after = updated.find((c) => c.user_id === selected.user_id) ?? selected
       const reason = text
         ? `Note added: "${text.slice(0, 140)}"${statusChanged ? ` + status set to ${nextStatus ?? "auto"}` : ""}`
         : `Status set to ${nextStatus ?? "auto (from signals)"}`
