@@ -862,7 +862,7 @@ export default function ClientRetention() {
   // Non-Active = clients who were SENT login access (needs_profile_completion)
   // but have not signed up and finished onboarding yet. Everyone else keeps
   // their computed stage.
-  const TRUHEIRS_PAID_RE = /(continu\w*|renew\w*|paid|pays|paying|purchas\w*|bought|signed up for|subscrib\w*)[^.]{0,60}(truheirs|software|subscription)|(truheirs|software) subscription[^.]{0,40}(paid|renew|continu|active)/i
+  const TRUHEIRS_PAID_RE = /(continu\w*|renew\w*|paid|pay|pays|paying|join\w*|purchas\w*|bought|signed up for|subscrib\w*)[^.]{0,60}(truheirs|software|subscription|dfo)|(truheirs|software) subscription[^.]{0,40}(paid|renew|continu|active)/i
   const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   const [activeUnscored, setActiveUnscored] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
   useEffect(() => {
@@ -1019,7 +1019,13 @@ export default function ClientRetention() {
         arr_value: 0,
         last_active_at: null,
       }))
-    return [...mapped, ...placeholders, ...activePlaceholders]
+    // Let notes (AI rating, stage, DFO subscription) apply to unscored clients too
+    const scoredPlaceholders = mergeNotes(activePlaceholders, notesMap).map((c) => {
+      const entry = notesMap[c.user_id]
+      if (!entry?.status_override && (entry?.entries ?? []).some((e) => TRUHEIRS_PAID_RE.test(e.note || ""))) return { ...c, status: "continuity" as Status }
+      return c
+    })
+    return [...mapped, ...placeholders, ...scoredPlaceholders]
   }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap])
 
 
@@ -1318,9 +1324,9 @@ export default function ClientRetention() {
     if (!over) return
     const activeId = String(active.id)
     const overId = String(over.id)
-    const moving = clients.find((client) => client.user_id === activeId)
+    const moving = clients.find((client) => client.user_id === activeId) ?? displayClients.find((client) => client.user_id === activeId)
     if (!moving) return
-    const overClient = clients.find((client) => client.user_id === overId)
+    const overClient = clients.find((client) => client.user_id === overId) ?? displayClients.find((client) => client.user_id === overId)
     const targetStatus = overId.startsWith("column:") ? overId.slice(7) as Status : overClient?.status
     if (!targetStatus) return
 
