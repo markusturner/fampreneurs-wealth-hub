@@ -1648,14 +1648,14 @@ export default function ClientRetention() {
           </div>
 
           {effectiveView === "board" ? (
-            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleBoardDragStart} onDragOver={handleBoardDragOver} onDragEnd={handleBoardDragEnd} onDragCancel={() => { setDragActiveId(null); setDragOverId(null) }}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
               </div>
             </DndContext>
           ) : (
