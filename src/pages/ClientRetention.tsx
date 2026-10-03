@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DndContext, DragEndEvent, PointerSensor, closestCorners, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
+import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent, PointerSensor, closestCorners, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Textarea } from "@/components/ui/textarea"
@@ -1320,7 +1320,21 @@ export default function ClientRetention() {
     if (error) toast.error("Couldn't save the new card order")
   }
 
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const handleBoardDragStart = ({ active }: DragStartEvent) => {
+    setDragActiveId(String(active.id))
+    setDragOverId(null)
+  }
+
+  const handleBoardDragOver = ({ over }: DragOverEvent) => {
+    setDragOverId(over ? String(over.id) : null)
+  }
+
   const handleBoardDragEnd = async ({ active, over }: DragEndEvent) => {
+    setDragActiveId(null)
+    setDragOverId(null)
     if (!over) return
     const activeId = String(active.id)
     const overId = String(over.id)
@@ -1634,14 +1648,14 @@ export default function ClientRetention() {
           </div>
 
           {effectiveView === "board" ? (
-            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleBoardDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleBoardDragStart} onDragOver={handleBoardDragOver} onDragEnd={handleBoardDragEnd} onDragCancel={() => { setDragActiveId(null); setDragOverId(null) }}>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
-                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} />
+                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
               </div>
             </DndContext>
           ) : (
@@ -2100,11 +2114,14 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  status, title, icon, clients, selectedId, onSelect, loading, startDates,
+  status, title, icon, clients, selectedId, onSelect, loading, startDates, dragActiveId, dragOverId,
 }: {
-  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
+  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>; dragActiveId?: string | null; dragOverId?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
+  const overColumn = dragOverId === `column:${status}`
+  const overClientId = dragOverId && !dragOverId.startsWith("column:") && dragOverId !== dragActiveId ? dragOverId : null
+  const showEndDivider = Boolean(dragActiveId) && (overColumn || (isOver && !overClientId))
   return (
     <section ref={setNodeRef} className={`min-w-[180px] flex-1 basis-0 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
       <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
@@ -2121,9 +2138,17 @@ function QueueGroup({
 
         <SortableContext items={clients.map((client) => client.user_id)} strategy={verticalListSortingStrategy}>
           {clients.map((client) => (
-            <SortableClientCard key={client.user_id} client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+            <div key={client.user_id}>
+              {overClientId === client.user_id && (
+                <div className="mb-2 h-1 rounded-full bg-[#2eb2ff] shadow-[0_0_6px_rgba(46,178,255,0.7)]" aria-hidden="true" />
+              )}
+              <SortableClientCard client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+            </div>
           ))}
         </SortableContext>
+        {showEndDivider && (
+          <div className="mt-2 h-1 rounded-full bg-[#2eb2ff] shadow-[0_0_6px_rgba(46,178,255,0.7)]" aria-hidden="true" />
+        )}
       </div>
     </section>
   )
