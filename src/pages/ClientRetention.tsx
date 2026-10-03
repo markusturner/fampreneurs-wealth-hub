@@ -1338,20 +1338,26 @@ export default function ClientRetention() {
     if (!over) return
     const activeId = String(active.id)
     const overId = String(over.id)
-    const moving = clients.find((client) => client.user_id === activeId) ?? displayClients.find((client) => client.user_id === activeId)
+    const moving = displayClients.find((client) => client.user_id === activeId) ?? clients.find((client) => client.user_id === activeId)
     if (!moving) return
-    const overClient = clients.find((client) => client.user_id === overId) ?? displayClients.find((client) => client.user_id === overId)
+    const overClient = displayClients.find((client) => client.user_id === overId) ?? clients.find((client) => client.user_id === overId)
     const targetStatus = overId.startsWith("column:") ? overId.slice(7) as Status : overClient?.status
     if (!targetStatus) return
 
-    const allIds = [...boardOrder.filter((id) => clients.some((client) => client.user_id === id)), ...clients.map((client) => client.user_id).filter((id) => !boardOrder.includes(id))]
-    const withoutActive = allIds.filter((id) => id !== activeId)
-    let insertAt = overClient ? withoutActive.indexOf(overId) : withoutActive.length
-    if (!overClient) {
-      const targetIds = withoutActive.filter((id) => clients.find((client) => client.user_id === id)?.status === targetStatus)
+    // Build the order exactly as it looks on screen, then drop the card where the divider was shown
+    const statusSeq: Status[] = ["invited", "at_risk", "slipping", "stable", "expansion_ready", "continuity"]
+    const visual = statusSeq.flatMap((s) => sortedBuckets[s].map((c) => c.user_id))
+    const hidden = [...boardOrder, ...displayClients.map((c) => c.user_id)].filter((id, i, arr) => arr.indexOf(id) === i && !visual.includes(id))
+    const withoutActive = [...visual, ...hidden].filter((id) => id !== activeId)
+    let insertAt: number
+    if (overClient && overId !== activeId) {
+      insertAt = withoutActive.indexOf(overId)
+    } else {
+      const targetIds = sortedBuckets[targetStatus].map((c) => c.user_id).filter((id) => id !== activeId)
       const lastTarget = targetIds.at(-1)
       insertAt = lastTarget ? withoutActive.indexOf(lastTarget) + 1 : withoutActive.length
     }
+    if (overId === activeId) return
     const nextOrder = [...withoutActive]
     nextOrder.splice(Math.max(0, insertAt), 0, activeId)
     setBoardOrder(nextOrder)
@@ -2136,7 +2142,7 @@ function QueueGroup({
         </>}
         {!loading && clients.length === 0 && <p className="px-2 py-4 text-xs text-muted-foreground">No clients in this group.</p>}
 
-        <SortableContext items={clients.map((client) => client.user_id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={clients.map((client) => client.user_id)} strategy={() => null}>
           {clients.map((client) => (
             <div key={client.user_id}>
               {overClientId === client.user_id && (
