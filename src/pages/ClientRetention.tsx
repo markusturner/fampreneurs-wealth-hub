@@ -1320,7 +1320,21 @@ export default function ClientRetention() {
     if (error) toast.error("Couldn't save the new card order")
   }
 
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const handleBoardDragStart = ({ active }: DragStartEvent) => {
+    setDragActiveId(String(active.id))
+    setDragOverId(null)
+  }
+
+  const handleBoardDragOver = ({ over }: DragOverEvent) => {
+    setDragOverId(over ? String(over.id) : null)
+  }
+
   const handleBoardDragEnd = async ({ active, over }: DragEndEvent) => {
+    setDragActiveId(null)
+    setDragOverId(null)
     if (!over) return
     const activeId = String(active.id)
     const overId = String(over.id)
