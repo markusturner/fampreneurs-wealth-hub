@@ -2114,11 +2114,14 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  status, title, icon, clients, selectedId, onSelect, loading, startDates,
+  status, title, icon, clients, selectedId, onSelect, loading, startDates, dragActiveId, dragOverId,
 }: {
-  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>;
+  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>; dragActiveId?: string | null; dragOverId?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
+  const overColumn = dragOverId === `column:${status}`
+  const overClientId = dragOverId && !dragOverId.startsWith("column:") && dragOverId !== dragActiveId ? dragOverId : null
+  const showEndDivider = Boolean(dragActiveId) && (overColumn || (isOver && !overClientId))
   return (
     <section ref={setNodeRef} className={`min-w-[180px] flex-1 basis-0 rounded-md p-2.5 transition-colors ${isOver ? "bg-accent/15 ring-2 ring-accent/40" : "bg-muted/35"}`}>
       <div className={`mb-2.5 flex items-center gap-2 rounded px-2 py-1.5 ${STATUS_META[status].bg} ${STATUS_META[status].color}`}>
@@ -2135,9 +2138,17 @@ function QueueGroup({
 
         <SortableContext items={clients.map((client) => client.user_id)} strategy={verticalListSortingStrategy}>
           {clients.map((client) => (
-            <SortableClientCard key={client.user_id} client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+            <div key={client.user_id}>
+              {overClientId === client.user_id && (
+                <div className="mb-2 h-1 rounded-full bg-[#2eb2ff] shadow-[0_0_6px_rgba(46,178,255,0.7)]" aria-hidden="true" />
+              )}
+              <SortableClientCard client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+            </div>
           ))}
         </SortableContext>
+        {showEndDivider && (
+          <div className="mt-2 h-1 rounded-full bg-[#2eb2ff] shadow-[0_0_6px_rgba(46,178,255,0.7)]" aria-hidden="true" />
+        )}
       </div>
     </section>
   )
