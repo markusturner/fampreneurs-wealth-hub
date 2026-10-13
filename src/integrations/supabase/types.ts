@@ -6503,6 +6503,8 @@ export type Database = {
         }
         Returns: number
       }
+      program_display_name: { Args: { p_code: string }; Returns: string }
+      program_group_names: { Args: { p_key: string }; Returns: string[] }
       remove_user_role: {
         Args: {
           remover_user_id: string
