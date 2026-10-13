@@ -11,7 +11,7 @@ export function isWebPushSupported() {
   if (typeof window === 'undefined') return false
   // Natively's frontend script loads in every browser and defines NativelyNotifications,
   // so only treat it as native when running inside the Natively app shell.
-  const inNativeShell = /natively/i.test(navigator.userAgent) || !!(window as AnyRec).plugins?.OneSignal
+  const inNativeShell = /natively/i.test(navigator.userAgent) || (window as AnyRec).natively?.isNativeApp === true || !!(window as AnyRec).plugins?.OneSignal
   if (Capacitor.isNativePlatform() || inNativeShell) return false
   return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
 }
