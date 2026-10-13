@@ -37,7 +37,12 @@ export function WebPushPrompt() {
             <p className="text-xs text-muted-foreground">We will let you know about new posts, messages, and events.</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={async () => { close(); await enableWebPush(user.id) }}>Turn on</Button>
+            <Button size="sm" onClick={async () => {
+              close()
+              const ok = await enableWebPush(user.id)
+              // If setup failed (not a browser block), let the prompt show again next visit.
+              if (!ok && Notification.permission !== 'denied') localStorage.removeItem(WEB_PUSH_PROMPT_KEY)
+            }}>Turn on</Button>
             <Button size="sm" variant="ghost" onClick={close}>Not now</Button>
           </div>
         </div>
