@@ -95,22 +95,20 @@ Deno.serve(async (req) => {
       (basePayload as any).app_url = tapUrl;
     }
 
-    // Prefer targeting saved Subscription IDs directly (from Natively) — this is
-    // the most reliable path. Fall back to External User ID alias only if we
-    // have no saved subscriptions for this user.
-    let delivery;
-    if (subscriptionIds.length > 0) {
-      console.log(`[PUSH] POST OneSignal /notifications for ${subscriptionIds.length} subscription_id(s)`);
+    // Target the member's External ID first so one send reaches every device
+    // (phone + desktop browser). Fall back to saved subscription ids (all
+    // platforms, no filtering) if the alias reached nobody.
+    console.log(`[PUSH] Targeting external_id=${user_id}`);
+    let delivery = await sendOneSignal(restKey, {
+      ...basePayload,
+      include_aliases: { external_id: [user_id] },
+      target_channel: "push",
+    });
+    if ((!delivery.ok || delivery.recipients === 0 || delivery.json?.errors) && subscriptionIds.length > 0) {
+      console.log(`[PUSH] Fallback: ${subscriptionIds.length} saved subscription_id(s)`);
       delivery = await sendOneSignal(restKey, {
         ...basePayload,
         include_subscription_ids: subscriptionIds,
-      });
-    } else {
-      console.log(`[PUSH] No saved subscriptions; targeting external_id=${user_id}`);
-      delivery = await sendOneSignal(restKey, {
-        ...basePayload,
-        include_aliases: { external_id: [user_id] },
-        target_channel: "push",
       });
     }
 

@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { FamilyToggleBar } from "./FamilyToggleBar"
 import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
+import { WebPushPrompt } from "@/components/dashboard/web-push-prompt"
 
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
@@ -173,6 +174,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
+      <WebPushPrompt />
       {DFO_DEMO_ROUTES.includes(location.pathname) && canUseDfoDemo && (
         <div className="fixed right-4 top-16 md:top-4 z-[70] rounded-full bg-background/95 shadow-md backdrop-blur-sm">
           <DfoDemoToggle />
