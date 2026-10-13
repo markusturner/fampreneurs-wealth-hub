@@ -115,3 +115,6 @@ verify_jwt = false
 
 [functions.handoff-reminders]
 verify_jwt = false
+
+[functions.onesignal-config]
+verify_jwt = false
