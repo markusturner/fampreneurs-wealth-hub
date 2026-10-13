@@ -14,7 +14,7 @@ export function isWebPushSupported() {
 }
 
 async function getAppId(): Promise<string | null> {
-  const { data, error } = await supabase.functions.invoke('onesignal-config')
+  const { data, error } = await supabase.functions.invoke('send-push-notification', { body: { action: 'config' } })
   if (error) { console.warn('[WEB-PUSH] config error', error); return null }
   return data?.app_id ?? null
 }
