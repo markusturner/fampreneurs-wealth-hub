@@ -4,6 +4,7 @@ import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AffiliateLinksManager } from '@/components/dashboard/affiliate-links-manager'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { TruHeirsBillingCard } from '@/components/dashboard/truheirs-billing-card'
+import { DesktopPushToggle } from '@/components/dashboard/web-push-prompt'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, ArrowLeft, User, Link2, Shield } from 'lucide-react'
@@ -73,6 +74,7 @@ export function ProfileSettings() {
 
         <TabsContent value="account" className="space-y-4">
           <TruHeirsBillingCard />
+          <DesktopPushToggle />
           <AccountSettings />
         </TabsContent>
 
