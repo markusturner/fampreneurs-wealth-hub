@@ -13,6 +13,14 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+
+    // Public config lookup for the web SDK (App ID is a public identifier).
+    if (body?.action === "config") {
+      return new Response(JSON.stringify({ app_id: Deno.env.get("ONESIGNAL_APP_ID") ?? null }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { user_id, title, message, notification_type, reference_id, link } = body;
 
     console.log(`[PUSH] ===== START OneSignal push =====`);
