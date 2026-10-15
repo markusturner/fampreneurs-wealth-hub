@@ -1,0 +1,1 @@
+UPDATE public.profiles SET first_name='Robert', last_name='Parker', display_name='Robert Parker' WHERE user_id='d0b6bc3f-1d1f-4723-90ac-ccac86b0fe8e';
