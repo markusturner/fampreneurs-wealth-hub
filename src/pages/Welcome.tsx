@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Loader2, ChevronDown, User, Shield, HeartPulse, FileText, LogOut, Video, Search, Sparkles, Send, BarChart3, Paperclip, Mic, Square, X, AlertTriangle } from 'lucide-react'
@@ -187,6 +188,25 @@ export default function Welcome() {
       navigate('/setup-login', { replace: true })
     }
   }, [loading, user, navigate])
+
+  // Members who haven't finished onboarding must go through it first
+  const { isAdminOrOwner: welcomeIsAdmin, isLoading: welcomeRoleLoading } = useIsAdminOrOwner()
+  useEffect(() => {
+    if (loading || welcomeRoleLoading || !user || welcomeIsAdmin) return
+    if ((user as any)?.user_metadata?.needs_password_setup) return
+    let cancelled = false
+    ;(async () => {
+      const [{ data: prof }, { data: onb }] = await Promise.all([
+        supabase.from('profiles').select('skip_onboarding').eq('user_id', user.id).maybeSingle(),
+        supabase.from('onboarding_responses').select('id').eq('user_id', user.id).maybeSingle(),
+      ])
+      if (cancelled || (prof as any)?.skip_onboarding || onb) return
+      const explained = localStorage.getItem(`onboarding_explained_${user.id}`)
+      navigate(explained ? '/onboarding' : '/onboarding-explanation', { replace: true })
+    })()
+    return () => { cancelled = true }
+  }, [loading, welcomeRoleLoading, welcomeIsAdmin, user, navigate])
+
 
 
 
