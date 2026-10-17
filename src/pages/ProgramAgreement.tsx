@@ -529,7 +529,7 @@ One 1-1 call per month for 3 months with our Family Office Team, if questions co
 The VIP Weekend includes Digital Family Office access only. It does not include access to the community or course content sections.
 
 Section 2. Payment
-The Client agrees to the VIP Weekend fee outlined at checkout. All sales are final. No refunds will be issued for the VIP Weekend experience.
+The total VIP Weekend investment is Fifty Thousand Dollars ($50,000.00). For today only, the Client may enroll at the discounted rate of Thirty Thousand Dollars ($30,000.00). The discounted rate applies to enrollments completed today. All sales are final. No refunds will be issued for the VIP Weekend experience.
 
 Section 3. Attendance
 The Client is responsible for their own travel, lodging, and meals unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
