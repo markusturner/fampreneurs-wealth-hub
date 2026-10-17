@@ -61,6 +61,7 @@ import SuccessionPlanning from "./pages/SuccessionPlanning";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
 import ProgramAgreements from "./pages/ProgramAgreements";
+import AgreementTemplates from "./pages/AgreementTemplates";
 import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 import ResetPassword from "./pages/ResetPassword";
@@ -172,6 +173,7 @@ function AppWithNotifications() {
         <Route path="/succession-planning" element={<WithLayout><SuccessionPlanning /></WithLayout>} />
         <Route path="/trust-form-submissions" element={<WithLayout><TrustFormSubmissions /></WithLayout>} />
         <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
+        <Route path="/agreement-templates" element={<WithLayout><AgreementTemplates /></WithLayout>} />
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         
         <Route path="/survey/" element={<SurveyPublic />} />
