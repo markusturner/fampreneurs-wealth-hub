@@ -389,41 +389,99 @@ By their signatures below, the parties hereby understand and agree to all terms 
 
 export const VIP_WEEKEND_AGREEMENT = `VIP Weekend Agreement
 
-Thank you for choosing The Fampreneurs VIP Weekend experience, an exclusive Done-For-You program that sets up your trusts and moves your assets for you.
+Thank you for choosing The Fampreneurs VIP Weekend experience, an exclusive Done-For-You experience that sets up your trusts and moves your assets for you.
 
-This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
+This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), residing at ____________________________________________________________________________, and VNCI, LLC ("The Fampreneurs").
 
-Section 1. Program Details
+The Client and The Fampreneurs team agree as follows:
+
+Note to Clients: One of the most difficult aspects of protecting your family's wealth is making sure your private information stays protected, while The Fampreneurs keep their proprietary information and intellectual property protected. The following agreement outlines the terms of the VIP Weekend so that each party clearly understands all boundaries, building a strong relationship and the best possible experience for one another.
+
+To gain the most benefit from the VIP Weekend you agree to the following:
+
+Section 1. Program Guidelines and Details
+
 Program: The Private Estate Accelerator - VIP Weekend Add-On.
-The Client receives:
 
-A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) where The Fampreneurs set up the Client's 3 domestic irrevocable trusts and move the Client's assets into them
+The VIP Weekend will include:
 
-1-1 Onboarding call to set up your plan
+    1. A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) where The Fampreneurs set up the Client's 3 domestic irrevocable trusts and move the Client's assets into them
 
-1-1 In-Person Mastermind Event (Choice Between Atlanta or Medellin)
+    2. 1-1 Onboarding call to set up your plan
 
-Free 3-Month Digital Family Office access (then $247/qtr)
+    3. 1-1 In-Person Mastermind Event (Choice Between Atlanta or Medellin)
 
-3 months of 24/7 Rachel AI support after the event
+    4. Free 3-Month Digital Family Office access (then $247/qtr)
 
-One 1-1 call per month for 3 months with our Family Office Team, if questions come up
+    5. 3 months of 24/7 Rachel AI support after the event
+
+    6. One 1-1 call per month for 3 months with our Family Office Team, if questions come up
 
 The VIP Weekend includes Digital Family Office access only. It does not include access to the community or course content sections.
 
-Section 2. Payment
-The Client agrees to the VIP Weekend fee outlined at checkout. All sales are final. No refunds will be issued for the VIP Weekend experience.
+Section 2. Guests
 
-Section 3. Attendance
-The Client is responsible for their own travel, lodging, and meals unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
+The Client may bring one (1) complimentary guest to the VIP Weekend at no additional cost.
 
-Section 4. Conduct
-The Client agrees to conduct themselves professionally and respectfully during the VIP Weekend. The Fampreneurs reserve the right to remove any attendee whose behavior is deemed disruptive.
+Each additional guest beyond the one (1) complimentary guest costs Two Thousand Five Hundred Dollars ($2,500.00) per person. This fee covers lodging, food, transportation, and all other event inclusions for that guest.
 
-Section 5. Chargebacks
-The Client acknowledges and agrees to all charges associated with the VIP Weekend and will not initiate a chargeback. Chargebacks constitute fraud and will be pursued legally.
+All additional guest fees must be paid in full before the event. Guest fees are non-refundable and non-transferable.
 
-By signing below, the parties agree to all terms and conditions of this agreement.`
+Section 3. Payment Terms
+
+The Client agrees to pay the VIP Weekend fee outlined at checkout, plus any additional guest fees described in Section 2.
+
+All payments are non-refundable. The start time is considered to be at the time of signing this document. All sales are non-refundable and chargebacks are not allowed. All non-payment will result in a filing with UCC as a lien.
+
+Section 4. Attendance
+
+Lodging, food, and transportation during the event are included for the Client and the one (1) complimentary guest. The Client is responsible for travel to and from the selected event city (Atlanta or Medellin) unless otherwise specified.
+
+Missed sessions or a missed event are not refundable and cannot be transferred. Rescheduling is at the sole discretion of The Fampreneurs.
+
+Section 5. Terms of Participation
+
+The Fampreneurs hold the right to limit, suspend, and/or terminate the Client's participation at any point due to the Client or any guest becoming disruptive or overly difficult to work with, hindering the productivity and/or participation of any employee, attendee, or team member. No refund will be issued in this case.
+
+Section 6. Conduct
+
+The Client and all guests agree to conduct themselves professionally and respectfully during the VIP Weekend. The Client is responsible for the conduct of their guests.
+
+Section 7. Non-Solicitation
+
+The Fampreneurs take the protection of their proprietary information and intellectual property very seriously. The Client agrees that during and for twelve (12) months following the VIP Weekend, the Client will not directly or indirectly solicit any person, client, or employee of The Fampreneurs to compete with The Fampreneurs or provide similar services.
+
+Section 8. Confidentiality and Content Sharing
+
+The Fampreneurs will respect the privacy of the Client and fellow attendees. In return, the Client and guests agree to respect the privacy of other attendees. Confidential information shared is the property of The Fampreneurs and/or the person who disclosed it.
+
+Recorded content, materials, writings, and directions are confidential and may not be shared with anyone outside of the VIP Weekend. Any reproduction or resale of this content is strictly prohibited.
+
+Section 9. Program Content and Direction
+
+Content is based on real experience and is always evolving. It is not investment, tax, or legal advice on any specific business or transaction. The Client remains responsible for their own final decisions.
+
+Section 10. Right to Use Name and Likeness
+
+The Client hereby consents to the use of their name, photograph, likeness, voice, testimonial, and biographical material, in whole or in part, for publication or reproduction in any medium, including but not limited to television, radio, print media, and the internet.
+
+Section 11. Terms of Sale
+
+The Client agrees that all VIP Weekend sales are final, non-refundable, and non-transferable.
+
+The Client agrees to make all payments on time and in full, as outlined in Sections 2 and 3.
+
+The Client agrees to waive any and all rights to charge-back, dispute, or make claims against any payment made.
+
+Section 12. Refund and Cancellation Policies
+
+There are no refunds and all sales are final for the VIP Weekend, including all additional guest fees.
+
+Section 13. Chargebacks
+
+The Client acknowledges and agrees to all charges associated with the VIP Weekend and will not initiate a chargeback or violate this agreement. Chargebacks constitute fraud and will be pursued legally.
+
+By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
 export const FBU_AGREEMENT = `Course Access Agreement
 
