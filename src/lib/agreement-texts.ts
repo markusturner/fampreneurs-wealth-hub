@@ -429,7 +429,9 @@ All additional guest fees must be paid in full before the event. Guest fees are 
 
 Section 3. Payment Terms
 
-The Client agrees to pay the VIP Weekend fee outlined at checkout, plus any additional guest fees described in Section 2.
+The total VIP Weekend investment is Fifty Thousand Dollars ($50,000.00). For today only, the Client may enroll at the discounted rate of Thirty Thousand Dollars ($30,000.00). The discounted rate applies to enrollments completed today.
+
+The Client also agrees to pay any additional guest fees described in Section 2.
 
 All payments are non-refundable. The start time is considered to be at the time of signing this document. All sales are non-refundable and chargebacks are not allowed. All non-payment will result in a filing with UCC as a lien.
 
