@@ -71,7 +71,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const p: any = profile
   // TruHeirs subscription is software only: no community or content
-  const softwareOnly = p?.software_only === true && !isAdminOrOwner && !isOwner
+  // VIP Weekend clients get Digital Family Office only (no community or content)
+  const isVipWeekend = /vip weekend/i.test(p?.program_name || '')
+  const softwareOnly = (p?.software_only === true || isVipWeekend) && !isAdminOrOwner && !isOwner
   useEffect(() => {
     if (softwareOnly && SOFTWARE_BLOCKED_PREFIXES.some((r) => location.pathname.startsWith(r))) {
       navigate('/dashboard')
