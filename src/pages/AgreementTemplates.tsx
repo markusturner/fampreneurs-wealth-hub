@@ -9,8 +9,8 @@ export default function AgreementTemplates() {
   const names = Object.keys(AGREEMENT_TEXT_MAP)
   const [selected, setSelected] = useState(names.find(n => /vip/i.test(n)) || names[0])
 
-  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>
-  if (!isAdminOrOwner) return <div className="p-8 text-center text-muted-foreground">Only admins can view this page.</div>
+  // Render instantly; only hide once roles are confirmed non-admin.
+  if (!isLoading && !isAdminOrOwner) return <div className="p-8 text-center text-muted-foreground">Only admins can view this page.</div>
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-4">
