@@ -81,19 +81,26 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: { user: requestingUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !requestingUser) {
+      console.error("Auth failed:", authError?.message);
       return new Response(
-        JSON.stringify({ error: "Invalid authorization" }),
+        JSON.stringify({ error: "Your session expired. Please sign in again." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("is_admin")
       .eq("user_id", requestingUser.id)
-      .single();
+      .maybeSingle();
+    const { data: roleRows } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requestingUser.id)
+      .in("role", ["admin", "owner"]);
 
-    if (profileError || !profile?.is_admin) {
+    if (!profile?.is_admin && !(roleRows && roleRows.length)) {
+      console.error("Not admin:", requestingUser.id);
       return new Response(
         JSON.stringify({ error: "Admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
