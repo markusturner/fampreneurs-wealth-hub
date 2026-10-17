@@ -99,7 +99,9 @@ export function AdminUserManagement() {
 
 
         if (error || data?.success === false || data?.error) {
-          throw new Error(data?.error || error?.message || 'Failed')
+          let msg = data?.error
+          try { msg = msg || (await (error as any)?.context?.json?.())?.error } catch {}
+          throw new Error(msg || error?.message || 'Failed')
         }
 
         const userId = data?.userId
