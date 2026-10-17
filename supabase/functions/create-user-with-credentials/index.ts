@@ -78,7 +78,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user: requestingUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    // Verify the JWT signature/expiry (works even if the server-side session row was rotated)
+    let requestingUser: { id: string } | null = null;
+    let authError: any = null;
+    const { data: claimsData, error: claimsErr } = await (supabaseAdmin.auth as any).getClaims(token);
+    if (claimsData?.claims?.sub) requestingUser = { id: claimsData.claims.sub };
+    else {
+      const { data: u, error: e } = await supabaseAdmin.auth.getUser(token);
+      requestingUser = u?.user ? { id: u.user.id } : null;
+      authError = e || claimsErr;
+    }
 
     if (authError || !requestingUser) {
       console.error("Auth failed:", authError?.message);
