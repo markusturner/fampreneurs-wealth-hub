@@ -506,13 +506,27 @@ By their signatures below, the parties hereby understand and agree to all terms 
 
 const VIP_WEEKEND_AGREEMENT = `VIP Weekend Agreement
 
-Thank you for choosing The Fampreneurs VIP Weekend experience — an exclusive in-person intensive designed to accelerate your family business, wealth, and legacy planning in just one weekend.
+Thank you for choosing The Fampreneurs VIP Weekend experience, an exclusive Done-For-You program that sets up your trusts and moves your assets for you.
 
 This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
 
 Section 1. Program Details
-Program: The Private Estate Accelerator — VIP Weekend Add-On.
-The Client receives priority in-person access to The Fampreneurs during the VIP Weekend, including hot-seat coaching, private strategy sessions, and networking with the founding team.
+Program: The Private Estate Accelerator - VIP Weekend Add-On.
+The Client receives:
+
+A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) where The Fampreneurs set up the Client's 3 domestic irrevocable trusts and move the Client's assets into them
+
+1-1 Onboarding call to set up your plan
+
+1-1 In-Person Mastermind Event (Choice Between Atlanta or Medellin)
+
+Free 3-Month Digital Family Office access (then $247/qtr)
+
+3 months of 24/7 Rachel AI support after the event
+
+One 1-1 call per month for 3 months with our Family Office Team, if questions come up
+
+The VIP Weekend includes Digital Family Office access only. It does not include access to the community or course content sections.
 
 Section 2. Payment
 The Client agrees to the VIP Weekend fee outlined at checkout. All sales are final. No refunds will be issued for the VIP Weekend experience.
