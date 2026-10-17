@@ -532,7 +532,7 @@ Section 2. Payment
 The total VIP Weekend investment is Fifty Thousand Dollars ($50,000.00). For today only, the Client may enroll at the discounted rate of Thirty Thousand Dollars ($30,000.00). The discounted rate applies to enrollments completed today. All sales are final. No refunds will be issued for the VIP Weekend experience.
 
 Section 3. Attendance
-The Client is responsible for their own travel, lodging, and meals unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
+Lodging, food, and transportation during the event are included for the Client and the one (1) complimentary guest. The Client is responsible for their own travel to and from the selected event city (Atlanta or Medellin) unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
 
 Section 4. Conduct
 The Client agrees to conduct themselves professionally and respectfully during the VIP Weekend. The Fampreneurs reserve the right to remove any attendee whose behavior is deemed disruptive.
