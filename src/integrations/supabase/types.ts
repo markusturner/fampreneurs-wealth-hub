@@ -3907,6 +3907,134 @@ export type Database = {
           },
         ]
       }
+      markus_knowledge_documents: {
+        Row: {
+          approved_by: string | null
+          available_at: string
+          content: string
+          created_at: string
+          external_id: string
+          id: string
+          observed_at: string
+          published_at: string | null
+          source_id: string
+          source_url: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          available_at: string
+          content: string
+          created_at?: string
+          external_id: string
+          id?: string
+          observed_at?: string
+          published_at?: string | null
+          source_id: string
+          source_url: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          available_at?: string
+          content?: string
+          created_at?: string
+          external_id?: string
+          id?: string
+          observed_at?: string
+          published_at?: string | null
+          source_id?: string
+          source_url?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "markus_knowledge_documents_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "markus_knowledge_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      markus_knowledge_job: {
+        Row: {
+          id: boolean
+          last_run_at: string | null
+          lease_until: string | null
+          pause_reason: string | null
+          paused: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          last_run_at?: string | null
+          lease_until?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          last_run_at?: string | null
+          lease_until?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      markus_knowledge_sources: {
+        Row: {
+          config: Json
+          created_at: string
+          dataset_id: string | null
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_started_at: string | null
+          last_success_at: string | null
+          platform: string
+          profile_url: string
+          run_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          dataset_id?: string | null
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_started_at?: string | null
+          last_success_at?: string | null
+          platform: string
+          profile_url: string
+          run_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          dataset_id?: string | null
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_started_at?: string | null
+          last_success_at?: string | null
+          platform?: string
+          profile_url?: string
+          run_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meeting_reminders: {
         Row: {
           created_at: string
@@ -6307,6 +6435,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acquire_markus_knowledge_lease: { Args: never; Returns: boolean }
       assign_accountability_role: {
         Args: {
           assigner_user_id: string
@@ -6512,6 +6641,15 @@ export type Database = {
           target_user_id: string
         }
         Returns: undefined
+      }
+      search_markus_knowledge: {
+        Args: { search_text: string }
+        Returns: {
+          content: string
+          published_at: string
+          source_url: string
+          title: string
+        }[]
       }
       submit_anonymous_survey: {
         Args: { p_answers: Json; p_survey_id: string }
