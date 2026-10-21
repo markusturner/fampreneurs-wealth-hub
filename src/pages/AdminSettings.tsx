@@ -8,6 +8,7 @@ import { AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashbo
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-admin'
+import { MarkusKnowledgeAdmin } from '@/components/dashboard/markus-knowledge-admin'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Shield, Zap, Video, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
