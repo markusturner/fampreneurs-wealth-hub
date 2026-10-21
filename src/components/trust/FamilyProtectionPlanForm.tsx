@@ -164,9 +164,11 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
         const details = await error.context?.json?.().catch(() => null)
         throw new Error(details?.error || error.message || "Failed to generate plan.")
       }
+      const when = new Date()
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
-      setSubmittedAt(new Date())
+      setSubmittedAt(when)
+      if (data.plan_text) void emailPdf(data.plan_text, when)
       toast({ title: "Plan created", description: `Your ${title} is ready.` })
       onSubmitted?.()
     } catch (err: any) {
@@ -181,6 +183,27 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
 
   const downloadPdf = async () => {
     if (!planText) return
+    const doc = await buildPdf(planText)
+    doc.save(pdfFilename())
+  }
+
+  const pdfFilename = () => `${(form.family_name || "Family").replace(/\s+/g, "-")}-${workbook ? "Protection-Workbook" : "Protection-Plan"}.pdf`
+
+  const emailPdf = async (text: string, when: Date) => {
+    try {
+      const doc = await buildPdf(text, when)
+      const pdf_base64 = (doc.output("datauristring") as string).split(",")[1]
+      const { error } = await supabase.functions.invoke("email-protection-plan", {
+        body: { pdf_base64, filename: pdfFilename(), mode: workbook ? "workbook" : "plan", full_name: form.full_name, family_name: form.family_name, state: form.state },
+      })
+      if (error) throw error
+      toast({ title: "Emailed", description: "A PDF copy was sent to your email." })
+    } catch (e) {
+      console.error("email pdf failed", e)
+    }
+  }
+
+  const buildPdf = async (planText: string, when?: Date) => {
     const { default: jsPDF } = await import("jspdf")
     const doc = new jsPDF({ unit: "pt", format: "letter" })
     const pageW = doc.internal.pageSize.getWidth()
@@ -210,7 +233,7 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
 
     doc.setTextColor(90, 90, 90)
     doc.setFontSize(9)
-    doc.text(`Prepared for ${form.full_name || "you"} • ${(submittedAt ?? new Date()).toLocaleDateString()}`, margin, y)
+    doc.text(`Prepared for ${form.full_name || "you"} • ${(when ?? submittedAt ?? new Date()).toLocaleDateString()}`, margin, y)
     y += 24
 
     const lines = planText.split("\n")
@@ -310,7 +333,7 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
       doc.text(`TruHeirs • ${title} • Page ${i} of ${pages}`, margin, pageH - 28)
     }
 
-    doc.save(`${(form.family_name || "Family").replace(/\s+/g, "-")}-${workbook ? "Protection-Workbook" : "Protection-Plan"}.pdf`)
+    return doc
   }
 
   if (planText !== null) {
