@@ -193,8 +193,8 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
     try {
       const doc = await buildPdf(text, when)
       const pdf_base64 = (doc.output("datauristring") as string).split(",")[1]
-      const { error } = await supabase.functions.invoke("email-protection-plan", {
-        body: { pdf_base64, filename: pdfFilename(), mode: workbook ? "workbook" : "plan", full_name: form.full_name, family_name: form.family_name, state: form.state },
+      const { error } = await supabase.functions.invoke("generate-family-protection-plan", {
+        body: { action: "email_pdf", pdf_base64, filename: pdfFilename(), mode: workbook ? "workbook" : "plan", full_name: form.full_name, family_name: form.family_name, state: form.state },
       })
       if (error) throw error
       toast({ title: "Emailed", description: "A PDF copy was sent to your email." })
