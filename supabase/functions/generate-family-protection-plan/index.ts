@@ -23,7 +23,9 @@ serve(async (req) => {
     if (userErr || !userData.user) throw new Error("Not authenticated");
     const user = userData.user;
 
-    const { form_data } = await req.json();
+    const { form_data, mode } = await req.json();
+    const isWorkbook = mode === "workbook";
+    const trustType = isWorkbook ? "vip_protection_workbook" : "family_protection_plan";
     if (!form_data) throw new Error("Missing form_data");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -74,7 +76,9 @@ Important rules you must always follow:
 13. Important Disclaimer
    - End the document with this exact text as its own section: "This Family Protection Plan is for education only. It is not legal, tax, or financial advice, and no attorney-client relationship is created by it. Laws change and vary by state. Please review this plan with a licensed estate-planning attorney and a tax professional in your state before you act on anything in it."
 
-Keep the whole document under 2,000 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
+${isWorkbook ? `This is the VIP Weekend Family Protection Workbook. Also add a section right before "Important Disclaimer" called "Your Trust Structure" that explains, using the TruHeirs framework, which assets go into the Private Irrevocable Family Trust, the 508(c)(1)(a) Ministry Trust, and the Irrevocable Business Trust (with Holding, Management, and Operating LLCs under the Business Trust, an Offshore Trust on top only if they have foreign assets, and retirement accounts staying personal). Use their answers to "structure_priority". If they have a revocable trust, explain how its assets will be reviewed and moved into the irrevocable trusts. Include commodities. Do not list documents to bring; that is shown separately.
+
+` : ""}Keep the whole document under ${isWorkbook ? "2,500" : "2,000"} words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
 
 Family answers:
 ${JSON.stringify(form_data, null, 2)}`;
@@ -119,7 +123,7 @@ ${JSON.stringify(form_data, null, 2)}`;
     if (serviceAccountJson) {
       try {
         const accessToken = await getGoogleAccessToken(serviceAccountJson);
-        const title = `${form_data.family_name || "Family"} Protection Plan`;
+        const title = `${form_data.family_name || "Family"} ${isWorkbook ? "Protection Workbook" : "Protection Plan"}`;
         const createRes = await fetch("https://docs.googleapis.com/v1/documents", {
           method: "POST",
           headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -150,7 +154,7 @@ ${JSON.stringify(form_data, null, 2)}`;
     // Save submission (update the existing one instead of creating duplicates).
     const submission = {
       user_id: user.id,
-      trust_type: "family_protection_plan",
+      trust_type: trustType,
       form_data,
       generated_document: documentUrl,
       status: "completed",
@@ -160,7 +164,7 @@ ${JSON.stringify(form_data, null, 2)}`;
       .from("trust_submissions")
       .select("id")
       .eq("user_id", user.id)
-      .eq("trust_type", "family_protection_plan")
+      .eq("trust_type", trustType)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -187,6 +191,10 @@ ${JSON.stringify(form_data, null, 2)}`;
       throw new Error("Your plan was created, but could not be saved. Please try again.");
     }
 
+    if (isWorkbook) {
+      try { await notifyAdmins(supabaseClient, form_data, user.email ?? ""); }
+      catch (e) { console.error("[FAMILY-PROTECTION-PLAN] admin email failed:", e); }
+    }
 
     return new Response(JSON.stringify({ plan_text: planText, document_url: documentUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -235,4 +243,33 @@ async function getGoogleAccessToken(serviceAccountJson: string): Promise<string>
   if (!res.ok) throw new Error(`Google token exchange failed: ${await res.text()}`);
   const data = await res.json();
   return data.access_token;
+}
+
+async function notifyAdmins(sb: any, form: any, clientEmail: string) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) return;
+  const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "TruHeirs <noreply@truheirs.app>";
+  const { data: roles } = await sb.from("user_roles").select("user_id").in("role", ["owner", "admin"]);
+  const { data: admins } = await sb.from("profiles").select("user_id, email").eq("is_admin", true);
+  const ids = new Set<string>([...(roles || []).map((r: any) => r.user_id), ...(admins || []).map((a: any) => a.user_id)]);
+  if (!ids.size) return;
+  const { data: profs } = await sb.from("profiles").select("email").in("user_id", [...ids]);
+  const emails = [...new Set((profs || []).map((p: any) => (p.email || "").trim().toLowerCase()).filter(Boolean))];
+  if (!emails.length) return;
+  const name = form.full_name || clientEmail || "A client";
+  const esc = (t: string) => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+  const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #eee;border-radius:12px;overflow:hidden">
+  <div style="background:#290a52;padding:20px 24px"><h2 style="color:#ffb500;margin:0">Protection Workbook Submitted</h2></div>
+  <div style="padding:24px;color:#222;line-height:1.5">
+  <p><strong>${esc(name)}</strong>${clientEmail ? ` (${esc(clientEmail)})` : ""} just finished the VIP Weekend Family Protection Workbook.</p>
+  <p>Family: ${esc(form.family_name || "-")}<br/>State: ${esc(form.state || "-")}</p>
+  <p><a href="https://truheirs.app/trust-form-submissions" style="background:#ffb500;color:#290a52;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">View submission</a></p>
+  <p style="color:#888;font-size:12px">The Fampreneurs Team</p></div></div>`;
+  for (const to of emails) {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: fromEmail, to: [to], subject: `Protection Workbook submitted: ${name}`, html }),
+    });
+  }
 }
