@@ -9,7 +9,14 @@ export function availableAt(published: string | null, observed: string): string 
 
 export function teachingConfigReady(config: Record<string, unknown>): boolean {
   return typeof config.recorder_email === 'string' && config.recorder_email.includes('@') &&
-    typeof config.meeting_type === 'string' && config.meeting_type.trim().length > 0;
+    Array.isArray(config.titles) && config.titles.length > 0 && config.titles.every(t => typeof t === 'string' && t.trim());
+}
+
+export function approvedTeachingMeeting(meeting: Record<string, any>, config: Record<string, any>): boolean {
+  if (!teachingConfigReady(config)) return false;
+  const recorder = String(meeting.recorded_by?.email || '').toLowerCase();
+  const title = String(meeting.meeting_title || meeting.title || '').trim().toLowerCase();
+  return recorder === String(config.recorder_email).toLowerCase() && config.titles.some((t: string) => t.trim().toLowerCase() === title);
 }
 
 export function actorFor(platform: string, profile: string, config: Record<string, unknown>) {
