@@ -1,0 +1,2 @@
+ALTER TABLE public.trust_submissions DROP CONSTRAINT trust_submissions_trust_type_check;
+ALTER TABLE public.trust_submissions ADD CONSTRAINT trust_submissions_trust_type_check CHECK (trust_type = ANY (ARRAY['business','ministry','family','trust_checklist','asset_inventory','trust_name_translator','family_protection_plan','family_legacy_meeting','vip_protection_workbook']::text[]));
