@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { welcomeSections } from '@/lib/workbook'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -35,7 +36,7 @@ const COMMUNITY_LABELS: Record<string, string> = {
   tffm: 'The Succession Society',
 }
 
-type LastUsed = { section: 'community' | 'content' | 'dashboard'; program?: string }
+type LastUsed = { section: 'community' | 'content' | 'dashboard' | 'workbook'; program?: string }
 
 function readLastUsed(): LastUsed | null {
   try {
@@ -52,6 +53,7 @@ function lastUsedLabel(l: LastUsed | null): string {
   if (!l) return ''
   if (l.section === 'community') return `Community${l.program && COMMUNITY_LABELS[l.program] ? ` — ${COMMUNITY_LABELS[l.program]}` : ''}`
   if (l.section === 'content') return 'Content'
+  if (l.section === 'workbook') return 'Protection Workbook'
   return 'Digital Family Office'
 }
 
@@ -439,10 +441,14 @@ export default function Welcome() {
             ? ['tfv','tfba','tffm'] as const
             : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['tfv'] as const)
           const hasMultiple = isAdminOrOwner && availableCommunities.length > 1
+          const sections = welcomeSections(isAdminOrOwner, profile?.program_name)
+          const showCommunity = sections.includes('community')
+          const showContent = sections.includes('content')
+          const showWorkbook = sections.includes('workbook')
           return (
         <>
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
-          {hasMultiple ? (
+          {!showCommunity ? null : hasMultiple ? (
             <button
               onClick={() => setCommunityOpen(v => !v)}
               className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none"
@@ -466,10 +472,10 @@ export default function Welcome() {
           )}
 
 
-          <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
-          <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
+          {showCommunity && <><div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
+          <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" /></>}
 
-          <button
+          {showContent && <button
             onClick={() => go('content', '/classroom')}
             className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
           >
@@ -477,10 +483,10 @@ export default function Welcome() {
             {lastUsed?.section === 'content' && (
               <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
-          </button>
+          </button>}
 
-          <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
-          <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
+          {showContent && <><div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
+          <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" /></>}
 
           <button
             onClick={() => go('dashboard', '/dashboard')}
@@ -491,6 +497,19 @@ export default function Welcome() {
               <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
           </button>
+          {showWorkbook && <>
+            <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
+            <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
+            <button
+              onClick={() => go('workbook' as any, '/protection-workbook')}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            >
+              Protection Workbook
+              {lastUsed?.section === 'workbook' && (
+                <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              )}
+            </button>
+          </>}
         </nav>
         {hasMultiple && (
           <div
