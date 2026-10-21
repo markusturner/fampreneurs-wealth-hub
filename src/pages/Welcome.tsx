@@ -494,7 +494,7 @@ export default function Welcome() {
           >
             Digital Family Office
             {lastUsed?.section === 'dashboard' && (
-              <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
           </button>
           {showWorkbook && <>
@@ -506,7 +506,7 @@ export default function Welcome() {
             >
               Protection Workbook
               {lastUsed?.section === 'workbook' && (
-                <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
             </button>
           </>}
