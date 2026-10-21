@@ -263,7 +263,7 @@ async function notifyAdmins(sb: any, form: any, clientEmail: string) {
   <div style="padding:24px;color:#222;line-height:1.5">
   <p><strong>${esc(name)}</strong>${clientEmail ? ` (${esc(clientEmail)})` : ""} just finished the VIP Weekend Family Protection Workbook.</p>
   <p>Family: ${esc(form.family_name || "-")}<br/>State: ${esc(form.state || "-")}</p>
-  <p><a href="https://truheirs.app/trust-form-submissions" style="background:#ffb500;color:#290a52;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">View submission</a></p>
+  <p><a href="https://truheirs.app/client-retention" style="background:#ffb500;color:#290a52;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">View submission</a></p>
   <p style="color:#888;font-size:12px">The Fampreneurs Team</p></div></div>`;
   for (const to of emails) {
     await fetch("https://api.resend.com/emails", {
