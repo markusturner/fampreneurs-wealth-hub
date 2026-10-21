@@ -4,6 +4,7 @@
 - [ ] Add daily source ingestion while preserving existing AI knowledge
 - [ ] Connect approved Markus accounts and choose safe Fathom recordings
 - [ ] Verify imports, daily scheduling, and chat retrieval with real sources
+- [ ] Explain and collect the teaching-call label and Fathom recorder email
 
 ## Teller bank connections (in progress)
 - [x] Research Teller API details
