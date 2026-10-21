@@ -490,11 +490,11 @@ export default function Welcome() {
 
           <button
             onClick={() => go('dashboard', '/dashboard')}
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
           >
             Digital Family Office
             {lastUsed?.section === 'dashboard' && (
-              <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
           </button>
           {showWorkbook && <>
@@ -502,11 +502,11 @@ export default function Welcome() {
             <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
             <button
               onClick={() => go('workbook' as any, '/protection-workbook')}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
             >
               Protection Workbook
               {lastUsed?.section === 'workbook' && (
-                <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
             </button>
           </>}
