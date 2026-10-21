@@ -490,7 +490,7 @@ export default function Welcome() {
 
           <button
             onClick={() => go('dashboard', '/dashboard')}
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
           >
             Digital Family Office
             {lastUsed?.section === 'dashboard' && (
@@ -502,7 +502,7 @@ export default function Welcome() {
             <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
             <button
               onClick={() => go('workbook' as any, '/protection-workbook')}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
             >
               Protection Workbook
               {lastUsed?.section === 'workbook' && (
