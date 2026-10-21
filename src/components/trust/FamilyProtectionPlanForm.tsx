@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Loader2, ShieldCheck, ExternalLink, Sparkles, Download } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useAuth } from "@/contexts/AuthContext"
-import { WorkbookQuestions, WorkbookResults } from "@/components/trust/WorkbookSections"
+import { WorkbookQuestions, WorkbookResults, QuestionGroup } from "@/components/trust/WorkbookSections"
 import { WORKBOOK_DEFAULTS, documentsToBring, buildStructure } from "@/lib/workbook"
 
 
@@ -383,6 +383,7 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
           Draft saved automatically at {savedAt.toLocaleTimeString()}
         </p>
       )}
+<QuestionGroup card={!!workbook} title="About You and Your Family">
 
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -417,6 +418,8 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
         <Label>6. What is your biggest worry about your family's future?</Label>
         <Textarea value={form.top_worry} onChange={e => update("top_worry", e.target.value)} placeholder="Losing what we built, taxes, lawsuits, kids not being ready..." rows={2} />
       </div>
+</QuestionGroup>
+<QuestionGroup card={!!workbook} title="What You Own">
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -491,6 +494,8 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
           <Textarea value={form.foreign_assets_detail} onChange={e => update("foreign_assets_detail", e.target.value)} rows={2} placeholder="Land in Ghana, bank account in Mexico, condo in Portugal..." />
         )}
       </div>
+</QuestionGroup>
+<QuestionGroup card={!!workbook} title="Your People and Your Plans">
 
       <div className="space-y-2">
         <Label>15. Do you have family or someone you plan to pass your wealth down to?</Label>
@@ -556,7 +561,9 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
         <Label>20. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
+</QuestionGroup>
 
+      
       {workbook && <WorkbookQuestions form={form} update={update} />}
 
 
