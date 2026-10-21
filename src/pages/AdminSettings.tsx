@@ -8,6 +8,7 @@ import { AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashbo
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-admin'
+import { MarkusKnowledgeAdmin } from '@/components/dashboard/markus-knowledge-admin'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Shield, Zap, Video, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
@@ -88,6 +89,7 @@ export function AdminSettings() {
                 Roles
               </TabsTrigger>
             )}
+            <TabsTrigger value="knowledge" className="flex items-center gap-2 whitespace-nowrap px-4 py-2 text-sm">Markus AI Knowledge</TabsTrigger>
           </TabsList>
         </div>
 
@@ -121,6 +123,7 @@ export function AdminSettings() {
         {isOwner && (
           <TabsContent value="permissions"><RolePermissionsManager /></TabsContent>
         )}
+        <TabsContent value="knowledge"><MarkusKnowledgeAdmin isOwner={isOwner} /></TabsContent>
       </Tabs>
     </div>
   )
