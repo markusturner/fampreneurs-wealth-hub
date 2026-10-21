@@ -552,7 +552,7 @@ export default function Welcome() {
                   askRachel()
                 }
               }}
-              placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Rachel anything...'}
+              placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Markus AI anything...'}
               className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
             />
             <input
