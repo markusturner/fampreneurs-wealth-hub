@@ -525,7 +525,7 @@ export default function Welcome() {
                   >
                     {COMMUNITY_LABELS[prog]}
                     {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
                     )}
                   </button>
                 ))}
