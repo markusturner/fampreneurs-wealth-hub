@@ -10,10 +10,14 @@ import { useToast } from "@/hooks/use-toast"
 import { Loader2, ShieldCheck, ExternalLink, Sparkles, Download } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useAuth } from "@/contexts/AuthContext"
+import { WorkbookQuestions, WorkbookResults } from "@/components/trust/WorkbookSections"
+import { WORKBOOK_DEFAULTS, documentsToBring, buildStructure } from "@/lib/workbook"
 
 
 interface Props {
   onSubmitted?: () => void
+  /** VIP Weekend Family Protection Workbook mode */
+  workbook?: boolean
 }
 
 const ASSET_OPTIONS = [
@@ -29,10 +33,12 @@ const ASSET_OPTIONS = [
   "Other valuables",
 ]
 
-export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
+export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
+  const trustType = workbook ? "vip_protection_workbook" : "family_protection_plan"
+  const title = workbook ? "Family Protection Workbook" : "Family Protection Plan"
   const { toast } = useToast()
   const { user } = useAuth()
-  const storageKey = user?.id ? `family_protection_plan_draft_${user.id}` : "family_protection_plan_draft_signed_out"
+  const storageKey = `${trustType}_draft_${user?.id || "signed_out"}`
   const [restored, setRestored] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [loading, setLoading] = useState(false)
@@ -66,7 +72,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     growth_assets: "unsure",
     growth_assets_detail: "",
     special_notes: "",
-
+    ...WORKBOOK_DEFAULTS,
   })
 
   // Restore saved draft, then fall back to the last saved submission
@@ -92,7 +98,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         .from("trust_submissions")
         .select("form_data, generated_document, created_at")
         .eq("user_id", user.id)
-        .eq("trust_type", "family_protection_plan")
+        .eq("trust_type", trustType)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle()
@@ -108,7 +114,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     }
     loadSaved()
     return () => { active = false }
-  }, [storageKey, user?.id])
+  }, [storageKey, user?.id, trustType])
 
 
   // Autosave draft
@@ -149,7 +155,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     setLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke("generate-family-protection-plan", {
-        body: { form_data: form },
+        body: { form_data: form, mode: workbook ? "workbook" : "plan" },
       })
       if (error) {
         const details = await error.context?.json?.().catch(() => null)
@@ -158,7 +164,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
       setSubmittedAt(new Date())
-      toast({ title: "Plan created", description: "Your Family Protection Plan is ready." })
+      toast({ title: "Plan created", description: `Your ${title} is ready.` })
       onSubmitted?.()
     } catch (err: any) {
       console.error(err)
@@ -190,7 +196,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     doc.setTextColor(255, 181, 0)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(20)
-    doc.text("Family Protection Plan", margin, 46)
+    doc.text(title, margin, 46)
     doc.setTextColor(255, 255, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(11)
@@ -252,15 +258,54 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       y += wrapped.length * 14 + 4
     }
 
+    if (workbook) {
+      const heading = (t: string) => {
+        newPageIfNeeded(40); y += 14
+        doc.setTextColor(41, 10, 82); doc.setFont("helvetica", "bold"); doc.setFontSize(14)
+        doc.text(t, margin, y); y += 8
+        doc.setDrawColor(255, 181, 0); doc.setLineWidth(1.5); doc.line(margin, y, margin + 46, y); y += 18
+      }
+      heading("Your Trust Structure")
+      for (const n of buildStructure(form)) {
+        const body = n.assets.length ? n.assets.join(", ") : "To be decided at VIP Weekend"
+        const wrapped = doc.splitTextToSize(body, pageW - margin * 2 - 24)
+        const h = 34 + wrapped.length * 13
+        newPageIfNeeded(h + 14)
+        doc.setFillColor(n.key === "personal" ? 245 : 248, n.key === "personal" ? 245 : 244, n.key === "personal" ? 245 : 255)
+        doc.setDrawColor(41, 10, 82); doc.setLineWidth(1)
+        doc.roundedRect(margin, y, pageW - margin * 2, h, 6, 6, "FD")
+        doc.setTextColor(41, 10, 82); doc.setFont("helvetica", "bold"); doc.setFontSize(11)
+        doc.text(n.title, margin + 12, y + 18)
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(60, 60, 60)
+        doc.text(wrapped, margin + 12, y + 34)
+        y += h + 14
+      }
+      heading("Documents to Bring to VIP Weekend")
+      for (const g of documentsToBring(form)) {
+        newPageIfNeeded(30)
+        doc.setTextColor(41, 10, 82); doc.setFont("helvetica", "bold"); doc.setFontSize(11)
+        doc.text(g.title, margin, y); y += 16
+        doc.setTextColor(30, 30, 30); doc.setFont("helvetica", "normal"); doc.setFontSize(10.5)
+        for (const it of g.items) {
+          const wrapped = doc.splitTextToSize(it, pageW - margin * 2 - 18)
+          newPageIfNeeded(wrapped.length * 14)
+          doc.rect(margin, y - 8, 8, 8)
+          doc.text(wrapped, margin + 18, y)
+          y += wrapped.length * 14 + 3
+        }
+        y += 6
+      }
+    }
+
     const pages = doc.getNumberOfPages()
     for (let i = 1; i <= pages; i++) {
       doc.setPage(i)
       doc.setFontSize(8)
       doc.setTextColor(140, 140, 140)
-      doc.text(`TruHeirs • Family Protection Plan • Page ${i} of ${pages}`, margin, pageH - 28)
+      doc.text(`TruHeirs • ${title} • Page ${i} of ${pages}`, margin, pageH - 28)
     }
 
-    doc.save(`${(form.family_name || "Family").replace(/\s+/g, "-")}-Protection-Plan.pdf`)
+    doc.save(`${(form.family_name || "Family").replace(/\s+/g, "-")}-${workbook ? "Protection-Workbook" : "Protection-Plan"}.pdf`)
   }
 
   if (planText) {
@@ -268,7 +313,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       <div className="space-y-4 max-w-3xl mx-auto">
         <div className="flex items-center justify-center gap-2 text-emerald-600">
           <ShieldCheck className="h-5 w-5" />
-          <span className="font-semibold">Your Family Protection Plan is ready</span>
+          <span className="font-semibold">Your {title} is ready</span>
         </div>
         {submittedAt && (
           <p className="text-xs text-muted-foreground text-center">
@@ -290,7 +335,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
         <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
           <div className="bg-sidebar px-5 py-4">
-            <h3 className="text-lg font-semibold text-secondary">Family Protection Plan</h3>
+            <h3 className="text-lg font-semibold text-secondary">{title}</h3>
             <p className="text-xs text-secondary/80">
               {(form.family_name || "Your")} Family{form.state ? ` • ${form.state}` : ""}
             </p>
@@ -299,6 +344,8 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
             <ReactMarkdown>{planText}</ReactMarkdown>
           </div>
         </div>
+
+        {workbook && <WorkbookResults form={form} />}
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button onClick={() => setPlanText(null)} className="gap-2">
@@ -317,6 +364,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
                 foreign_assets_detail: "", has_heirs: "yes", heirs_alternative_notes: "", trustee_name: "",
                 successor_trustee: "", trust_protector: "", knows_roles: "no", trusted_people: "",
                 growth_assets: "unsure", growth_assets_detail: "", special_notes: "",
+                ...WORKBOOK_DEFAULTS,
               })
             }}
           >
@@ -509,6 +557,8 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
 
+      {workbook && <WorkbookQuestions form={form} update={update} />}
+
 
       <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <strong>Disclaimer:</strong> This plan is for education only. It is not legal, tax, or financial advice. No attorney-client relationship is created. Please review your plan with a licensed attorney and tax professional in your state before you act on it.
@@ -518,7 +568,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
       <Button onClick={handleGenerate} disabled={loading} variant="secondary" className="gap-2 w-full sm:w-auto">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-        {loading ? "Building your plan..." : "Generate my Family Protection Plan"}
+        {loading ? "Building your plan..." : workbook ? "Create My Workbook" : "Generate my Family Protection Plan"}
       </Button>
     </div>
   )
