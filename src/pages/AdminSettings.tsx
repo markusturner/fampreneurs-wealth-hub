@@ -89,6 +89,7 @@ export function AdminSettings() {
                 Roles
               </TabsTrigger>
             )}
+            <TabsTrigger value="knowledge" className="flex items-center gap-2 whitespace-nowrap px-4 py-2 text-sm">Markus AI Knowledge</TabsTrigger>
           </TabsList>
         </div>
 
@@ -122,6 +123,7 @@ export function AdminSettings() {
         {isOwner && (
           <TabsContent value="permissions"><RolePermissionsManager /></TabsContent>
         )}
+        <TabsContent value="knowledge"><MarkusKnowledgeAdmin isOwner={isOwner} /></TabsContent>
       </Tabs>
     </div>
   )
