@@ -56,6 +56,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import TrustCreation from "./pages/TrustCreation";
+import ProtectionWorkbook from "./pages/ProtectionWorkbook";
 import AssetInventoryPreview from "./pages/AssetInventoryPreview";
 import SuccessionPlanning from "./pages/SuccessionPlanning";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
@@ -167,6 +168,7 @@ function AppWithNotifications() {
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
         <Route path="/contact-support" element={<ContactSupport />} />
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
+        <Route path="/protection-workbook" element={<WithLayout><ProtectionWorkbook /></WithLayout>} />
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
         <Route path="/asset-inventory-preview" element={<WithLayout><AssetInventoryPreview /></WithLayout>} />
         <Route path="/asset-inventory-preview/:id" element={<WithLayout><AssetInventoryPreview /></WithLayout>} />
