@@ -8,11 +8,17 @@ import { COMMODITY_OPTIONS, PERSONAL_RECORD_OPTIONS, buildStructure, documentsTo
 
 type Form = Record<string, any>
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-    <h3 className="text-sm font-semibold uppercase tracking-widest text-sidebar">{title}</h3>
+export const QuestionGroup = ({ title, card, children }: { title?: string; card?: boolean; children: React.ReactNode }) => (
+  <div className={card ? "space-y-5 rounded-xl border border-border bg-card p-4 sm:p-5" : "space-y-5"}>
+    {card && title ? (
+      <h3 className="text-sm font-semibold uppercase tracking-widest text-sidebar">{title}</h3>
+    ) : null}
     {children}
   </div>
+)
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <QuestionGroup title={title} card>{children}</QuestionGroup>
 )
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
