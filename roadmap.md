@@ -1,5 +1,10 @@
 # Roadmap
 
+## Markus AI daily knowledge updates
+- [ ] Add daily source ingestion while preserving existing AI knowledge
+- [ ] Connect approved Markus accounts and choose safe Fathom recordings
+- [ ] Verify imports, daily scheduling, and chat retrieval with real sources
+
 ## Teller bank connections (in progress)
 - [x] Research Teller API details
 - [x] Request TELLER_CERTIFICATE + TELLER_PRIVATE_KEY via add_secret; set TELLER_ENV=development
