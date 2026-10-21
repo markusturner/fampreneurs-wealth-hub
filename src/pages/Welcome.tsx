@@ -455,7 +455,7 @@ export default function Welcome() {
             >
               Community
               {lastUsed?.section === 'community' && (
-                <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                <span className="ml-1 whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
               <ChevronDown className={`h-3 w-3 opacity-60 group-hover:opacity-100 transition-transform ${communityOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -466,7 +466,7 @@ export default function Welcome() {
             >
               Community
               {lastUsed?.section === 'community' && (
-                <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                <span className="ml-1 whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
             </button>
           )}
@@ -481,7 +481,7 @@ export default function Welcome() {
           >
             Content
             {lastUsed?.section === 'content' && (
-              <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
           </button>}
 
