@@ -153,6 +153,9 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
       return
     }
     setLoading(true)
+    setPlanText("")
+    setSubmittedAt(new Date())
+    window.scrollTo({ top: 0, behavior: "smooth" })
     try {
       const { data, error } = await supabase.functions.invoke("generate-family-protection-plan", {
         body: { form_data: form, mode: workbook ? "workbook" : "plan" },
@@ -168,6 +171,8 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
       onSubmitted?.()
     } catch (err: any) {
       console.error(err)
+      setPlanText(null)
+      setSubmittedAt(null)
       toast({ title: "Error", description: err.message || "Failed to generate plan.", variant: "destructive" })
     } finally {
       setLoading(false)
@@ -308,7 +313,7 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
     doc.save(`${(form.family_name || "Family").replace(/\s+/g, "-")}-${workbook ? "Protection-Workbook" : "Protection-Plan"}.pdf`)
   }
 
-  if (planText) {
+  if (planText !== null) {
     return (
       <div className="space-y-4 max-w-3xl mx-auto">
         <div className="flex items-center justify-center gap-2 text-emerald-600">
@@ -321,7 +326,7 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
           </p>
         )}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={downloadPdf} variant="secondary" className="gap-2">
+          <Button onClick={downloadPdf} variant="secondary" className="gap-2" disabled={loading || !planText}>
             <Download className="h-4 w-4" /> Download PDF
           </Button>
           {documentUrl && (
@@ -341,14 +346,24 @@ export function FamilyProtectionPlanForm({ onSubmitted, workbook }: Props) {
             </p>
           </div>
           <div className="max-h-[60vh] overflow-y-auto px-5 py-4 text-sm leading-relaxed prose prose-sm max-w-none [&_h1]:text-base [&_h2]:text-base [&_h3]:text-sm [&_h1]:mt-4 [&_h2]:mt-4 [&_h3]:mt-3 [&_p]:my-2">
-            <ReactMarkdown>{planText}</ReactMarkdown>
+            {loading || !planText ? (
+              <div className="space-y-3 animate-pulse" aria-label="Writing your plan">
+                <p className="text-muted-foreground not-prose">Writing your personalized plan. Your structure and document list are ready below.</p>
+                <div className="h-3 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-full" />
+                <div className="h-3 bg-muted rounded w-5/6" />
+                <div className="h-3 bg-muted rounded w-2/3" />
+              </div>
+            ) : (
+              <ReactMarkdown>{planText}</ReactMarkdown>
+            )}
           </div>
         </div>
 
         {workbook && <WorkbookResults form={form} />}
 
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={() => setPlanText(null)} className="gap-2">
+          <Button onClick={() => setPlanText(null)} className="gap-2" disabled={loading}>
             Edit my answers
           </Button>
           <Button
