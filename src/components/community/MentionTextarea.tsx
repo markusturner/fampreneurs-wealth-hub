@@ -7,7 +7,7 @@ const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
+  tffm: 'The Legacy InnerCircle',
 }
 
 interface MemberOption {
@@ -37,7 +37,7 @@ async function loadMembers(program: string): Promise<MemberOption[]> {
     .limit(500)
   if (assigned) query = query.ilike('program_name', `%${assigned}%`)
   const { data } = await query
-  const rows = (data || []).filter(r => !!r.display_name).map(r => ({
+  const rows = (data || []).filter(r => !!r.display_name && !(assigned && String((r as any).program_name || '').includes('(VIP Weekend)'))).map(r => ({
     user_id: r.user_id, display_name: r.display_name as string, avatar_url: r.avatar_url,
   }))
   cachedProgram = program

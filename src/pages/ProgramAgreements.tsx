@@ -28,12 +28,10 @@ interface ProgramAgreement {
 const AGREEMENT_LABELS: Record<string, string> = {
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
-  fbu: 'The Family Business University',
+  tffm: 'The Legacy InnerCircle',
   'The Trust Vault': 'The Trust Vault',
   'The Private Estate Accelerator': 'The Private Estate Accelerator',
-  'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
-  'The Family Business University': 'The Family Business University',
+  'The Legacy InnerCircle': 'The Legacy InnerCircle',
 }
 
 export default function ProgramAgreements() {

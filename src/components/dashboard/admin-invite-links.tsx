@@ -20,7 +20,7 @@ type RoleType = 'trustee' | 'family_office_member' | 'family_member'
 const PROGRAM_OPTIONS = [
   'The Trust Vault',
   'The Private Estate Accelerator',
-  'The Family Fortune Mastermind',
+  'The Legacy InnerCircle',
 ]
 
 const DURATION_PRESETS: Record<string, number | null> = {

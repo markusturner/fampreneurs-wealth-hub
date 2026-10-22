@@ -247,7 +247,7 @@ const handler = async (req: Request): Promise<Response> => {
         "The Trust Vault": "The Trust Vault",
         "The Private Estate Accelerator": "The Private Estate Accelerator",
         "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend",
-        "The Family Fortune Mastermind": "The Family Fortune Mastermind",
+        "The Legacy InnerCircle": "The Legacy InnerCircle",
       };
 
       const groupName = PROGRAM_TO_GROUP[programName];

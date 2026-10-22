@@ -19,7 +19,7 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
+  tffm: 'The Legacy InnerCircle',
 }
 
 export function CommunityMembersList({ program }: { program: string }) {
@@ -50,6 +50,7 @@ export function CommunityMembersList({ program }: { program: string }) {
         .from('profiles')
         .select('user_id, display_name, avatar_url, membership_type, is_admin, is_moderator')
         .ilike('program_name', `%${assignedProgramName}%`)
+        .not('program_name', 'ilike', '%(VIP Weekend)%')
         .not('display_name', 'is', null)
         .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
         .order('display_name')

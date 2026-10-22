@@ -11,7 +11,7 @@ const PROGRAM_NAMES: Record<string, string> = {
   fbu: "Family Business University",
   tfv: "The Trust Vault",
   tfba: "The Private Estate Accelerator",
-  tffm: "The Family Fortune Mastermind",
+  tffm: "The Legacy InnerCircle",
 };
 
 type Generated = { title: string; body: string; replyToKey?: string };
@@ -224,7 +224,7 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
     category: "wins",
     cadence: "as_needed",
     generate: async (supabase, program) => {
-      // TFFM (Succession Society) members already completed trust creation — skip.
+      // TFFM (Legacy InnerCircle) members already completed trust creation — skip.
       if (program === "tffm") return null;
 
       // Look at recent trust submissions (last 14d) for new completers

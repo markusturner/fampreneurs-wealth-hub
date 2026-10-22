@@ -35,7 +35,7 @@ const LAST_USED_KEY = 'truheirs:lastUsed'
 const COMMUNITY_LABELS: Record<string, string> = {
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Succession Society',
+  tffm: 'The Legacy InnerCircle',
 }
 
 type LastUsed = { section: 'community' | 'content' | 'dashboard' | 'workbook'; program?: string }

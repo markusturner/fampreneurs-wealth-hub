@@ -72,7 +72,7 @@ interface PartnerProfile {
   created_at: string
 }
 
-// Upsell ladder: TTV → PEA ($9,000) → Succession Society ($22,000) → TFFM ($40,000)
+// Upsell ladder: TTV → PEA ($9,000) → Legacy InnerCircle ($22,000) → TFFM ($40,000)
 const PROGRAM_VALUE: Record<string, number> = { fbu: 900, tfv: 5000, tfba: 9000, tffm: 22000 }
 
 function upsellInfo(c: ClientScore): { target: string; price: number; cost: number } | null {
@@ -82,7 +82,7 @@ function upsellInfo(c: ClientScore): { target: string; price: number; cost: numb
   if (key === "tfv") return { target: "PEA", price: 9000, cost: Math.max(0, 9000 - (PROGRAM_VALUE.tfv ?? 0)) }
   if (key === "tfba") return { target: "TSS", price: 22000, cost: Math.max(0, 22000 - (PROGRAM_VALUE.tfba ?? 0)) }
   if (key === "tffm") {
-    // Succession Society members can still ascend to the Family Fortune Mastermind
+    // Legacy InnerCircle members can still ascend to the Legacy InnerCircle
     if (name.includes("mastermind")) return null
     return { target: "TFFM", price: 40000, cost: Math.max(0, 40000 - (PROGRAM_VALUE.tffm ?? 0)) }
   }

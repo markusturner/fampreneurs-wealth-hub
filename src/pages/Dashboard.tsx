@@ -48,7 +48,7 @@ const Dashboard = () => {
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
   const showTutorial = shouldShowTutorial && hasTruHeirsAccess
 
-  // Governance + Handoff are Succession Society (succession planning) only
+  // Governance + Handoff are Legacy InnerCircle (succession planning) only
   const inSuccessionProgram =
     profileProgramCodes(profile?.program_name).includes('tffm') ||
     subscriptionStatus.programs?.includes('tffm')
@@ -124,7 +124,7 @@ const Dashboard = () => {
       ) : activeTab === 'office' ? (
         <Community showDemoToggle={false} />
       ) : activeTab === 'governance' ? (
-        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Legacy InnerCircle Only">
           <div className="space-y-4">
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
@@ -151,7 +151,7 @@ const Dashboard = () => {
           </div>
         </LockedPageOverlay>
       ) : activeTab === 'handoff' ? (
-        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Legacy InnerCircle Only">
           <HandoffPanel />
         </LockedPageOverlay>
       ) : null}

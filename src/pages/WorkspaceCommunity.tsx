@@ -53,6 +53,7 @@ import {
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
 import { CommentReactions } from '@/components/community/CommentReactions'
+import { PostViewers } from '@/components/community/PostViewers'
 import { AIChat } from '@/components/dashboard/ai-chat'
 
 
@@ -103,7 +104,7 @@ const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
+  tffm: 'The Legacy InnerCircle',
 }
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {
@@ -378,6 +379,7 @@ export default function WorkspaceCommunity() {
       .from('profiles')
       .select('user_id')
       .ilike('program_name', `%${assignedProgramName}%`)
+        .not('program_name', 'ilike', '%(VIP Weekend)%')
       .not('display_name', 'is', null)
       .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
@@ -1959,7 +1961,8 @@ export default function WorkspaceCommunity() {
                             (() => {
                               const isExpanded = expandedPosts.has(post.id)
                               const lineCount = (post.content.match(/\n/g) || []).length + 1
-                              const shouldClamp = !isExpanded && (lineCount > 3 || post.content.length > 280)
+                              const isWin = post.category === 'wins'
+                              const shouldClamp = !isWin && !isExpanded && (lineCount > 3 || post.content.length > 280)
                               return (
                                 <div className="mt-2">
                                   {post.title && (
@@ -1970,7 +1973,7 @@ export default function WorkspaceCommunity() {
                                       {renderContentWithMentions(post.content, post.author_name)}
                                     </p>
                                   )}
-                                  {post.content && (lineCount > 3 || post.content.length > 280) && (
+                                  {post.content && !isWin && (lineCount > 3 || post.content.length > 280) && (
                                     <button
                                       type="button"
                                       onClick={() => setExpandedPosts(prev => {
@@ -2028,6 +2031,7 @@ export default function WorkspaceCommunity() {
                               <MessageCircle className="h-4 w-4" />
                               {post.comments_count > 0 && post.comments_count}
                             </button>
+                            <PostViewers postId={post.id} userId={user?.id} canSeeViewers={isAdmin || isOwner} />
                           </div>
 
                           {/* Comments Section */}

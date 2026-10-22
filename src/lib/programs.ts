@@ -1,12 +1,11 @@
-// Program taxonomy + display helpers (FFM is shown as "The Succession Society")
+// Program taxonomy + display helpers (tffm is shown as "The Legacy InnerCircle")
 
 export type ProgramCode = 'fbu' | 'tfv' | 'tfba' | 'tffm'
 
 export const PROGRAM_OPTIONS: { code: ProgramCode; label: string }[] = [
-  { code: 'fbu', label: 'Family Business University' },
   { code: 'tfv', label: 'The Trust Vault' },
   { code: 'tfba', label: 'The Private Estate Accelerator' },
-  { code: 'tffm', label: 'The Succession Society' },
+  { code: 'tffm', label: 'The Legacy InnerCircle' },
 ]
 
 export const SOP_PROGRAM_CODES: ProgramCode[] = ['tfv', 'tfba', 'tffm']
@@ -15,7 +14,7 @@ const SHORT_LABELS: Record<string, string> = {
   fbu: 'FBU',
   tfv: 'TTV',
   tfba: 'PEA',
-  tffm: 'TFFM',
+  tffm: 'TLI',
 }
 
 // Short display label for a program code (internal code stays 'tfba')
@@ -45,11 +44,11 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     'The Family Business University': 'fbu',
     'Family Business University': 'fbu',
     'The Trust Vault': 'tfv',
-    'The Family Vault': 'tfv',
     'The Family Business Accelerator': 'tfba',
     'The Private Estate Accelerator': 'tfba',
-    'The Family Fortune Mastermind': 'tffm',
+    'The Legacy InnerCircle': 'tffm',
     'The Succession Society': 'tffm',
+    'The Family Fortune Mastermind': 'tffm',
   }
   return programName.split(',')
     .map(s => map[stripProgramVariant(s)])
@@ -74,9 +73,9 @@ export function expandProgramCodes(codes: (string | null | undefined)[]): Progra
 // Community group names (including legacy names) that belong to a program code
 export const PROGRAM_GROUP_NAMES: Record<ProgramCode, string[]> = {
   fbu: ['Family Business University', 'The Family Business University'],
-  tfv: ['The Trust Vault', 'The Family Vault'],
+  tfv: ['The Trust Vault', 'The Trust Vault'],
   tfba: ['The Private Estate Accelerator', 'The Family Business Accelerator'],
-  tffm: ['The Succession Society', 'The Family Fortune Mastermind'],
+  tffm: ['The Legacy InnerCircle', 'The Legacy InnerCircle'],
 }
 
 export function programGroupNames(codes: ProgramCode[]): string[] {
