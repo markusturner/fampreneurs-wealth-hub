@@ -1543,6 +1543,7 @@ export type Database = {
           pinned: boolean
           pinned_at: string | null
           program: string | null
+          recording_source_post_id: string | null
           title: string | null
           updated_at: string
           user_id: string
@@ -1561,6 +1562,7 @@ export type Database = {
           pinned?: boolean
           pinned_at?: string | null
           program?: string | null
+          recording_source_post_id?: string | null
           title?: string | null
           updated_at?: string
           user_id: string
@@ -1579,6 +1581,7 @@ export type Database = {
           pinned?: boolean
           pinned_at?: string | null
           program?: string | null
+          recording_source_post_id?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string
@@ -1595,6 +1598,13 @@ export type Database = {
           {
             foreignKeyName: "community_posts_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_recording_source_post_id_fkey"
+            columns: ["recording_source_post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
             referencedColumns: ["id"]
