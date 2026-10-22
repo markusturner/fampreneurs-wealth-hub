@@ -9,8 +9,9 @@ import type { useWelcomeChat, WelcomeConversation } from '@/hooks/useWelcomeChat
 
 type Chat = ReturnType<typeof useWelcomeChat>
 
-export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen }: { chat: Chat; onReset: (folder?: string | null) => void; onNewChat: (folder?: string | null) => void; onOpen: (conversation: WelcomeConversation) => Promise<void> }) {
+export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenChange }: { chat: Chat; onReset: (folder?: string | null) => void; onNewChat: (folder?: string | null) => void; onOpen: (conversation: WelcomeConversation) => Promise<void>; onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false)
+  const setOpenState = (value: boolean) => { setOpen(value); onOpenChange?.(value) }
   const [filter, setFilter] = useState('')
   const [folder, setFolder] = useState<string | null>(null)
   const [projectDialog, setProjectDialog] = useState(false)
@@ -32,7 +33,7 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen }: { chat:
       await chat.moveToProject(project.id)
       setName('')
       setProjectDialog(false)
-      setOpen(false)
+      setOpenState(false)
     } catch {
       toast({ title: 'Could not create project', description: 'Please try again.', variant: 'destructive' })
     } finally { setCreating(false) }
@@ -63,17 +64,17 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen }: { chat:
           </DropdownMenu>
         </div>
         <div className="flex shrink-0 items-center">
-          <Button variant="ghost" className={`h-10 gap-1.5 px-2 text-xs ${open ? 'bg-muted text-foreground' : ''}`} aria-label="View chats" aria-expanded={open} aria-controls={historyId} title="Chats" disabled={chat.busy} onClick={() => { setOpen(!open); if (!open) void chat.refresh() }}><MessagesSquare /><span>Chats</span></Button>
+          <Button variant="ghost" className={`h-10 gap-1.5 px-2 text-xs ${open ? 'bg-muted text-foreground' : ''}`} aria-label="View chats" aria-expanded={open} aria-controls={historyId} title="Chats" disabled={chat.busy} onClick={() => { setOpenState(!open); if (!open) void chat.refresh() }}><MessagesSquare /><span>Chats</span></Button>
           <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Add project" title="Add project" disabled={chat.busy} onClick={() => setProjectDialog(true)}><FolderPlus /></Button>
-          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Start new chat" title="New chat" disabled={chat.busy} onClick={() => { onNewChat(chat.projectId); setOpen(false) }}><Plus /></Button>
+          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Start new chat" title="New chat" disabled={chat.busy} onClick={() => { onNewChat(chat.projectId); setOpenState(false) }}><Plus /></Button>
         </div>
       </div>
       {open && <section id={historyId} aria-label="Chats" className="mb-3 w-full min-w-0 border-y border-border/70 py-2">
               <div className="mb-2 flex items-center gap-2">
                 {folder && <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Back to all chats" onClick={() => setFolder(null)}><ArrowLeft /></Button>}
                 <h2 className="min-w-0 flex-1 truncate text-xs">{selectedProject?.name || 'Chats'}</h2>
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="New chat in this project" title="New chat" onClick={() => { onNewChat(folder); setOpen(false) }}><Plus /></Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Close chats" title="Close chats" onClick={() => setOpen(false)}><X /></Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="New chat in this project" title="New chat" onClick={() => { onNewChat(folder); setOpenState(false) }}><Plus /></Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Close chats" title="Close chats" onClick={() => setOpenState(false)}><X /></Button>
               </div>
               <div className="relative mb-2"><Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search chats" placeholder="Search chats" value={filter} onChange={event => setFilter(event.target.value)} className="h-10 border-border/60 bg-background/50 pl-9 text-base sm:text-sm" /></div>
               <div className="max-h-44 overflow-y-auto overscroll-contain">
@@ -82,7 +83,7 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen }: { chat:
                     {chat.projects.map(project => <Button key={project.id} variant="ghost" className="h-10 max-w-48 shrink-0 justify-start px-2 text-xs" onClick={() => setFolder(project.id)}><Folder /><span className="truncate">{project.name}</span><span className="text-muted-foreground">{chat.conversations.filter(item => item.project_id === project.id).length}</span></Button>)}
                   </div>}
                   {chats.map(conversation => <Button key={conversation.id} variant="ghost" disabled={chat.busy} className="h-11 w-full justify-start gap-2 px-2 text-left" onClick={async () => {
-                    try { await onOpen(conversation); setOpen(false) } catch { toast({ title: 'Could not open chat', description: 'Please try again.', variant: 'destructive' }) }
+                    try { await onOpen(conversation); setOpenState(false) } catch { toast({ title: 'Could not open chat', description: 'Please try again.', variant: 'destructive' }) }
                   }}><MessageSquare className="text-muted-foreground" /><span className="min-w-0 flex-1 truncate text-xs text-foreground">{conversation.title}</span><span className="shrink-0 text-[10px] text-muted-foreground">{new Date(conversation.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></Button>)}
                   {chats.length === 0 && <p className="px-2 py-6 text-center text-xs text-muted-foreground">{filter ? 'No matching chats.' : 'No chats yet.'}</p>}
                 </>}

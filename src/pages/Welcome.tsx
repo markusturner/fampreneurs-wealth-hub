@@ -80,6 +80,7 @@ export default function Welcome() {
   const [rachelAnswer, setRachelAnswer] = useState('')
   const [rachelLoading, setRachelLoading] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [chatsOpen, setChatsOpen] = useState(false)
   const [answerAtBottom, setAnswerAtBottom] = useState(false)
   const [answerScrollable, setAnswerScrollable] = useState(false)
   const answerRef = useRef<HTMLDivElement | null>(null)
@@ -92,7 +93,7 @@ export default function Welcome() {
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const welcomeChat = useWelcomeChat(user?.id)
-  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || !!welcomeChat.activeConversation || rachelQuestion.trim().length > 0 || attachments.length > 0
+  const searchActive = searchFocused || chatsOpen || rachelLoading || !!rachelAnswer || !!welcomeChat.activeConversation || rachelQuestion.trim().length > 0 || attachments.length > 0
 
   const resetChat = (folder: string | null = null) => {
     welcomeChat.newChat(folder)
@@ -569,7 +570,7 @@ export default function Welcome() {
         })()}
 
         <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
-          <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onNewChat={startNewChat} onOpen={openChat} />
+          <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onNewChat={startNewChat} onOpen={openChat} onOpenChange={setChatsOpen} />
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
             <input
