@@ -137,13 +137,9 @@ export default function WorkspaceCalendar() {
       
       // Map group names (including legacy names) to short IDs used in meeting community_ids
       const nameToShortId: Record<string, string> = {
-        'Family Business University': 'fbu',
-        'The Family Business University': 'fbu',
-        'The Trust Vault': 'tfv',
         'The Trust Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
         'The Family Business Accelerator': 'tfba',
-        'The Legacy InnerCircle': 'tffm',
         'The Legacy InnerCircle': 'tffm',
         'The Family Legacy: VIP Weekend': 'tflvip',
       }

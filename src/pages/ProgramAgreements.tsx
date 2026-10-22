@@ -29,11 +29,9 @@ const AGREEMENT_LABELS: Record<string, string> = {
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
   tffm: 'The Legacy InnerCircle',
-  fbu: 'The Family Business University',
   'The Trust Vault': 'The Trust Vault',
   'The Private Estate Accelerator': 'The Private Estate Accelerator',
   'The Legacy InnerCircle': 'The Legacy InnerCircle',
-  'The Family Business University': 'The Family Business University',
 }
 
 export default function ProgramAgreements() {

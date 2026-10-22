@@ -17,11 +17,8 @@ import {
 
 
 const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
-  'Family Business University': { slug: 'fbu', label: 'Family Business University' },
-  'The Family Business University': { slug: 'fbu', label: 'Family Business University' },
   'The Trust Vault': { slug: 'tfv', label: 'The Trust Vault' },
   'The Private Estate Accelerator': { slug: 'tfba', label: 'The Private Estate Accelerator' },
-  'The Legacy InnerCircle': { slug: 'tffm', label: 'The Legacy InnerCircle' },
   'The Legacy InnerCircle': { slug: 'tffm', label: 'The Legacy InnerCircle' },
 }
 
