@@ -25,6 +25,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import ReactMarkdown from 'react-markdown'
+import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat'
+import { WelcomeChatLibrary } from '@/components/chat/WelcomeChatLibrary'
 
 
 
@@ -88,7 +90,25 @@ export default function Welcome() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0 || attachments.length > 0
+  const welcomeChat = useWelcomeChat(user?.id)
+  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || !!welcomeChat.activeConversation || rachelQuestion.trim().length > 0 || attachments.length > 0
+
+  const resetChat = (folder: string | null = null) => {
+    welcomeChat.newChat(folder)
+    setRachelAnswer('')
+    setRachelQuestion('')
+    setAttachments([])
+    setSearchFocused(false)
+    setAnswerAtBottom(false)
+  }
+
+  const openChat = async (conversation: WelcomeConversation) => {
+    await welcomeChat.openConversation(conversation)
+    setRachelAnswer('')
+    setRachelQuestion('')
+    setAttachments([])
+    setAnswerAtBottom(false)
+  }
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -220,7 +240,7 @@ export default function Welcome() {
     const ro = new ResizeObserver(check)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [rachelAnswer])
+  }, [rachelAnswer, welcomeChat.messages])
 
   const { markAsWatched } = useTutorialVideo(user?.id || null)
 
@@ -234,15 +254,6 @@ export default function Welcome() {
     if (!loading && !user) {
       navigate('/auth', { replace: true })
       return
-    }
-    // On mobile, skip the welcome screen and go straight to the user's community
-    if (!loading && user && profile && !isVipWeekendProgram(profile.program_name) && typeof window !== 'undefined' && window.innerWidth < 768) {
-      const pn = (profile?.program_name || '').toLowerCase()
-      let slug = 'tfv'
-      if (pn.includes('vault')) slug = 'tfv'
-      else if (pn.includes('accelerator')) slug = 'tfba'
-      else if (pn.includes('mastermind') || pn.includes('fortune') || pn.includes('succession')) slug = 'tffm'
-      navigate(`/workspace-community?program=${slug}`, { replace: true })
     }
   }, [user, profile, loading, navigate])
 
@@ -259,19 +270,20 @@ export default function Welcome() {
     const typed = (preset ?? rachelQuestion).trim()
     const message = typed || (attachments.length > 0 ? 'Read the attached document(s) fully. Summarize what they are, extract the key terms, flag anything missing, risky, or outdated, and tell me exactly what should be revised and how.' : '')
     if (preset) setRachelQuestion(preset)
-    if (!message || rachelLoading) return
+    if (!message || rachelLoading || welcomeChat.busy) return
     setAnswerAtBottom(false)
 
     setRachelLoading(true)
     setRachelAnswer('')
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message, persona: 'rachel', instructions: '', attachments: preset ? [] : attachments }
-      })
-      if (error) throw error
-      setRachelAnswer(data?.response || 'Rachel could not answer right now. Please try again.')
+      const result = await welcomeChat.send(message, preset ? [] : attachments)
+      if (!result) return
+      setRachelAnswer(result.reply)
+      setRachelQuestion('')
+      setAttachments([])
+      if (!result.saved) toast({ title: 'Your reply is ready', description: 'This chat could not be saved. Keep it open and try again later.', variant: 'destructive' })
     } catch {
-      setRachelAnswer('Rachel could not answer right now. Please try again.')
+      toast({ title: 'Markus could not answer right now', description: 'Your question is still here. Please try again.', variant: 'destructive' })
     } finally {
       setRachelLoading(false)
     }
@@ -290,7 +302,7 @@ export default function Welcome() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 bg-background text-foreground">
+    <main className="relative min-h-[100dvh] overflow-x-hidden flex flex-col items-center justify-center px-4 pt-24 pb-12 sm:pt-24 sm:pb-16 bg-background text-foreground">
       <Helmet>
         <title>Welcome — TruHeirs</title>
         <meta name="description" content="Choose where to go next in your TruHeirs family dashboard." />
@@ -383,7 +395,7 @@ export default function Welcome() {
         </DropdownMenu>
       </div>
 
-      <div className={`relative z-10 flex flex-col items-center text-center w-full max-w-4xl transition-all duration-500 ease-out ${searchActive ? '-translate-y-4 sm:-translate-y-8' : ''}`}>
+      <div className="relative z-10 flex flex-col items-center text-center w-full max-w-4xl transition-all duration-500 ease-out">
         <img
           src="/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"
           alt="TruHeirs"
@@ -550,6 +562,7 @@ export default function Welcome() {
         })()}
 
         <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
+          <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onOpen={openChat} />
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
             <input
@@ -565,7 +578,8 @@ export default function Welcome() {
                 }
               }}
               placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Markus AI anything...'}
-              className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
+              aria-label="Ask Markus AI anything"
+              className="min-w-0 flex-1 bg-transparent px-1 py-1 text-base sm:text-sm outline-none placeholder:text-muted-foreground"
             />
             <input
               ref={fileInputRef}
@@ -575,30 +589,35 @@ export default function Welcome() {
               className="hidden"
               onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
             />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               type="button"
               aria-label="Attach a photo or file"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => fileInputRef.current?.click()}
-              className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors"
+              className="h-10 w-10 shrink-0 rounded-full text-muted-foreground hover:text-secondary"
             >
               <Paperclip className="h-3.5 w-3.5" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               type="button"
               aria-label={recording ? 'Stop recording' : 'Speak your question'}
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleRecording}
               disabled={transcribing}
-              className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition-colors ${recording ? 'bg-destructive/15 text-destructive animate-pulse' : 'text-muted-foreground hover:text-secondary'}`}
+              className={`h-10 w-10 shrink-0 rounded-full ${recording ? 'bg-destructive/15 text-destructive animate-pulse' : 'text-muted-foreground hover:text-secondary'}`}
             >
               {transcribing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : recording ? <Square className="h-3 w-3" /> : <Mic className="h-3.5 w-3.5" />}
-            </button>
+            </Button>
             <Button
               size="icon"
-              className="h-7 w-7 rounded-full"
+              aria-label="Send Markus message"
+              className="h-10 w-10 shrink-0 rounded-full"
               onClick={() => askRachel()}
-              disabled={(!rachelQuestion.trim() && attachments.length === 0) || rachelLoading}
+              disabled={(!rachelQuestion.trim() && attachments.length === 0) || rachelLoading || welcomeChat.busy}
             >
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
@@ -621,7 +640,7 @@ export default function Welcome() {
           )}
 
 
-          {searchActive && !rachelAnswer && !rachelLoading && (
+          {searchActive && !rachelAnswer && !rachelLoading && welcomeChat.messages.length === 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {RACHEL_SUGGESTIONS.map(s => (
                 <button
@@ -635,7 +654,9 @@ export default function Welcome() {
             </div>
           )}
 
-          {rachelAnswer && (
+          {rachelLoading && <div role="status" className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Markus is thinking...</div>}
+
+          {welcomeChat.messages.length > 0 && (
             <div className="relative mt-3">
               <div
                 ref={answerRef}
@@ -645,8 +666,13 @@ export default function Welcome() {
                 }}
                 onWheel={(e) => e.stopPropagation()}
                 style={{ WebkitOverflowScrolling: 'touch' }}
-                className="max-h-[45vh] overflow-y-auto overscroll-contain touch-pan-y rounded-xl bg-muted/60 px-4 pt-3 pb-10 text-left text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline"
+                role="log"
+                aria-label="Markus chat messages"
+                className="max-h-[45dvh] overflow-y-auto overscroll-contain touch-pan-y rounded-lg bg-muted/60 px-4 pt-3 pb-10 text-left text-xs sm:text-sm leading-relaxed text-foreground [&_a]:text-secondary [&_a]:font-medium [&_a]:underline [&_pre]:overflow-x-auto [&_img]:max-w-full"
               >
+                {welcomeChat.messages.map(message => <div key={message.id} className={`min-w-0 break-words py-2 ${message.role === 'user' ? 'border-b border-border/60' : ''}`}>
+                  <p className="mb-1 text-[10px] font-semibold text-muted-foreground">{message.role === 'user' ? 'You' : 'Markus AI'}</p>
+                  <div className="prose prose-sm max-w-none [&_p]:my-2 [overflow-wrap:anywhere]">
                 <ReactMarkdown
                   components={{
                     a: ({ href, children, ...props }) => {
@@ -655,9 +681,9 @@ export default function Welcome() {
                         <a
                           href={href}
                           onClick={(e) => {
-                            if (isInternal) {
+                            if (isInternal && href) {
                               e.preventDefault()
-                              navigate(href!)
+                              navigate(href)
                             }
                           }}
                           target={isInternal ? undefined : '_blank'}
@@ -670,8 +696,10 @@ export default function Welcome() {
                     },
                   }}
                 >
-                  {rachelAnswer}
+                  {message.content}
                 </ReactMarkdown>
+                  </div>
+                </div>)}
               </div>
               <div
                 className={`pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-xl transition-opacity duration-500 ease-out ${answerAtBottom || !answerScrollable ? 'opacity-0' : 'opacity-100'}`}

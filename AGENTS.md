@@ -10,6 +10,10 @@
 ## VIP workbook navigation
 - Keep the mastermind navigation destination on the existing protection-workbook route and use workbook eligibility helpers rather than creating community records; this preserves workbook submissions and onboarding.
 
+## Welcome AI chat
+- Welcome chat uses the existing chat_projects, chat_conversations, and ai_chat_history tables with the rachel persona and explicit user filters, so its projects and history stay shared with the full AI chat page.
+- Keep /welcome available on mobile rather than redirecting to a community, so the welcome Markus chat controls remain reachable across devices.
+
 ## Markus knowledge ingestion
 - Store incremental source content separately from persona uploads and retrieve bounded, approved excerpts through a service-role-only search function; this preserves existing knowledge without growing every chat prompt indefinitely.
 - Ingest only configured owner profiles and exact owner teaching-call titles; Fathom material requires owner privacy approval before shared retrieval because teaching calls can contain private client questions.
