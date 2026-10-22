@@ -72,7 +72,7 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenCha
       {open && <section id={historyId} aria-label="Chats" className="mb-3 w-full min-w-0 border-y border-border/70 py-2">
               <div className="mb-2 flex items-center gap-2">
                 {folder && <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Back to all chats" onClick={() => setFolder(null)}><ArrowLeft /></Button>}
-                <h2 className="min-w-0 flex-1 truncate text-xs">{selectedProject?.name || 'Chats'}</h2>
+                <h2 className="min-w-0 flex-1 truncate text-xs">{selectedProject?.name || 'Recent chats'}</h2>
                 <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="New chat in this project" title="New chat" onClick={() => { onNewChat(folder); setOpenState(false) }}><Plus /></Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Close chats" title="Close chats" onClick={() => setOpenState(false)}><X /></Button>
               </div>
