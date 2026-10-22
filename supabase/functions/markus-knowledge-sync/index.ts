@@ -15,7 +15,7 @@ Deno.serve(async req => {
   const db = createClient(url, key);
   let leased = false;
   try {
-    const body = z.object({ action: z.enum(['sync', 'status', 'resume', 'review']).default('sync'), document_id: z.string().uuid().optional(), content: z.string().min(1).max(150000).optional(), status: z.enum(['approved', 'excluded']).optional() }).strict().safeParse(await req.json().catch(() => ({})));
+    const body = z.object({ action: z.enum(['sync', 'status', 'resume', 'review']).default('sync'), document_id: z.string().uuid().optional(), content: z.string().min(1).max(150000).optional(), status: z.enum(['approved', 'excluded']).optional(), privacy_confirmed: z.boolean().optional() }).strict().safeParse(await req.json().catch(() => ({})));
     if (!body.success) return output({ error: 'Invalid update request' }, 400);
     const scheduler = req.headers.get('X-Markus-Job-Key');
     const scheduled = !!scheduler && scheduler === Deno.env.get('MARKUS_KNOWLEDGE_JOB_KEY');
@@ -49,7 +49,7 @@ Deno.serve(async req => {
     }
     if (action === 'review') {
       if (!owner || !body.data.document_id || !body.data.status) return output({ error: 'Owner approval and a document are required' }, 403);
-      if (body.data.status === 'approved' && !body.data.content) return output({ error: 'Provide teaching notes with private client details removed' }, 400);
+      if (body.data.status === 'approved' && (!body.data.content || !body.data.privacy_confirmed)) return output({ error: 'Confirm private client details were removed before sharing teaching notes' }, 400);
       const result = await db.from('markus_knowledge_documents').update({ status: body.data.status, ...(body.data.content ? { content: body.data.content } : {}), approved_by: caller }).eq('id', body.data.document_id).eq('status', 'review').select('id');
       if (result.error) throw result.error;
       if (!result.data?.length) return output({ error: 'This recording is no longer waiting for review' }, 409);
@@ -95,13 +95,15 @@ Deno.serve(async req => {
           if (!response.ok) throw new ProviderError(response.status, (await response.text()).slice(0, 500));
           const page = await response.json();
           let count = 0;
+          let remaining = false;
           for (const meeting of page.items || []) {
-            if (count >= SOURCE_LIMIT || !approvedTeachingMeeting(meeting, config)) continue;
+            if (!approvedTeachingMeeting(meeting, config)) continue;
             const recordingId = String(meeting.recording_id || '');
             if (!/^\d+$/.test(recordingId)) continue;
             const existing = await db.from('markus_knowledge_documents').select('id').eq('source_id', source.id).eq('external_id', recordingId).maybeSingle();
             if (existing.error) throw existing.error;
             if (existing.data) continue;
+            if (count >= SOURCE_LIMIT) { remaining = true; break; }
             const transcript = await fetch(`https://api.fathom.ai/external/v1/recordings/${recordingId}/transcript`, { headers: { 'X-Api-Key': fathomKey } });
             if (!transcript.ok) throw new ProviderError(transcript.status, (await transcript.text()).slice(0, 500));
             const data = await transcript.json();
@@ -111,7 +113,7 @@ Deno.serve(async req => {
             await save(source.id, { external_id: recordingId, title: meeting.meeting_title || meeting.title, source_url: meeting.share_url || meeting.url || 'https://fathom.video', published_at: published, observed_at: now, available_at: availableAt(published, now), content: content.slice(0, 150000), status: 'review' });
             count++;
           }
-          const update = await db.from('markus_knowledge_sources').update({ config: { ...config, cursor: page.next_cursor || null }, last_success_at: page.next_cursor ? source.last_success_at : now, last_error: null }).eq('id', source.id);
+          const update = await db.from('markus_knowledge_sources').update({ config: { ...config, cursor: remaining ? config.cursor || null : page.next_cursor || null }, last_success_at: remaining || page.next_cursor ? source.last_success_at : now, last_error: null }).eq('id', source.id);
           if (update.error) throw update.error;
           results.push({ platform: 'fathom', awaiting_review: count });
           continue;

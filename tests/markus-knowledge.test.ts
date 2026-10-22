@@ -30,3 +30,12 @@ test('TikTok captions are not presented as spoken transcripts', () => {
 test('failed or empty transcript results never become knowledge', () => {
   expect(normalizeSocial('youtube', { video_id: '1', url: 'https://youtube.com/watch?v=1', error: 'No captions' }, '2026-10-21T00:00:00Z')).toBeNull();
 });
+test('invalid source URLs are rejected', () => {
+  expect(normalizeSocial('instagram', { id: '1', caption: 'Teaching', url: 'not a URL' }, '2026-10-21T00:00:00Z')).toBeNull();
+  expect(normalizeSocial('instagram', { id: '1', caption: 'Teaching', url: 'https://example.com/post' }, '2026-10-21T00:00:00Z')).toBeNull();
+});
+test('documented YouTube, Instagram and LinkedIn text is retained', () => {
+  expect(normalizeSocial('youtube', { video_id: '1', title: 'Trusts', url: 'https://www.youtube.com/watch?v=1', full_text: 'YouTube teaching' }, '2026-10-21T00:00:00Z')?.content).toBe('YouTube teaching');
+  expect(normalizeSocial('instagram', { id: '2', url: 'https://www.instagram.com/p/2/', caption: 'Instagram teaching', ownerUsername: 'markusturnerofficial' }, '2026-10-21T00:00:00Z')?.owner).toBe('markusturnerofficial');
+  expect(normalizeSocial('linkedin', { id: '3', linkedinUrl: 'https://www.linkedin.com/posts/3', content: 'LinkedIn teaching', author: { publicIdentifier: 'markusturner' } }, '2026-10-21T00:00:00Z')?.content).toBe('LinkedIn teaching');
+});

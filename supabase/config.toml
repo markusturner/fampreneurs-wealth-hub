@@ -116,3 +116,9 @@ verify_jwt = false
 
 [functions.handoff-reminders]
 verify_jwt = false
+
+[functions.markus-knowledge-sync]
+verify_jwt = false
+
+[functions.markus-knowledge-schedule]
+verify_jwt = false

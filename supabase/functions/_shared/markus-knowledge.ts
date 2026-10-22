@@ -39,7 +39,8 @@ export function normalizeSocial(platform: string, item: Record<string, any>, obs
   };
   const value = map[platform];
   if (!value?.id || typeof value.text !== 'string' || !value.text.trim() || typeof value.url !== 'string') return null;
-  const parsedUrl = new URL(value.url);
+  let parsedUrl: URL;
+  try { parsedUrl = new URL(value.url); } catch { return null; }
   const allowed = { youtube: ['youtube.com', 'www.youtube.com', 'youtu.be'], instagram: ['instagram.com', 'www.instagram.com'], tiktok: ['tiktok.com', 'www.tiktok.com'], linkedin: ['linkedin.com', 'www.linkedin.com'] }[platform];
   if (parsedUrl.protocol !== 'https:' || !allowed?.includes(parsedUrl.hostname)) return null;
   const published = typeof value.date === 'string' && Number.isFinite(Date.parse(value.date)) ? new Date(value.date).toISOString() : null;
