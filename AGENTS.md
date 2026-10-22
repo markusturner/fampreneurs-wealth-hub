@@ -11,6 +11,7 @@
 - Keep the mastermind navigation destination on the existing protection-workbook route and use workbook eligibility helpers rather than creating community records; this preserves workbook submissions and onboarding.
 
 ## Welcome AI chat
+- History navigation uses an inline bounded list, not a portal or overlay, so opening history cannot cover the welcome content or composer. This navigation-only change leaves transcript, composer, and chat transport intact.
 - Welcome chat uses the existing chat_projects, chat_conversations, and ai_chat_history tables with the rachel persona and explicit user filters, so its projects and history stay shared with the full AI chat page.
 - Keep /welcome available on mobile rather than redirecting to a community, so the welcome Markus chat controls remain reachable across devices.
 
