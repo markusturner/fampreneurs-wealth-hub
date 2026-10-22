@@ -1,5 +1,9 @@
 # Roadmap
 
+## VIP Weekend Mastermind navigation
+- [ ] Move workbook entry into Community choices for admins and owners, and show only Mastermind and DFO for VIP clients
+- [ ] Check navigation rules and page compilation
+
 ## Markus AI daily knowledge updates
 - [x] Add source storage, bounded importer, admin knowledge tab, and chat retrieval while preserving existing AI knowledge
 - [x] Connect Apify and Inngest, save owner social profiles, and configure safe Fathom title matching

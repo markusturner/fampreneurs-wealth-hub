@@ -1,11 +1,11 @@
 import { test, expect } from 'bun:test'
 import { welcomeSections, documentsToBring, buildStructure } from '../src/lib/workbook'
 
-test('admins and owners see 4 welcome buttons', () => {
-  expect(welcomeSections(true, null)).toEqual(['community', 'content', 'dashboard', 'workbook'])
+test('admins and owners access the workbook through Community, not a separate welcome section', () => {
+  expect(welcomeSections(true, null)).toEqual(['community', 'content', 'dashboard'])
 })
 test('VIP Weekend clients see only DFO and workbook', () => {
-  expect(welcomeSections(false, 'The Private Estate Accelerator (VIP Weekend)')).toEqual(['dashboard', 'workbook'])
+  expect(welcomeSections(false, 'The Private Estate Accelerator (VIP Weekend)')).toEqual(['workbook', 'dashboard'])
 })
 test('other clients do not see the workbook', () => {
   expect(welcomeSections(false, 'The Trust Vault (TTV)')).not.toContain('workbook')
