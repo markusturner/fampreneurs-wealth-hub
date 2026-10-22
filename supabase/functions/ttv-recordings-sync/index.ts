@@ -3,10 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 const RECORDER = 'markusturner94@gmail.com';
 
-// Teaching calls only: title starts with the program name (client-prefixed sales calls like "Name: The Trust Vault" are skipped).
+// Trust Vault community gets all Private Estate Accelerator (formerly Family Business Accelerator) recordings, per owner.
 export function isTrustVaultRecording(title: string): boolean {
   const t = title.trim().toLowerCase();
-  return t.startsWith('the trust vault') || t.startsWith('trust vault') || t.startsWith('the family vault');
+  return t.includes('the private estate accelerator') || t.includes('the family business accelerator');
 }
 
 Deno.serve(async (req) => {
@@ -16,7 +16,12 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('FATHOM_API_KEY');
     if (!key) return json({ error: 'Fathom not configured' }, 500);
     const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    const { data: owner } = await db.from('user_roles').select('user_id').eq('role', 'owner').limit(1).maybeSingle();
+    const { data: owners } = await db.from('user_roles').select('user_id').eq('role', 'owner');
+    let owner: { user_id: string } | null = null;
+    for (const o of owners ?? []) {
+      const { data: u } = await db.auth.admin.getUserById(o.user_id);
+      if (u?.user?.email?.toLowerCase() === RECORDER) { owner = o; break; }
+    }
     if (!owner) return json({ error: 'No owner' }, 500);
     const { data: done } = await db.from('fathom_community_posts').select('recording_id');
     const seen = new Set((done ?? []).map((r) => r.recording_id));
