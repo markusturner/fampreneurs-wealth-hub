@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { RefreshCw, Loader2, ExternalLink, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ export function MarkusKnowledgeAdmin({ isOwner }: { isOwner: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [privacyConfirmed, setPrivacyConfirmed] = useState<Record<string, boolean>>({});
   async function call(body: Record<string, unknown>) {
     const { data, error } = await supabase.functions.invoke('markus-knowledge-sync', { body });
     if (error) {
@@ -64,7 +66,7 @@ export function MarkusKnowledgeAdmin({ isOwner }: { isOwner: boolean }) {
       <a className="text-primary font-medium" href={doc.source_url} target="_blank" rel="noreferrer">{doc.title}</a>
       <Label htmlFor={`notes-${doc.id}`}>Teaching notes with private client details removed</Label>
       <Textarea id={`notes-${doc.id}`} value={drafts[doc.id] ?? doc.content} onChange={e => setDrafts(prev => ({ ...prev, [doc.id]: e.target.value }))} className="min-h-48" disabled={!isOwner || busy} />
-      {isOwner && <div className="flex gap-2"><Button disabled={busy} onClick={() => action({ action: 'review', document_id: doc.id, status: 'approved', content: drafts[doc.id] ?? doc.content })}><Check className="mr-2 h-4 w-4" />Approve notes</Button><Button variant="outline" disabled={busy} onClick={() => action({ action: 'review', document_id: doc.id, status: 'excluded' })}><X className="mr-2 h-4 w-4" />Exclude</Button></div>}
+      {isOwner && <><div className="flex items-center gap-2"><Checkbox id={`privacy-${doc.id}`} checked={!!privacyConfirmed[doc.id]} onCheckedChange={v => setPrivacyConfirmed(prev => ({ ...prev, [doc.id]: v === true }))} /><Label htmlFor={`privacy-${doc.id}`}>I removed private client details and approve sharing these teaching notes.</Label></div><div className="flex gap-2"><Button disabled={busy || !privacyConfirmed[doc.id]} onClick={() => action({ action: 'review', document_id: doc.id, status: 'approved', content: drafts[doc.id] ?? doc.content, privacy_confirmed: true })}><Check className="mr-2 h-4 w-4" />Approve notes</Button><Button variant="outline" disabled={busy} onClick={() => action({ action: 'review', document_id: doc.id, status: 'excluded' })}><X className="mr-2 h-4 w-4" />Exclude</Button></div></>}
     </article>)}
     <h3 className="font-semibold">Recent knowledge</h3>
     <div className="divide-y divide-border">{documents.filter(d => d.status === 'approved').map(doc => <div key={doc.id} className="py-3"><a className="text-primary" href={doc.source_url} target="_blank" rel="noreferrer">{doc.title}</a><p className="text-xs text-muted-foreground">{new Date(doc.published_at || doc.observed_at).toLocaleDateString()}</p></div>)}</div>
