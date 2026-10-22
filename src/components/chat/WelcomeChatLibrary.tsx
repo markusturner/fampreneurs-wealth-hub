@@ -9,7 +9,7 @@ import type { useWelcomeChat, WelcomeConversation } from '@/hooks/useWelcomeChat
 
 type Chat = ReturnType<typeof useWelcomeChat>
 
-export function WelcomeChatLibrary({ chat, onReset, onOpen }: { chat: Chat; onReset: (folder?: string | null) => void; onOpen: (conversation: WelcomeConversation) => Promise<void> }) {
+export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen }: { chat: Chat; onReset: (folder?: string | null) => void; onNewChat: (folder?: string | null) => void; onOpen: (conversation: WelcomeConversation) => Promise<void> }) {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [folder, setFolder] = useState<string | null>(null)
@@ -65,14 +65,14 @@ export function WelcomeChatLibrary({ chat, onReset, onOpen }: { chat: Chat; onRe
         <div className="flex shrink-0 items-center">
           <Button variant="ghost" className={`h-10 gap-1.5 px-2 text-xs ${open ? 'bg-muted text-foreground' : ''}`} aria-label="View chats" aria-expanded={open} aria-controls={historyId} title="Chats" disabled={chat.busy} onClick={() => { setOpen(!open); if (!open) void chat.refresh() }}><MessagesSquare /><span>Chats</span></Button>
           <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Add project" title="Add project" disabled={chat.busy} onClick={() => setProjectDialog(true)}><FolderPlus /></Button>
-          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Start new chat" title="New chat" disabled={chat.busy} onClick={() => { onReset(chat.projectId); setOpen(false) }}><Plus /></Button>
+          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Start new chat" title="New chat" disabled={chat.busy} onClick={() => { onNewChat(chat.projectId); setOpen(false) }}><Plus /></Button>
         </div>
       </div>
       {open && <section id={historyId} aria-label="Chats" className="mb-3 w-full min-w-0 border-y border-border/70 py-2">
               <div className="mb-2 flex items-center gap-2">
                 {folder && <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Back to all chats" onClick={() => setFolder(null)}><ArrowLeft /></Button>}
                 <h2 className="min-w-0 flex-1 truncate text-xs">{selectedProject?.name || 'Chats'}</h2>
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="New chat in this project" title="New chat" onClick={() => { onReset(folder); setOpen(false) }}><Plus /></Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="New chat in this project" title="New chat" onClick={() => { onNewChat(folder); setOpen(false) }}><Plus /></Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Close chats" title="Close chats" onClick={() => setOpen(false)}><X /></Button>
               </div>
               <div className="relative mb-2"><Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search chats" placeholder="Search chats" value={filter} onChange={event => setFilter(event.target.value)} className="h-10 border-border/60 bg-background/50 pl-9 text-base sm:text-sm" /></div>
