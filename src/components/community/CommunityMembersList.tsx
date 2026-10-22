@@ -19,7 +19,7 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
+  tffm: 'The Legacy InnerCircle',
 }
 
 export function CommunityMembersList({ program }: { program: string }) {

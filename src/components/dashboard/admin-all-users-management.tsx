@@ -61,7 +61,7 @@ const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
   'The Trust Vault': 'The Trust Vault',
   'The Private Estate Accelerator': 'The Private Estate Accelerator',
   'The Family Legacy: VIP Weekend': 'The Family Legacy: VIP Weekend',
-  'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+  'The Legacy InnerCircle': 'The Legacy InnerCircle',
 }
 const programToCommunityName = (p: string) => PROGRAM_TO_COMMUNITY_NAME[p] || p
 
@@ -172,7 +172,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
     'The Trust Vault',
     'The Private Estate Accelerator',
     'The Family Legacy: VIP Weekend',
-    'The Family Fortune Mastermind'
+    'The Legacy InnerCircle'
   ])
   const [managingPrograms, setManagingPrograms] = useState(false)
   const [newProgramName, setNewProgramName] = useState('')

@@ -7,7 +7,7 @@ const PROGRAM_DAYS: Record<ProgramCode, number> = {
   fbu: 365,
   tfv: 112, // 16 weeks
   tfba: 90, // Private Estate Accelerator
-  tffm: 365, // Succession Society - 12 months
+  tffm: 365, // Legacy InnerCircle - 12 months
 }
 
 const VIP_DAYS = 90

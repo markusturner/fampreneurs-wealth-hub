@@ -58,7 +58,7 @@ export const PROGRAMS: Program[] = [
   },
   {
     id: 'tffm',
-    name: 'The Family Fortune Mastermind',
+    name: 'The Legacy InnerCircle',
     shortName: 'TFFM',
     pricing: [
       { label: '$40,000 (Paid in Full)', price_id: 'price_tffm_pif', amount: 4000000, interval: 'One-Time', mode: 'payment' },

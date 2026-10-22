@@ -131,7 +131,7 @@ export function AdminAnalyticsOverview() {
         .from('profiles')
         .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected, partner_group_id')
 
-      // Program membership counts (TruHeirs paid, TFBA, The Succession Society)
+      // Program membership counts (TruHeirs paid, TFBA, The Legacy InnerCircle)
       const paidUserIds = new Set(
         (subscribers || []).filter((s: any) => s.subscribed === true).map((s: any) => s.user_id)
       )
@@ -353,7 +353,7 @@ export function AdminAnalyticsOverview() {
             <MetricCard
               title="TSS Members"
               value={metrics.tssMembers}
-              subtitle="The Succession Society"
+              subtitle="The Legacy InnerCircle"
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
           </div>

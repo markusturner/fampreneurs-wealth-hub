@@ -315,7 +315,7 @@ To gain the most benefit from The Fampreneurs' Mentorship program you agree to t
 
 Section 1. Program Guidelines and Payment Details
 
-Program: The Family Fortune Mastermind.
+Program: The Legacy InnerCircle.
 
 Program Details:
 
@@ -325,7 +325,7 @@ The mastermind will include:
 
 12-months of Monthly 1-on-1 meetings with our Family Success Coach
 
-FREE Private Access to 'The Family Fortune Mastermind' Skool Community
+FREE Private Access to 'The Legacy InnerCircle' Skool Community
 
 One (1) Offshore Trust selected from our Global Partners Portfolio, subject to full program payment and the client's responsibility to satisfy any additional setup fees, required minimum deposits, ongoing banking requirements, or other conditions imposed by the trustee, private bank, or financial institution associated with the selected jurisdiction.
 
@@ -346,7 +346,7 @@ You may bring one guest only. One additional guest may attend for $3,500, which 
 
 Payment Terms:
 
-Total Program Cost: The Family Fortune Mastermind - Regularly $42,000, but today for ONLY $35,000.
+Total Program Cost: The Legacy InnerCircle - Regularly $42,000, but today for ONLY $35,000.
 
 Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
 
@@ -438,7 +438,7 @@ Coaching with The Fampreneurs. You will attend a bi-weekly live virtual training
 
 Section 10. Refund and Cancellation Policies
 
-The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Family Fortune Mastermind Program.
+The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Legacy InnerCircle Program.
 
 I understand that the training program teaches me everything I need to do from A-Z. If I'm stuck anywhere, I will ask for help in the Private Community Group and on the LIVE Q&A Calls.
 
@@ -522,7 +522,7 @@ A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) wher
 
 Free 3-Month Digital Family Office access (then $247/qtr)
 
-3 months of 24/7 Rachel AI support after the event
+3 months of 24/7 Markus AI support after the event
 
 One 1-1 call per month for 3 months with our Family Office Team, if questions come up
 
@@ -544,10 +544,10 @@ By signing below, the parties agree to all terms and conditions of this agreemen
 
 const AGREEMENT_MAP: Record<string, string> = {
   'The Trust Vault': TFV_AGREEMENT,
-  'The Family Vault': TFV_AGREEMENT,
+  'The Trust Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
   'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
-  'The Family Fortune Mastermind': TFFM_AGREEMENT,
+  'The Legacy InnerCircle': TFFM_AGREEMENT,
   'The Family Business University': FBU_AGREEMENT,
 }
 
@@ -580,7 +580,7 @@ function getAgreementKey(programName: string | null | undefined): string | null 
     normalizedProgramName.includes('mastermind') ||
     normalizedProgramName.includes('fortune')
   ) {
-    return 'The Family Fortune Mastermind'
+    return 'The Legacy InnerCircle'
   }
 
   if (

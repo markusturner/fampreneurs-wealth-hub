@@ -396,7 +396,7 @@ export default function Classroom() {
               <div className="mt-8 sm:mt-10 space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3">
                   <Users className="h-4 w-4 text-[#ffb500]" />
-                  <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#ffb500]">The Succession Society</h2>
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#ffb500]">The Legacy InnerCircle</h2>
                   <div className="flex-1 h-px bg-border" />
                   <span className="text-[10px] text-muted-foreground">{successionCourses.length} {successionCourses.length === 1 ? 'course' : 'courses'}</span>
                 </div>

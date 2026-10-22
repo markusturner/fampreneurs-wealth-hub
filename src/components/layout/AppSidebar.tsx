@@ -44,7 +44,7 @@ import { profileProgramCodes, expandProgramCodes, type ProgramCode } from "@/lib
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
   { code: 'tfv', label: 'The Trust Vault' },
   { code: 'tfba', label: 'The Private Estate Accelerator' },
-  { code: 'tffm', label: 'The Succession Society' },
+  { code: 'tffm', label: 'The Legacy InnerCircle' },
 ]
 
 interface NavItemProps {

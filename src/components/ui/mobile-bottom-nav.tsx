@@ -21,14 +21,14 @@ const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
   'The Family Business University': { slug: 'fbu', label: 'Family Business University' },
   'The Trust Vault': { slug: 'tfv', label: 'The Trust Vault' },
   'The Private Estate Accelerator': { slug: 'tfba', label: 'The Private Estate Accelerator' },
-  'The Family Fortune Mastermind': { slug: 'tffm', label: 'The Succession Society' },
-  'The Succession Society': { slug: 'tffm', label: 'The Succession Society' },
+  'The Legacy InnerCircle': { slug: 'tffm', label: 'The Legacy InnerCircle' },
+  'The Legacy InnerCircle': { slug: 'tffm', label: 'The Legacy InnerCircle' },
 }
 
 const ALL_COMMUNITIES = [
   { slug: 'tfv', label: 'The Trust Vault' },
   { slug: 'tfba', label: 'The Private Estate Accelerator' },
-  { slug: 'tffm', label: 'The Succession Society' },
+  { slug: 'tffm', label: 'The Legacy InnerCircle' },
 ]
 
 export function MobileBottomNav() {

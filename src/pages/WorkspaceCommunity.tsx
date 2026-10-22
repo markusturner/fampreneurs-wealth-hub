@@ -103,7 +103,7 @@ const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
-  tffm: 'The Family Fortune Mastermind',
+  tffm: 'The Legacy InnerCircle',
 }
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {

@@ -140,11 +140,11 @@ export default function WorkspaceCalendar() {
         'Family Business University': 'fbu',
         'The Family Business University': 'fbu',
         'The Trust Vault': 'tfv',
-        'The Family Vault': 'tfv',
+        'The Trust Vault': 'tfv',
         'The Private Estate Accelerator': 'tfba',
         'The Family Business Accelerator': 'tfba',
-        'The Succession Society': 'tffm',
-        'The Family Fortune Mastermind': 'tffm',
+        'The Legacy InnerCircle': 'tffm',
+        'The Legacy InnerCircle': 'tffm',
         'The Family Legacy: VIP Weekend': 'tflvip',
       }
       const matched = (data || [])
@@ -847,7 +847,7 @@ export default function WorkspaceCalendar() {
                 {[
                   { id: 'tfv', label: 'The Trust Vault', short: 'TTV' },
                   { id: 'tfba', label: 'The Private Estate Accelerator', short: 'PEA' },
-                  { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
+                  { id: 'tffm', label: 'The Legacy InnerCircle', short: 'TFFM' },
                 ].map(community => (
                   <div key={community.id} className="rounded-lg border border-border hover:bg-muted/50 transition-colors overflow-hidden">
                     <div className="flex items-center gap-2 p-2">
