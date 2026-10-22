@@ -14,7 +14,7 @@ const SHORT_LABELS: Record<string, string> = {
   fbu: 'FBU',
   tfv: 'TTV',
   tfba: 'PEA',
-  tffm: 'TFFM',
+  tffm: 'TLI',
 }
 
 // Short display label for a program code (internal code stays 'tfba')

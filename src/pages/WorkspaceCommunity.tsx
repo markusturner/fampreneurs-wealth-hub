@@ -378,6 +378,7 @@ export default function WorkspaceCommunity() {
       .from('profiles')
       .select('user_id')
       .ilike('program_name', `%${assignedProgramName}%`)
+        .not('program_name', 'ilike', '%(VIP Weekend)%')
       .not('display_name', 'is', null)
       .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
