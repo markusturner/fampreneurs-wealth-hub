@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         const link = m.share_url || m.url;
         const date = new Date(when).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
         const { data: post, error } = await db.from('community_posts').insert({
-          user_id: owner.user_id, program: 'tfv', category: 'discussion', title: `${title} Recording - ${date}`,
+          user_id: owner.user_id, program: 'tfv', category: 'recordings', title: `${title} Recording - ${date}`,
           content: `Here is the recording from our ${title} call on ${date}.\n\nWatch it here: ${link}`,
           video_url: link, created_at: when,
         }).select('id').single();
