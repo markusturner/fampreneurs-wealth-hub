@@ -1,5 +1,9 @@
 # Roadmap
 
+## Welcome Markus AI projects and history
+- [ ] Add compact projects, saved chats, and back navigation to welcome chat
+- [ ] Verify chat controls on desktop, tablet, and phone; real-account checks depend on external sign-in access
+
 ## VIP Weekend Mastermind navigation
 - [x] Move workbook entry into Community choices for admins and owners, and show only Mastermind and DFO for VIP clients
 - [x] Check navigation rules and page compilation; mocked-account navigation passes, real signed-in checks unavailable on external backend
