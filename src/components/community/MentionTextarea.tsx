@@ -35,9 +35,9 @@ async function loadMembers(program: string): Promise<MemberOption[]> {
     .not('display_name', 'is', null)
     .order('display_name')
     .limit(500)
-  if (assigned) query = query.ilike('program_name', `%${assigned}%`).not('program_name', 'ilike', '%(VIP Weekend)%')
+  if (assigned) query = query.ilike('program_name', `%${assigned}%`)
   const { data } = await query
-  const rows = (data || []).filter(r => !!r.display_name).map(r => ({
+  const rows = (data || []).filter(r => !!r.display_name && !(assigned && String((r as any).program_name || '').includes('(VIP Weekend)'))).map(r => ({
     user_id: r.user_id, display_name: r.display_name as string, avatar_url: r.avatar_url,
   }))
   cachedProgram = program
