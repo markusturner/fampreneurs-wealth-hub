@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Welcome Markus AI projects and history
+- [ ] Replace the overlapping history window with a compact inline list and check desktop, tablet, and phone layouts
 - [x] Add compact projects, saved chats, and back navigation to welcome chat
 - [x] Check project creation, saved chat reopening, follow-ups, search, reload, and layout at desktop, tablet, and phone sizes using mocked services
 - [ ] Verify real-account chat saving and replies; external unmanaged sign-in prevents authenticated testing
