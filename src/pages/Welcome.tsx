@@ -579,7 +579,7 @@ export default function Welcome() {
               }}
               placeholder={recording ? 'Listening…' : transcribing ? 'Writing what you said…' : 'Ask Markus AI anything...'}
               aria-label="Ask Markus AI anything"
-              className="min-w-0 flex-1 bg-transparent px-1 py-1 text-base sm:text-sm outline-none placeholder:text-muted-foreground"
+              className="min-w-0 flex-1 bg-transparent px-1 py-1 text-base sm:text-sm outline-none placeholder:text-xs sm:placeholder:text-sm placeholder:text-muted-foreground"
             />
             <input
               ref={fileInputRef}

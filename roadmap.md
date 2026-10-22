@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Welcome Markus AI projects and history
-- [ ] Add compact projects, saved chats, and back navigation to welcome chat
-- [ ] Verify chat controls on desktop, tablet, and phone; real-account checks depend on external sign-in access
+- [x] Add compact projects, saved chats, and back navigation to welcome chat
+- [x] Check project creation, saved chat reopening, follow-ups, search, reload, and layout at desktop, tablet, and phone sizes using mocked services
+- [ ] Verify real-account chat saving and replies; external unmanaged sign-in prevents authenticated testing
 
 ## VIP Weekend Mastermind navigation
 - [x] Move workbook entry into Community choices for admins and owners, and show only Mastermind and DFO for VIP clients
