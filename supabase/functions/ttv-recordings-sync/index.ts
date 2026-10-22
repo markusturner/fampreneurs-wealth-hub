@@ -1,13 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isTrustVaultRecording } from './filter.ts';
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 const RECORDER = 'markusturner94@gmail.com';
 
-// Trust Vault community gets all Private Estate Accelerator (formerly Family Business Accelerator) recordings, per owner.
-export function isTrustVaultRecording(title: string): boolean {
-  const t = title.trim().toLowerCase();
-  return t.includes('the private estate accelerator') || t.includes('the family business accelerator');
-}
+// Trust Vault receives only the owner's Q&A Accountability Calls.
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -15,7 +12,10 @@ Deno.serve(async (req) => {
   try {
     const key = Deno.env.get('FATHOM_API_KEY');
     if (!key) return json({ error: 'Fathom not configured' }, 500);
-    const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceKey) return json({ error: 'Server connection is not configured' }, 500);
+    const db = createClient(supabaseUrl, serviceKey);
     const { data: owners } = await db.from('user_roles').select('user_id').eq('role', 'owner');
     let owner: { user_id: string } | null = null;
     for (const o of owners ?? []) {

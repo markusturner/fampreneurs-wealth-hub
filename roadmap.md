@@ -33,5 +33,6 @@
 - Resend sending domain verification (Yahoo may block client emails)
 
 ## Oct 22 batch
+- [ ] Correct Trust Vault imports to Q&A Accountability Calls only, remove wrong auto-imports, and backdate qualifying calls
 - [x] Rename programs (Legacy InnerCircle, Trust Vault merge, FBU removed), Markus AI support wording, VIP clients out of PEA lists, Wins show full, post viewers, All chats compacts welcome
 - [ ] Trust Vault Fathom auto-posting: built and scheduled hourly, but new function URL returns 404 (same deployment issue as Markus sync); no Trust Vault titled recordings exist in Fathom yet to backdate
