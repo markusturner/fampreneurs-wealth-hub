@@ -1500,6 +1500,35 @@ export type Database = {
           },
         ]
       }
+      community_post_views: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           audio_url: string | null
@@ -2971,6 +3000,35 @@ export type Database = {
           voting_options?: Json
         }
         Relationships: []
+      }
+      fathom_community_posts: {
+        Row: {
+          created_at: string
+          post_id: string | null
+          program: string
+          recording_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id?: string | null
+          program: string
+          recording_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string | null
+          program?: string
+          recording_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fathom_community_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       featured_courses: {
         Row: {

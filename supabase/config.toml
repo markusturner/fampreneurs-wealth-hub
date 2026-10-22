@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.markus-knowledge-schedule]
 verify_jwt = false
+
+[functions.ttv-recordings-sync]
+verify_jwt = false
