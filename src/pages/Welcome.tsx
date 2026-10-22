@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { welcomeSections } from '@/lib/workbook'
+import { isVipWeekendProgram, welcomeSections } from '@/lib/workbook'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -53,7 +53,7 @@ function lastUsedLabel(l: LastUsed | null): string {
   if (!l) return ''
   if (l.section === 'community') return `Community${l.program && COMMUNITY_LABELS[l.program] ? ` — ${COMMUNITY_LABELS[l.program]}` : ''}`
   if (l.section === 'content') return 'Content'
-  if (l.section === 'workbook') return 'Protection Workbook'
+  if (l.section === 'workbook') return 'VIP Weekend Mastermind'
   return 'Digital Family Office'
 }
 
@@ -236,7 +236,7 @@ export default function Welcome() {
       return
     }
     // On mobile, skip the welcome screen and go straight to the user's community
-    if (!loading && user && profile && typeof window !== 'undefined' && window.innerWidth < 768) {
+    if (!loading && user && profile && !isVipWeekendProgram(profile.program_name) && typeof window !== 'undefined' && window.innerWidth < 768) {
       const pn = (profile?.program_name || '').toLowerCase()
       let slug = 'tfv'
       if (pn.includes('vault')) slug = 'tfv'
@@ -406,7 +406,7 @@ export default function Welcome() {
               <span>{programBadgeLabel}</span>
             </div>
 
-            {user && (
+            {user && !isVipWeekendProgram(profile?.program_name) && (
               <StartHereChecklist
                 userId={user.id}
                 onWatchVideo={() => setTutorialOpen(true)}
@@ -454,7 +454,7 @@ export default function Welcome() {
               className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none"
             >
               Community
-              {lastUsed?.section === 'community' && (
+              {(lastUsed?.section === 'community' || lastUsed?.section === 'workbook') && (
                 <span className="ml-1 whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
               <ChevronDown className={`h-3 w-3 opacity-60 group-hover:opacity-100 transition-transform ${communityOpen ? 'rotate-180' : ''}`} />
@@ -474,6 +474,21 @@ export default function Welcome() {
 
           {showCommunity && <><div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
           <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" /></>}
+
+          {showWorkbook && <>
+            <Button
+              variant="ghost"
+              onClick={() => go('workbook', '/protection-workbook')}
+              className="h-auto inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent px-4 py-2"
+            >
+              VIP Weekend Mastermind
+              {lastUsed?.section === 'workbook' && (
+                <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              )}
+            </Button>
+            <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
+            <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
+          </>}
 
           {showContent && <button
             onClick={() => go('content', '/classroom')}
@@ -497,19 +512,6 @@ export default function Welcome() {
               <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
             )}
           </button>
-          {showWorkbook && <>
-            <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
-            <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
-            <button
-              onClick={() => go('workbook' as any, '/protection-workbook')}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
-            >
-              Protection Workbook
-              {lastUsed?.section === 'workbook' && (
-                <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-              )}
-            </button>
-          </>}
         </nav>
         {hasMultiple && (
           <div
@@ -529,6 +531,16 @@ export default function Welcome() {
                     )}
                   </button>
                 ))}
+                <Button
+                  variant="ghost"
+                  onClick={() => { setCommunityOpen(false); go('workbook', '/protection-workbook') }}
+                  className="relative h-auto w-full whitespace-nowrap text-[11px] tracking-[0.2em] uppercase font-medium py-2.5 hover:text-secondary"
+                >
+                  VIP Weekend Mastermind
+                  {lastUsed?.section === 'workbook' && (
+                    <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                  )}
+                </Button>
               </div>
             </div>
           </div>

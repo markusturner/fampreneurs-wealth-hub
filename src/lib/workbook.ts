@@ -6,8 +6,8 @@ export type WelcomeSection = 'community' | 'content' | 'dashboard' | 'workbook'
 
 /** Which Welcome page buttons a user sees. */
 export function welcomeSections(isAdminOrOwner: boolean, programName?: string | null): WelcomeSection[] {
-  if (isAdminOrOwner) return ['community', 'content', 'dashboard', 'workbook']
-  if (isVipWeekendProgram(programName)) return ['dashboard', 'workbook']
+  if (isAdminOrOwner) return ['community', 'content', 'dashboard']
+  if (isVipWeekendProgram(programName)) return ['workbook', 'dashboard']
   return ['community', 'content', 'dashboard']
 }
 

@@ -22,7 +22,8 @@ export default function ProtectionWorkbook() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <BackToWelcome />
       <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Family Protection Workbook</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">VIP Weekend Mastermind</h1>
+        <h2 className="mt-2 text-lg font-semibold text-foreground">Family Protection Workbook</h2>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">VIP Weekend Prep. Fill this out so our team can set up your trusts with ease.</p>
       </div>
       <FamilyProtectionPlanForm workbook />

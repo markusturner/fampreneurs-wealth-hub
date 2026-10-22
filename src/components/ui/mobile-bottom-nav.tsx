@@ -8,6 +8,8 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
 import { useEffect, useState } from 'react'
 import { profileProgramCodes } from '@/lib/programs'
+import { isVipWeekendProgram } from '@/lib/workbook'
+import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
@@ -53,6 +55,7 @@ export function MobileBottomNav() {
 
 
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
+  const isVipClient = isVipWeekendProgram(profile?.program_name) && !isAdmin && !isOwner
 
   const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
   const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
@@ -129,7 +132,10 @@ export function MobileBottomNav() {
   const isEventsView = new URLSearchParams(location.search).get('view') === 'events'
   const isCommunityActive = location.pathname === '/workspace-community' && !isEventsView
 
-  const navItems = [
+  const navItems = isVipClient ? [
+    { name: 'VIP Weekend Mastermind', href: '/protection-workbook', icon: FileText },
+    { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },
+  ] : [
     { name: 'Messages', href: '/messenger', icon: Mail },
     { name: 'Calendar', href: calendarHref, icon: Calendar, isCalendar: true },
     { name: 'Community', href: communityHref, icon: MessageSquare, isCommunity: true },
@@ -139,7 +145,7 @@ export function MobileBottomNav() {
 
   
 
-  const workspaceItems = [
+  const workspaceItems = isVipClient ? [] : [
     ...(!isFamilyMember ? [{ name: 'Trust Creation', href: '/trust-creation', icon: ScrollText }] : []),
     ...(!isFamilyMember ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
     { name: 'Members', href: '/workspace-members', icon: Users },
@@ -270,9 +276,9 @@ export function MobileBottomNav() {
 
               <div className="space-y-1 overflow-y-auto flex-1 -mx-1 px-1">
                 {/* Workspace Section */}
-                <div className="pt-1 pb-1 px-3">
+                {workspaceItems.length > 0 && <div className="pt-1 pb-1 px-3">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Workspace</p>
-                </div>
+                </div>}
                 {workspaceItems.map((item) => {
                   const Icon = item.icon
                   const active = location.pathname === item.href
@@ -404,6 +410,16 @@ export function MobileBottomNav() {
                 </button>
               )
             })}
+            {(isAdmin || isOwner) && (
+              <Button
+                variant="ghost"
+                onClick={() => { navigate('/protection-workbook'); setCommunityPickerOpen(false) }}
+                className="h-auto w-full justify-start gap-3 px-3 py-3 text-sm"
+              >
+                <FileText className="h-4 w-4 shrink-0" />
+                <span className="text-left">VIP Weekend Mastermind</span>
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>
