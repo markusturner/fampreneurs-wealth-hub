@@ -21,4 +21,4 @@
 - Run imports only behind admin validation or the internal scheduler secret, with a database lease, source checkpoints, deduplication, spending caps, and persistent access pauses; this prevents duplicate work and unattended failure loops.
 
 ## Community recording imports
-- Keep the Trust Vault recording title predicate in a side-effect-free module with rule tests, so testing the selection never starts the Edge server.
+- Mirror PEA community recording posts into Trust Vault using a database trigger and a unique source-post link, so copies are immediate and media updates cannot create duplicates; direct Fathom polling is disabled.

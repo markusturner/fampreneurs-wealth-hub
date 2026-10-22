@@ -34,6 +34,6 @@
 
 ## Oct 22 batch
 - [x] Set and test Trust Vault Q&A-only selection; remove 58 wrongly imported Accelerator recordings
-- [ ] Copy existing and future PEA community recording posts into Trust Vault with original dates; replaces Q&A Fathom import request
+- [x] Copy 17 existing PEA community recording posts into Trust Vault with original dates and add immediate future-post mirroring
 - [x] Rename programs (Legacy InnerCircle, Trust Vault merge, FBU removed), Markus AI support wording, VIP clients out of PEA lists, Wins show full, post viewers, All chats compacts welcome
-- [ ] Disable direct Trust Vault Fathom polling in favor of community-post mirroring
+- [x] Disable direct Trust Vault Fathom polling in favor of community-post mirroring
