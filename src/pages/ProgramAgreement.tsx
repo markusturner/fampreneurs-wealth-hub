@@ -455,7 +455,7 @@ Thank you for choosing The Fampreneurs VIP Weekend experience, an exclusive Done
 This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
 
 Section 1. Program Details
-Program: The Private Estate Accelerator - VIP Weekend Add-On.
+Program: VIP Weekend Mastermind.
 The Client receives:
 
 A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) where The Fampreneurs set up the Client's 3 domestic irrevocable trusts and move the Client's assets into them
@@ -489,7 +489,7 @@ By signing below, the parties agree to all terms and conditions of this agreemen
 const AGREEMENT_MAP: Record<string, string> = {
   'The Trust Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
-  'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
+  'VIP Weekend Mastermind': VIP_WEEKEND_AGREEMENT,
   'The Legacy InnerCircle': TFFM_AGREEMENT,
 }
 
@@ -499,7 +499,7 @@ function getAgreementKey(programName: string | null | undefined): string | null 
   const normalizedProgramName = programName.trim().toLowerCase()
 
   if (normalizedProgramName.includes('vip weekend')) {
-    return 'The Private Estate Accelerator (VIP Weekend)'
+    return 'VIP Weekend Mastermind'
   }
 
   if (

@@ -401,7 +401,7 @@ To gain the most benefit from the VIP Weekend you agree to the following:
 
 Section 1. Program Guidelines and Details
 
-Program: The Private Estate Accelerator - VIP Weekend Add-On.
+Program: VIP Weekend Mastermind.
 
 The VIP Weekend will include:
 
@@ -488,7 +488,7 @@ By their signatures below, the parties hereby understand and agree to all terms 
 export const AGREEMENT_TEXT_MAP: Record<string, string> = {
   'The Trust Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
-  'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
+  'VIP Weekend Mastermind': VIP_WEEKEND_AGREEMENT,
   'The Legacy InnerCircle': TFFM_AGREEMENT,
 }
 
