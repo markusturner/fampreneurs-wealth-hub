@@ -1960,7 +1960,8 @@ export default function WorkspaceCommunity() {
                             (() => {
                               const isExpanded = expandedPosts.has(post.id)
                               const lineCount = (post.content.match(/\n/g) || []).length + 1
-                              const shouldClamp = !isExpanded && (lineCount > 3 || post.content.length > 280)
+                              const isWin = post.category === 'wins'
+                              const shouldClamp = !isWin && !isExpanded && (lineCount > 3 || post.content.length > 280)
                               return (
                                 <div className="mt-2">
                                   {post.title && (
@@ -1971,7 +1972,7 @@ export default function WorkspaceCommunity() {
                                       {renderContentWithMentions(post.content, post.author_name)}
                                     </p>
                                   )}
-                                  {post.content && (lineCount > 3 || post.content.length > 280) && (
+                                  {post.content && !isWin && (lineCount > 3 || post.content.length > 280) && (
                                     <button
                                       type="button"
                                       onClick={() => setExpandedPosts(prev => {
