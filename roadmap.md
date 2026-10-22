@@ -1,11 +1,14 @@
 # Roadmap
 
 ## Markus AI daily knowledge updates
-- [ ] Add daily source ingestion while preserving existing AI knowledge
-- [ ] Connect approved Markus accounts and choose safe Fathom recordings
-- [ ] Verify imports, daily scheduling, and chat retrieval with real sources
+- [x] Add source storage, bounded importer, admin knowledge tab, and chat retrieval while preserving existing AI knowledge
+- [x] Connect Apify and Inngest, save owner social profiles, and configure safe Fathom title matching
+- [ ] Activate new update functions and scheduler: deployed source is uploaded but new function URLs return 404; external deployment availability blocks live verification
+- [ ] Verify real imports and signed-in chat retrieval after function availability is restored; signed-in testing is unavailable for this external backend
+- [ ] Complete Instagram/TikTok spoken-video transcription after validating importer output and actual runs; current adapters import captions only
 - [x] Explain and collect the teaching-call names and Fathom recorder email
-- [ ] Apply exact teaching-title allowlist for the owner Fathom account
+- [x] Apply exact teaching-title allowlist for the owner Fathom account
+- [ ] Get one teaching recording link if Fathom uses client-name prefixes; initial recent page contains no exact teaching-title matches
 
 ## Teller bank connections (in progress)
 - [x] Research Teller API details
