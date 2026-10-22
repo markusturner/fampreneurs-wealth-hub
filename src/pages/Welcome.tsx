@@ -88,6 +88,7 @@ export default function Welcome() {
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const composerRef = useRef<HTMLInputElement | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const welcomeChat = useWelcomeChat(user?.id)
@@ -100,6 +101,12 @@ export default function Welcome() {
     setAttachments([])
     setSearchFocused(false)
     setAnswerAtBottom(false)
+  }
+
+  const startNewChat = (folder: string | null = null) => {
+    resetChat(folder)
+    toast({ title: 'New chat started', description: 'Ask Markus AI anything to begin.' })
+    requestAnimationFrame(() => composerRef.current?.focus())
   }
 
   const openChat = async (conversation: WelcomeConversation) => {
@@ -562,10 +569,11 @@ export default function Welcome() {
         })()}
 
         <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
-          <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onOpen={openChat} />
+          <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onNewChat={startNewChat} onOpen={openChat} />
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
             <input
+              ref={composerRef}
               type="text"
               value={rachelQuestion}
               onChange={(event) => setRachelQuestion(event.target.value)}
