@@ -1,9 +1,8 @@
-// Program taxonomy + display helpers (FFM is shown as "The Legacy InnerCircle")
+// Program taxonomy + display helpers (tffm is shown as "The Legacy InnerCircle")
 
 export type ProgramCode = 'fbu' | 'tfv' | 'tfba' | 'tffm'
 
 export const PROGRAM_OPTIONS: { code: ProgramCode; label: string }[] = [
-  { code: 'fbu', label: 'Family Business University' },
   { code: 'tfv', label: 'The Trust Vault' },
   { code: 'tfba', label: 'The Private Estate Accelerator' },
   { code: 'tffm', label: 'The Legacy InnerCircle' },
@@ -45,11 +44,11 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     'The Family Business University': 'fbu',
     'Family Business University': 'fbu',
     'The Trust Vault': 'tfv',
-    'The Trust Vault': 'tfv',
     'The Family Business Accelerator': 'tfba',
     'The Private Estate Accelerator': 'tfba',
     'The Legacy InnerCircle': 'tffm',
-    'The Legacy InnerCircle': 'tffm',
+    'The Succession Society': 'tffm',
+    'The Family Fortune Mastermind': 'tffm',
   }
   return programName.split(',')
     .map(s => map[stripProgramVariant(s)])
