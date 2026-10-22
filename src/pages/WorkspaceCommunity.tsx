@@ -53,6 +53,7 @@ import {
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
 import { CommentReactions } from '@/components/community/CommentReactions'
+import { PostViewers } from '@/components/community/PostViewers'
 import { AIChat } from '@/components/dashboard/ai-chat'
 
 
@@ -2030,6 +2031,7 @@ export default function WorkspaceCommunity() {
                               <MessageCircle className="h-4 w-4" />
                               {post.comments_count > 0 && post.comments_count}
                             </button>
+                            <PostViewers postId={post.id} userId={user?.id} canSeeViewers={isAdmin || isOwner} />
                           </div>
 
                           {/* Comments Section */}
