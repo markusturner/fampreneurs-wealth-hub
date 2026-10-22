@@ -11,7 +11,9 @@ type Chat = ReturnType<typeof useWelcomeChat>
 
 export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenChange }: { chat: Chat; onReset: (folder?: string | null) => void; onNewChat: (folder?: string | null) => void; onOpen: (conversation: WelcomeConversation) => Promise<void>; onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false)
-  const setOpenState = (value: boolean) => { setOpen(value); onOpenChange?.(value) }
+  const [menuOpen, setMenuOpen] = useState(false)
+  const setOpenState = (value: boolean) => { setOpen(value); onOpenChange?.(value || menuOpen) }
+  const setMenuState = (value: boolean) => { setMenuOpen(value); onOpenChange?.(value || open) }
   const [filter, setFilter] = useState('')
   const [folder, setFolder] = useState<string | null>(null)
   const [projectDialog, setProjectDialog] = useState(false)
@@ -48,7 +50,7 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenCha
               <ArrowLeft />
             </Button>
           )}
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuState}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" disabled={chat.busy} className="h-10 min-w-0 max-w-[180px] gap-1 px-2 text-xs" aria-label="Choose chat project">
                 <Folder className="shrink-0" /><span className="truncate">{activeProject?.name || 'All chats'}</span><ChevronDown className="shrink-0" />
