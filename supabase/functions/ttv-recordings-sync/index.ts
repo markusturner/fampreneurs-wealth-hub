@@ -3,10 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 const RECORDER = 'markusturner94@gmail.com';
 
-// Teaching calls only: title starts with the program name (client-prefixed sales calls like "Name: The Trust Vault" are skipped).
+// Trust Vault community gets all Private Estate Accelerator (formerly Family Business Accelerator) recordings, per owner.
 export function isTrustVaultRecording(title: string): boolean {
   const t = title.trim().toLowerCase();
-  return t.startsWith('the trust vault') || t.startsWith('trust vault') || t.startsWith('the family vault');
+  return t.includes('the private estate accelerator') || t.includes('the family business accelerator');
 }
 
 Deno.serve(async (req) => {
