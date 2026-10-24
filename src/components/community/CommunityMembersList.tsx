@@ -22,7 +22,7 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
   tffm: 'The Legacy InnerCircle',
 }
 
-export function CommunityMembersList({ program }: { program: string }) {
+export function CommunityMembersList({ program, compact = false }: { program: string; compact?: boolean }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
   const [selected, setSelected] = useState<MemberProfile | null>(null)
   const { bySender, markReadFromSender } = useUnreadDMCounts()
@@ -84,7 +84,7 @@ export function CommunityMembersList({ program }: { program: string }) {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <h4 className="font-semibold text-sm mb-3">Members ({members.length})</h4>
-          <ScrollArea className="h-80 pr-2">
+          <ScrollArea className={compact ? 'h-40 pr-2' : 'h-80 pr-2'}>
             <div className="space-y-1">
               {members.map(member => {
                 const unread = bySender[member.user_id] || 0

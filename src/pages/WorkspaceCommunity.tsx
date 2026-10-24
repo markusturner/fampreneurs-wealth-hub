@@ -1566,12 +1566,12 @@ export default function WorkspaceCommunity() {
                   <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                  <button className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => imageInputRef.current?.click()}>
+                  <Button variant="ghost" size="icon" title="Add photos" aria-label="Add photos" className="h-9 w-9 text-muted-foreground" onClick={() => imageInputRef.current?.click()}>
                     <Image className="h-5 w-5" />
-                  </button>
-                  <button className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => videoInputRef.current?.click()}>
+                  </Button>
+                  <Button variant="ghost" size="icon" title="Add video" aria-label="Add video" className="h-9 w-9 text-muted-foreground" onClick={() => videoInputRef.current?.click()}>
                     <Video className="h-5 w-5" />
-                  </button>
+                  </Button>
                   <button
                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isRecording ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
                     onClick={isRecording ? stopRecording : startRecording}
@@ -2058,11 +2058,11 @@ export default function WorkspaceCommunity() {
           </div>
 
           <aside className="community-right-rail">
-            {pinnedPost && <section><h3 className="community-rail-heading">Pinned</h3><Button variant="ghost" className="h-auto w-full rounded-lg bg-secondary/20 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1 block text-[11px] font-normal line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
-            <section><div className="community-rail-title"><h3 className="community-rail-heading">Upcoming events</h3><Button variant="ghost" size="sm" className="h-6 p-0 text-[10px] text-accent" onClick={() => setCommunityView('events')}>View all</Button></div><CommunityEventsSection program={program} compact onViewAll={() => setCommunityView('events')} /></section>
-            <section><div className="community-rail-title"><h3 className="community-rail-heading">Leaderboard</h3><Button variant="ghost" size="sm" className="h-6 p-0 text-[10px] text-accent" onClick={() => setCommunityView('leaderboard')}>View all</Button></div><CommunityLeaderboardSection program={program} compact /></section>
-            <section><h3 className="community-rail-heading">Recordings</h3><div className="space-y-2">{posts.filter(p => p.category === 'recordings').slice(0, 2).map(p => <Button key={p.id} variant="outline" className="h-auto w-full justify-start rounded-lg bg-card p-3 text-left whitespace-normal" onClick={() => openPost(p.id)}><Play className="h-8 w-8 shrink-0 rounded-full bg-muted p-2" /><span className="min-w-0 text-xs font-semibold">{p.title || p.content.replace(/<[^>]+>/g, '').slice(0, 65)}</span></Button>)}</div></section>
-            <CommunityMembersList program={program} />
+            {pinnedPost && <section><div className="community-rail-title"><h3 className="community-rail-heading"><Pin />Pinned</h3></div><Button variant="ghost" className="h-auto w-full justify-start rounded-lg bg-secondary/15 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span className="min-w-0"><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1.5 block text-[11px] leading-relaxed font-normal text-muted-foreground line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
+            <section><div className="community-rail-title"><h3 className="community-rail-heading"><CalendarDays />Upcoming events</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('events')}>View all</Button></div><CommunityEventsSection program={program} compact onViewAll={() => setCommunityView('events')} /></section>
+            <section><div className="community-rail-title"><h3 className="community-rail-heading"><Trophy />Leaderboard</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('leaderboard')}>View all</Button></div><CommunityLeaderboardSection program={program} compact /></section>
+            <section><div className="community-rail-title"><h3 className="community-rail-heading"><Play />Recordings</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => { setActiveCategory('recordings'); setCommunityView('feed') }}>View all</Button></div><div className="space-y-2">{posts.filter(p => p.category === 'recordings').slice(0, 2).map(p => <Button key={p.id} variant="ghost" className="community-rail-row" onClick={() => openPost(p.id)}><Play className="h-8 w-8 shrink-0 rounded-full bg-muted p-2" /><span className="min-w-0"><span className="block text-xs font-semibold leading-relaxed line-clamp-2">{p.title || p.content.replace(/<[^>]+>/g, '').slice(0, 65)}</span><span className="mt-1 block text-[10px] font-normal text-muted-foreground">{formatPostDate(p.created_at)}</span></span></Button>)}{!posts.some(p => p.category === 'recordings') && <p className="text-xs text-muted-foreground">No recordings yet.</p>}</div></section>
+            <section><CommunityMembersList program={program} compact /></section>
           </aside>
         </div>
 
