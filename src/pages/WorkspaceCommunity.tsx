@@ -201,6 +201,7 @@ export default function WorkspaceCommunity() {
   const [selectMode, setSelectMode] = useState(false)
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([])
   const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [showEarlier, setShowEarlier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
   const [messageSearch, setMessageSearch] = useState('')
@@ -728,7 +729,7 @@ export default function WorkspaceCommunity() {
   }
 
   const handleBulkDelete = async () => {
-    if (!(isAdmin || isOwner) || selectedPostIds.length === 0) return
+    if (!canDeleteSelection(posts, selectedPostIds, user?.id, isAdmin || isOwner)) return
     setBulkDeleting(true)
     try {
       const { data, error } = await supabase
@@ -1232,15 +1233,36 @@ export default function WorkspaceCommunity() {
     : posts.filter(p => p.category === activeCategory)
   ).filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())))
   const latestMessageId = filteredPosts.at(-1)?.id
+  const isPhone = typeof window !== 'undefined' && window.innerWidth < 768
+  const renderedPosts = visibleMessageWindow(filteredPosts, isPhone && !showEarlier ? MOBILE_MESSAGE_WINDOW : null)
+  const hiddenEarlierCount = filteredPosts.length - renderedPosts.length
+  const canDeleteSelected = canDeleteSelection(posts, selectedPostIds, user?.id, isAdmin || isOwner)
+  const allSelected = filteredPosts.length > 0 && filteredPosts.every(p => selectedPostIds.includes(p.id))
+  const toggleSelected = (postId: string) => setSelectedPostIds(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId])
+  const startSelecting = (postId: string) => { setSelectMode(true); setSelectedPostIds([postId]); setMessageMenuId(null) }
+  const stopSelecting = () => { setSelectMode(false); setSelectedPostIds([]) }
+  const stickToBottom = useRef(true)
   useEffect(() => {
     if (communityView !== 'feed' || loading) return
+    stickToBottom.current = true
     const frame = requestAnimationFrame(() => {
       const scroll = messageScrollRef.current
       if (scroll) scroll.scrollTop = scroll.scrollHeight
     })
     return () => cancelAnimationFrame(frame)
   }, [program, activeCategory, communityView, loading, latestMessageId, messageSearch])
-  useEffect(() => { setThreadPostId(null) }, [program, activeCategory])
+  // Photos and videos finish loading after the text; keep the newest message in view meanwhile.
+  useEffect(() => {
+    const scroll = messageScrollRef.current
+    if (!scroll || communityView !== 'feed') return
+    const onScroll = () => { stickToBottom.current = scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 120 }
+    scroll.addEventListener('scroll', onScroll, { passive: true })
+    const list = scroll.querySelector('.community-message-list')
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { if (stickToBottom.current) scroll.scrollTop = scroll.scrollHeight }) : null
+    if (list && ro) ro.observe(list)
+    return () => { scroll.removeEventListener('scroll', onScroll); ro?.disconnect() }
+  }, [communityView, loading, program])
+  useEffect(() => { setThreadPostId(null); setShowEarlier(false); setSelectMode(false); setSelectedPostIds([]) }, [program, activeCategory])
 
   const handleTogglePin = async (post: Post) => {
     const newPinned = !post.pinned
@@ -1414,46 +1436,20 @@ export default function WorkspaceCommunity() {
             {communityView === 'feed' && (
             <>
             {pinnedPost && <div className="community-pinned-sticky"><Button variant="ghost" className="community-pinned-banner" onClick={() => openPost(pinnedPost.id)}><Pin className="h-4 w-4 shrink-0" /><span className="min-w-0 flex-1 text-left whitespace-normal">Pinned: {pinnedPost.title || pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 90)}</span><ChevronRight className="shrink-0" /></Button></div>}
-            {/* Bulk delete toolbar (admins & owners only) */}
-            {(isAdmin || isOwner) && filteredPosts.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {!selectMode ? (
-                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setSelectMode(true)}>
-                    <ListChecks className="h-3.5 w-3.5" /> Select posts
+            {selectMode && (
+              <div className="community-select-bar">
+                <span className="text-xs font-semibold">{selectedPostIds.length} selected</span>
+                <div className="flex items-center gap-1.5">
+                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setSelectedPostIds(allSelected ? [] : filteredPosts.map(p => p.id))}>
+                    <ListChecks className="h-3.5 w-3.5 mr-1" />{allSelected ? 'Clear all' : 'Select all'}
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs"
-                      onClick={() =>
-                        setSelectedPostIds(
-                          selectedPostIds.length === filteredPosts.length ? [] : filteredPosts.map(p => p.id)
-                        )
-                      }
-                    >
-                      {selectedPostIds.length === filteredPosts.length ? 'Clear all' : 'Select all'}
+                  {canDeleteSelected && (
+                    <Button size="sm" variant="destructive" className="h-8 text-xs" disabled={bulkDeleting} onClick={handleBulkDelete}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />Delete ({selectedPostIds.length})
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="h-8 text-xs"
-                      disabled={selectedPostIds.length === 0 || bulkDeleting}
-                      onClick={handleBulkDelete}
-                    >
-                      Delete {selectedPostIds.length > 0 ? `(${selectedPostIds.length})` : ''}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 text-xs"
-                      onClick={() => { setSelectMode(false); setSelectedPostIds([]) }}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )}
+                  )}
+                  <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={stopSelecting}>Cancel</Button>
+                </div>
               </div>
             )}
 
@@ -1484,12 +1480,23 @@ export default function WorkspaceCommunity() {
                   </CardContent>
                 </Card>
               ) : (
-                filteredPosts.map((post, index) => (
+                <>
+                {hiddenEarlierCount > 0 && (
+                  <Button variant="ghost" size="sm" className="mx-auto h-8 text-xs text-muted-foreground" onClick={() => { stickToBottom.current = false; setShowEarlier(true) }}>
+                    <ChevronUp className="h-3.5 w-3.5 mr-1" />Show {hiddenEarlierCount} earlier messages
+                  </Button>
+                )}
+                {renderedPosts.map((post, index) => (
                   <div key={post.id}>
-                    {(index === 0 || new Date(filteredPosts[index - 1].created_at).toDateString() !== new Date(post.created_at).toDateString()) && <p className="community-day-label">{new Date(post.created_at).toDateString() === new Date().toDateString() ? 'Today' : formatPostDate(post.created_at)}</p>}
-                  <Card id={`community-post-${post.id}`} className={`community-message ${post.user_id === user?.id ? 'community-message-own' : ''}`}
+                    {(index === 0 || new Date(renderedPosts[index - 1].created_at).toDateString() !== new Date(post.created_at).toDateString()) && <p className="community-day-label">{new Date(post.created_at).toDateString() === new Date().toDateString() ? 'Today' : formatPostDate(post.created_at)}</p>}
+                  <Card id={`community-post-${post.id}`} className={`community-message ${post.user_id === user?.id ? 'community-message-own' : ''} ${selectMode && selectedPostIds.includes(post.id) ? 'community-message-selected' : ''}`}
+                    onClickCapture={e => {
+                      if (!selectMode) return
+                      e.preventDefault(); e.stopPropagation()
+                      toggleSelected(post.id)
+                    }}
                     onPointerDown={e => {
-                      if (e.pointerType !== 'touch' || window.innerWidth >= 768 || (e.target as HTMLElement).closest('button, input, textarea, a, video, audio')) return
+                      if (selectMode || e.pointerType !== 'touch' || (e.target as HTMLElement).closest('button, input, textarea, a, video, audio')) return
                       cancelMessageHold()
                       holdStartRef.current = { x: e.clientX, y: e.clientY }
                       holdTimerRef.current = setTimeout(() => { setMessageMenuId(post.id); holdTimerRef.current = null }, 500)
@@ -1499,21 +1506,14 @@ export default function WorkspaceCommunity() {
                       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) cancelMessageHold()
                     }}
                     onPointerUp={cancelMessageHold} onPointerCancel={cancelMessageHold}
-                    onContextMenu={e => { if (window.innerWidth < 768) { e.preventDefault(); cancelMessageHold(); setMessageMenuId(post.id) } }}
+                    onContextMenu={e => { if (!selectMode && e.nativeEvent instanceof PointerEvent ? (e.nativeEvent as PointerEvent).pointerType === 'touch' : !selectMode && window.innerWidth < 1024) { e.preventDefault(); cancelMessageHold(); setMessageMenuId(post.id) } }}
                   >
                     <CardContent className="community-message-body">
                       <div className="community-message-row">
-                        {selectMode && (isAdmin || isOwner) && (
-                          <input
-                            type="checkbox"
-                            className="mt-3 h-4 w-4 accent-[#ffb500] cursor-pointer flex-shrink-0"
-                            checked={selectedPostIds.includes(post.id)}
-                            onChange={(e) =>
-                              setSelectedPostIds(prev =>
-                                e.target.checked ? [...prev, post.id] : prev.filter(id => id !== post.id)
-                              )
-                            }
-                          />
+                        {selectMode && (
+                          <span role="checkbox" aria-checked={selectedPostIds.includes(post.id)} aria-label={`Select message from ${post.author_name}`} className={`community-select-dot ${selectedPostIds.includes(post.id) ? 'is-checked' : ''}`}>
+                            {selectedPostIds.includes(post.id) && <Check className="h-3 w-3" />}
+                          </span>
                         )}
                         <Avatar className="community-message-avatar h-8 w-8 flex-shrink-0">
                           {post.author_avatar && <AvatarImage src={post.author_avatar} />}
@@ -1701,6 +1701,7 @@ export default function WorkspaceCommunity() {
                                 toggleComments(post.id)
                                 window.setTimeout(() => commentTextareaRefs.current[post.id]?.focus(), 350)
                               }}><MessageCircle className="h-3.5 w-3.5 mr-2" />Reply</DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => startSelecting(post.id)}><ListChecks className="h-3.5 w-3.5 mr-2" />Select</DropdownMenuItem>
                               {(isAdmin || isOwner) && (
                                 <DropdownMenuItem onClick={() => handleTogglePin(post)}>
                                   {post.pinned ? (
