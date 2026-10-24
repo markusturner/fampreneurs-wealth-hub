@@ -1496,7 +1496,7 @@ export default function WorkspaceCommunity() {
                       toggleSelected(post.id)
                     }}
                     onPointerDown={e => {
-                      if (selectMode || e.pointerType !== 'touch' || (e.target as HTMLElement).closest('button, input, textarea, a, video, audio')) return
+                      if (selectMode || e.pointerType !== 'touch' || window.innerWidth >= 768 || (e.target as HTMLElement).closest('button, input, textarea, a, video, audio')) return
                       cancelMessageHold()
                       holdStartRef.current = { x: e.clientX, y: e.clientY }
                       holdTimerRef.current = setTimeout(() => { setMessageMenuId(post.id); holdTimerRef.current = null }, 500)
@@ -1506,7 +1506,7 @@ export default function WorkspaceCommunity() {
                       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) cancelMessageHold()
                     }}
                     onPointerUp={cancelMessageHold} onPointerCancel={cancelMessageHold}
-                    onContextMenu={e => { if (!selectMode && e.nativeEvent instanceof PointerEvent ? (e.nativeEvent as PointerEvent).pointerType === 'touch' : !selectMode && window.innerWidth < 1024) { e.preventDefault(); cancelMessageHold(); setMessageMenuId(post.id) } }}
+                    onContextMenu={e => { if (!selectMode && window.innerWidth < 768) { e.preventDefault(); cancelMessageHold(); setMessageMenuId(post.id) } }}
                   >
                     <CardContent className="community-message-body">
                       <div className="community-message-row">
