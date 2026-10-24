@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Community message redesign
-- [ ] Remove events, leaderboard, and recordings from the right sidebar and diagnose missing member posts
+- [x] Remove events, leaderboard, and recordings from the right sidebar; live database confirms Trust Vault has 29 posts by Markus only, while other authors' posts are in Accelerator and InnerCircle
 - [x] Preserve full posting tools, match message and top bar colors, and clean up the right sidebar; checked with sample accounts on desktop, tablet, and phone
 - [x] Match desktop and phone community references while preserving post tools and comments
 - [x] Skip mobile Welcome and open an eligible community, keeping VIP/software-only restrictions
