@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { initPushNotifications } from '@/lib/push-notifications'
 import { clearRequestCache } from '@/lib/request-cache'
 import { recoverStoredSession, SESSION_BACKUP_KEY, PERSONAL_SIGN_OUT_SCOPE } from '@/lib/session-persistence'
+import { saveDurableBackup, clearDurableBackup, readDurableBackup } from '@/lib/durable-session'
 
 interface Profile {
   id: string
@@ -76,9 +77,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const saveSessionBackup = (s: Session | null) => {
     try {
       if (s?.refresh_token) {
-        localStorage.setItem(SESSION_BACKUP_KEY, JSON.stringify({ refresh_token: s.refresh_token, saved_at: Date.now() }))
+        const serialized = JSON.stringify({ refresh_token: s.refresh_token, saved_at: Date.now() })
+        localStorage.setItem(SESSION_BACKUP_KEY, serialized)
+        saveDurableBackup(serialized)
       } else {
         localStorage.removeItem(SESSION_BACKUP_KEY)
+        clearDurableBackup()
       }
     } catch {
       // storage unavailable; ignore
@@ -91,6 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch {
       // ignore
     }
+    clearDurableBackup()
   }
 
   // Called when supabase-js unexpectedly signs the user out (typically a failed
@@ -99,7 +104,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const tryRestoreSession = async () => {
     if (intentionalSignOut.current) return null
     if (restoreInFlight.current) return restoreInFlight.current
-    const attempt = recoverStoredSession(supabase.auth, localStorage)
+    const attempt = (async () => {
+      // An app update can wipe localStorage; reseed it from the durable copy.
+      try {
+        if (!localStorage.getItem(SESSION_BACKUP_KEY)) {
+          const { data } = await supabase.auth.getSession()
+          if (!data.session) {
+            const durable = await readDurableBackup()
+            if (durable && !intentionalSignOut.current) localStorage.setItem(SESSION_BACKUP_KEY, durable)
+          }
+        }
+      } catch {
+        // storage unavailable; continue with what we have
+      }
+      const restored = await recoverStoredSession(supabase.auth, localStorage)
+      if (!restored && !localStorage.getItem(SESSION_BACKUP_KEY)) clearDurableBackup()
+      return restored
+    })()
     restoreInFlight.current = attempt
     try { return await attempt } finally { restoreInFlight.current = null }
   }
@@ -171,12 +192,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       setLoading(false)
     }
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+    let retryDelay = 2000
     const recover = async () => {
       try {
         const restored = await tryRestoreSession()
+        retryDelay = 2000
         applySession(intentionalSignOut.current ? null : restored)
       } catch {
-        // Keep the current screen and retry when connectivity returns.
+        // Keep the current screen and retry; never treat a network blip as a logout.
+        if (retryTimer) clearTimeout(retryTimer)
+        retryTimer = setTimeout(() => { if (active) void recover() }, retryDelay)
+        retryDelay = Math.min(retryDelay * 2, 30000)
       }
     }
 
@@ -197,7 +224,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           intentionalSignOut.current = false
           applySession(session)
         } else if (event === 'SIGNED_OUT') {
-          if (intentionalSignOut.current || !localStorage.getItem(SESSION_BACKUP_KEY)) {
+          if (intentionalSignOut.current) {
             applySession(null)
           } else {
             // Route guards must wait until the server accepts or rejects recovery.
@@ -236,6 +263,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       active = false
+      if (retryTimer) clearTimeout(retryTimer)
       subscription.unsubscribe()
       document.removeEventListener('visibilitychange', onVisibilityChange)
       window.removeEventListener('online', onOnline)
