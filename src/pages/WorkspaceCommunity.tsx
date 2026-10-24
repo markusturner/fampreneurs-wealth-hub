@@ -2065,7 +2065,6 @@ export default function WorkspaceCommunity() {
             <CommunityMembersList program={program} />
           </aside>
         </div>
-      </div>
 
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
