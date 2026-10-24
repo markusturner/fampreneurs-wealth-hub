@@ -10,6 +10,7 @@ import { CommunityLeaderboardSection } from '@/components/community/CommunityLea
 import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { PostRichEditor } from '@/components/community/PostRichEditor'
 import { chronologicalMessages } from '@/lib/community-message-order'
+import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -296,20 +297,16 @@ export default function WorkspaceCommunity() {
 
       const postIds = (postsData || []).map(p => p.id)
       
-      const [{ data: likes }, { data: comments }] = await Promise.all([
+      const userIds = [...new Set((postsData || []).map(p => p.user_id))]
+      const [{ data: likes }, { data: comments }, { data: profiles }] = await Promise.all([
         supabase.from('community_reactions').select('post_id, user_id').in('post_id', postIds.length ? postIds : ['']),
         supabase.from('community_comments').select('post_id').in('post_id', postIds.length ? postIds : ['']),
+        supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds.length ? userIds : ['']),
       ])
-
-      const userIds = [...new Set((postsData || []).map(p => p.user_id))]
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', userIds.length ? userIds : [''])
 
       const profileMap = new Map((profiles || []).map(p => [p.user_id, p]))
 
-      setPosts((postsData || []).map(post => {
+      const mapped: Post[] = (postsData || []).map(post => {
         const authorProfile = profileMap.get(post.user_id)
         const postLikes = (likes || []).filter(l => l.post_id === post.id)
         const postComments = (comments || []).filter(c => c.post_id === post.id)
@@ -346,15 +343,26 @@ export default function WorkspaceCommunity() {
           pinned: (post as any).pinned || false,
           pinned_at: (post as any).pinned_at || null,
         }
-      }))
+      })
+      if (requestedProgram.current !== program) return
+      setPosts(mapped)
+      writeFeedCache(user?.id, program, mapped, localStorage)
     } catch (error) {
       console.error('Error fetching posts:', error)
     } finally {
-      setLoading(false)
+      if (requestedProgram.current === program) setLoading(false)
     }
   }, [user?.id, program])
 
-  useEffect(() => { fetchPosts() }, [fetchPosts])
+  // Show the last-seen messages instantly, then refresh in the background.
+  const requestedProgram = useRef<string | null>(program)
+  useEffect(() => {
+    requestedProgram.current = program
+    const cached = readFeedCache<Post>(user?.id, program, localStorage)
+    if (cached) { setPosts(cached); setLoading(false) }
+    else { setPosts([]); setLoading(true) }
+    fetchPosts()
+  }, [fetchPosts])
 
   // Load the persisted community profile. Use the stable group ID so custom
   // names remain editable and do not break future lookups.
