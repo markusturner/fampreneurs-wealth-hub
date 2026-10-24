@@ -349,12 +349,11 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-message-avatar { margin-bottom: 22px; }
 .community-bubble { background: hsl(var(--community-bubble)); padding: 10px 12px; border-radius: 16px 16px 16px 4px; position: relative; }
 .community-message-own .community-bubble { background: hsl(var(--community-own)); color: hsl(var(--primary)); border-radius: 16px 16px 4px 16px; }
-.community-author { position: relative; margin: -29px 0 12px; min-height: 17px; color: hsl(var(--foreground)); }
+.community-author { margin: -29px 0 12px; min-height: 17px; color: hsl(var(--foreground)); }
 .community-author > span:first-child { font-size: 11px; }
 .community-message-own .community-author { justify-content: flex-end; }
-.community-message-time { position: absolute; right: 0; top: 100%; margin-top: 6px; white-space: nowrap; color: hsl(var(--muted-foreground)); }
-.community-author .community-message-time { position: static; margin: 0 0 0 auto; }
-.community-message-own .community-author .community-message-time { color: hsl(var(--muted-foreground)); }
+.community-message-time { position: absolute; right: 0; bottom: -17px; white-space: nowrap; color: hsl(var(--muted-foreground)); }
+.community-author .community-message-time { font-size: 10px; }
 .community-message-tag { border: 0; background: hsl(var(--community-discussion)); color: hsl(var(--foreground)); }
 .community-message-tag.category-wins { background: hsl(var(--community-wins)); }
 .community-message-tag.category-recordings { background: hsl(var(--community-recordings)); }
