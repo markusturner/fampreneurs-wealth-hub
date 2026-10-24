@@ -346,6 +346,7 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-mobile-brand { display: none; }
 .community-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 18px 32px 24px; scrollbar-width: thin; }
 .community-pinned-sticky { position: sticky; top: 0; z-index: 5; background: hsl(var(--community-canvas)); padding-bottom: 14px; }
+.community-pinned-sticky::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 18px; background: hsl(var(--community-canvas)); }
 .community-pinned-banner { width: 100%; height: auto; min-height: 40px; background: hsl(var(--secondary) / .2); border-radius: 10px; font-size: 12px; }
 .community-message-list { display: flex; flex-direction: column; gap: 34px; }
 .community-day-label { text-align: center; color: hsl(var(--muted-foreground)); font-size: 11px; margin-bottom: 20px; }
