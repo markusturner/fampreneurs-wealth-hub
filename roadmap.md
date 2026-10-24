@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Community message redesign
-- [ ] Match desktop and phone community references while preserving post tools and comments
-- [ ] Skip mobile Welcome and open an eligible community, keeping VIP/software-only restrictions
-- [ ] Verify navigation rules and desktop/phone layout; live account checks depend on available sign-in
+- [x] Match desktop and phone community references while preserving post tools and comments
+- [x] Skip mobile Welcome and open an eligible community, keeping VIP/software-only restrictions
+- [x] Verify entry rules and desktop/tablet/phone layouts with sample accounts
+- [ ] Verify posting with a real account; external unmanaged sign-in prevents authenticated checks
 
 ## Welcome Markus AI projects and history
 - [x] Replace the overlapping history window with a compact inline list; desktop, tablet, and phone checks confirm it never covers the question box

@@ -1409,7 +1409,7 @@ export default function WorkspaceCommunity() {
             <>
             {/* Mobile Post Dialog - Skool style */}
             <Dialog open={mobilePostOpen} onOpenChange={setMobilePostOpen}>
-              <DialogContent className="fixed inset-0 max-w-full md:max-w-2xl md:inset-auto md:h-[85dvh] md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col z-[70] [&>button]:hidden">
+              <DialogContent className="community-post-dialog fixed inset-0 max-w-full md:max-w-2xl md:inset-auto md:h-[85dvh] md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col z-[70] [&>button]:hidden">
                 {/* Top bar */}
                 <div className="grid grid-cols-3 items-center px-4 py-3 border-b border-border/50 bg-background">
                   <div className="flex justify-start">
@@ -2189,7 +2189,6 @@ export default function WorkspaceCommunity() {
         </DialogContent>
       </Dialog>
 
-      <div className="pb-40 md:pb-16" />
     </div>
   )
 }

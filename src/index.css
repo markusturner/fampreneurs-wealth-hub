@@ -322,6 +322,8 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-shell { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; color: hsl(var(--foreground)); background: hsl(var(--card)); }
 .community-topbar { height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: hsl(var(--sidebar-background)); color: hsl(var(--sidebar-foreground)); }
 .community-topbar button { color: inherit; }
+.community-topbar > button { background: transparent; border: 0; box-shadow: none; }
+.community-post-dialog { background: hsl(var(--card)); }
 .community-columns { display: grid; grid-template-columns: 232px minmax(0, 1fr) 272px; flex: 1; min-height: 0; }
 .community-left-rail { border-right: 1px solid hsl(var(--border)); display: flex; flex-direction: column; overflow-y: auto; }
 .community-category-list { padding: 0 14px; display: flex; flex-direction: column; gap: 4px; }
@@ -350,7 +352,9 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-author { position: relative; margin: -29px 0 12px; min-height: 17px; color: hsl(var(--foreground)); }
 .community-author > span:first-child { font-size: 11px; }
 .community-message-own .community-author { justify-content: flex-end; }
-.community-message-time { position: absolute; right: 0; bottom: -8px; transform: translateY(100%); white-space: nowrap; color: hsl(var(--muted-foreground)); }
+.community-message-time { position: absolute; right: 0; top: 100%; margin-top: 6px; white-space: nowrap; color: hsl(var(--muted-foreground)); }
+.community-author .community-message-time { position: static; margin: 0 0 0 auto; }
+.community-message-own .community-author .community-message-time { color: hsl(var(--muted-foreground)); }
 .community-message-tag { border: 0; background: hsl(var(--community-discussion)); color: hsl(var(--foreground)); }
 .community-message-tag.category-wins { background: hsl(var(--community-wins)); }
 .community-message-tag.category-recordings { background: hsl(var(--community-recordings)); }
