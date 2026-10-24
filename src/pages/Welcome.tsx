@@ -27,6 +27,9 @@ import {
 import ReactMarkdown from 'react-markdown'
 import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat'
 import { WelcomeChatLibrary } from '@/components/chat/WelcomeChatLibrary'
+import { mobileEntryPath } from '@/lib/mobile-entry'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { useSubscription } from '@/hooks/useSubscription'
 
 
 
@@ -70,10 +73,13 @@ const RACHEL_SUGGESTIONS = [
 
 export default function Welcome() {
   const { user, profile, loading, signOut } = useAuth()
-  const { isAdmin } = useUserRole()
-  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { isAdmin, isFamilyOfficeOnly, isLoading: roleLoading } = useUserRole()
+  const { isOwner, isLoading: ownerLoading } = useOwnerRole(user?.id ?? null)
+  const isMobile = useIsMobile()
+  const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [mobileOnboardingReady, setMobileOnboardingReady] = useState(false)
   const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
   const [communityOpen, setCommunityOpen] = useState(false)
   const [rachelQuestion, setRachelQuestion] = useState('')
@@ -230,7 +236,8 @@ export default function Welcome() {
         supabase.from('profiles').select('skip_onboarding').eq('user_id', user.id).maybeSingle(),
         supabase.from('onboarding_responses').select('id').eq('user_id', user.id).maybeSingle(),
       ])
-      if (cancelled || (prof as any)?.skip_onboarding || onb) return
+      if (cancelled) return
+      if ((prof as any)?.skip_onboarding || onb) { setMobileOnboardingReady(true); return }
       const explained = localStorage.getItem(`onboarding_explained_${user.id}`)
       navigate(explained ? '/onboarding' : '/onboarding-explanation', { replace: true })
     })()
@@ -297,7 +304,15 @@ export default function Welcome() {
     }
   }
 
-  if (loading) {
+  useEffect(() => {
+    if (!isMobile || loading || !user || !profile || roleLoading || ownerLoading || subscriptionStatus.loading) return
+    if ((user as any)?.user_metadata?.needs_password_setup || (!isAdmin && !isOwner && !mobileOnboardingReady)) return
+    let lastCommunity: string | null = null
+    try { lastCommunity = localStorage.getItem('mobile:lastCommunity') } catch {}
+    navigate(mobileEntryPath({ programName: profile.program_name, programs: subscriptionStatus.programs, isAdminOrOwner: isAdmin || isOwner, softwareOnly: (profile as any).software_only, familyOfficeOnly: isFamilyOfficeOnly, lastCommunity }), { replace: true })
+  }, [isMobile, mobileOnboardingReady, loading, user, profile, roleLoading, ownerLoading, subscriptionStatus.loading, subscriptionStatus.programs, isAdmin, isOwner, isFamilyOfficeOnly, navigate])
+
+  if (loading || isMobile) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <Loader2 className="h-8 w-8 animate-spin text-secondary" />

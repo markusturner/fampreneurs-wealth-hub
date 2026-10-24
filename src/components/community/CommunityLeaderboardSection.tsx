@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Trophy, Crown, Medal, Award } from 'lucide-react'
 import { subDays } from 'date-fns'
 
-interface Props { program: string }
+interface Props { program: string; compact?: boolean }
 
 // Skool-style level thresholds (cumulative points to reach the level)
 const LEVEL_THRESHOLDS = [0, 5, 20, 65, 155, 515, 2015, 8015, 33015]
@@ -25,7 +25,7 @@ type Row = { user_id: string; display_name: string; avatar_url: string | null; p
 
 type Range = '7' | '30' | 'all'
 
-export function CommunityLeaderboardSection({ program }: Props) {
+export function CommunityLeaderboardSection({ program, compact }: Props) {
   const cacheKey = `lb-cache-v1:${program}`
   const initial = (() => {
     try {
@@ -52,6 +52,7 @@ export function CommunityLeaderboardSection({ program }: Props) {
   }, [program])
 
   if (loading) return <p className="text-sm text-muted-foreground py-6 text-center">Loading leaderboard…</p>
+  if (compact) return <LeaderboardColumn title="All time" rows={rowsAll.slice(0, 3)} />
 
 
   return (

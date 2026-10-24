@@ -185,7 +185,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50">
+        <header className={`${location.pathname === '/workspace-community' ? 'hidden' : 'md:hidden'} sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50`}>
           <div className="flex items-center gap-2">
             <img
               src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
@@ -200,7 +200,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'pb-20 md:pb-0'}`}>
+        <main className={`flex-1 ${location.pathname.startsWith('/classroom/') || location.pathname === '/workspace-community' ? 'overflow-hidden' : 'pb-20 md:pb-0'}`}>
           {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
             <div className="sticky top-0 z-40 flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
               <FamilyToggleBar />
