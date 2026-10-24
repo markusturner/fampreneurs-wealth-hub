@@ -79,6 +79,7 @@ export default function Welcome() {
   const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [mobileOnboardingReady, setMobileOnboardingReady] = useState(false)
   const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
   const [communityOpen, setCommunityOpen] = useState(false)
   const [rachelQuestion, setRachelQuestion] = useState('')
@@ -235,7 +236,8 @@ export default function Welcome() {
         supabase.from('profiles').select('skip_onboarding').eq('user_id', user.id).maybeSingle(),
         supabase.from('onboarding_responses').select('id').eq('user_id', user.id).maybeSingle(),
       ])
-      if (cancelled || (prof as any)?.skip_onboarding || onb) return
+      if (cancelled) return
+      if ((prof as any)?.skip_onboarding || onb) { setMobileOnboardingReady(true); return }
       const explained = localStorage.getItem(`onboarding_explained_${user.id}`)
       navigate(explained ? '/onboarding' : '/onboarding-explanation', { replace: true })
     })()
@@ -304,11 +306,11 @@ export default function Welcome() {
 
   useEffect(() => {
     if (!isMobile || loading || !user || !profile || roleLoading || ownerLoading || subscriptionStatus.loading) return
-    if (profile.needs_profile_completion || (!isAdmin && !isOwner && !profile.onboarding_completed && !(profile as any).skip_onboarding)) return
+    if ((user as any)?.user_metadata?.needs_password_setup || (!isAdmin && !isOwner && !mobileOnboardingReady)) return
     let lastCommunity: string | null = null
     try { lastCommunity = localStorage.getItem('mobile:lastCommunity') } catch {}
     navigate(mobileEntryPath({ programName: profile.program_name, programs: subscriptionStatus.programs, isAdminOrOwner: isAdmin || isOwner, softwareOnly: (profile as any).software_only, familyOfficeOnly: isFamilyOfficeOnly, lastCommunity }), { replace: true })
-  }, [isMobile, loading, user, profile, roleLoading, ownerLoading, subscriptionStatus.loading, subscriptionStatus.programs, isAdmin, isOwner, isFamilyOfficeOnly, navigate])
+  }, [isMobile, mobileOnboardingReady, loading, user, profile, roleLoading, ownerLoading, subscriptionStatus.loading, subscriptionStatus.programs, isAdmin, isOwner, isFamilyOfficeOnly, navigate])
 
   if (loading || isMobile) {
     return (

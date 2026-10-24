@@ -54,7 +54,7 @@ export function MobileBottomNav() {
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
   const isVipClient = isVipWeekendProgram(profile?.program_name) && !isAdmin && !isOwner
 
-  const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
+  const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo', '/trust-design-booking']
   const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
   const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/' && location.pathname !== '/welcome' && !isOnboardingRoute
 
@@ -168,7 +168,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-      <nav className="bg-[hsl(262_86%_19%)] backdrop-blur-xl rounded-full px-4 shadow-lg">
+      <nav className="bg-sidebar backdrop-blur-xl rounded-full px-4 shadow-lg">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const active = (item as any).isCommunity
@@ -189,8 +189,8 @@ export function MobileBottomNav() {
                   <div className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                     active
-                      ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
-                      : "text-white/70 hover:text-white active:scale-95"
+                      ? "bg-card text-foreground shadow-lg"
+                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground active:scale-95"
                   )}>
                     <Icon className="h-5 w-5 flex-shrink-0" />
                     {active && (
@@ -212,13 +212,13 @@ export function MobileBottomNav() {
                 <div className={cn(
                   "relative flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   active
-                    ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
-                    : "text-white/70 hover:text-white active:scale-95"
+                    ? "bg-card text-foreground shadow-lg"
+                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground active:scale-95"
                 )}>
                   <div className="relative">
                     <Icon className="h-5 w-5 flex-shrink-0" />
                     {item.name === 'Messages' && unreadDMTotal > 0 && (
-                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#ffb500] text-[#290a52] text-[9px] font-bold flex items-center justify-center leading-none">
+                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-secondary text-foreground text-[9px] font-bold flex items-center justify-center leading-none">
                         {unreadDMTotal > 99 ? '99+' : unreadDMTotal}
                       </span>
                     )}
@@ -253,8 +253,8 @@ export function MobileBottomNav() {
               <div className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 pointer-events-none",
                 isMoreActive
-                  ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
-                  : "text-white/70 active:scale-95"
+                  ? "bg-card text-foreground shadow-lg"
+                  : "text-sidebar-foreground/70 active:scale-95"
               )}>
                 <LayoutGrid className="h-5 w-5 flex-shrink-0" />
                 {isMoreActive && (
@@ -394,14 +394,14 @@ export function MobileBottomNav() {
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
                     isCurrentCommunity
-                      ? "bg-[#ffb500]/10 text-[#ffb500]"
+                      ? "bg-secondary/10 text-secondary"
                       : "text-foreground hover:bg-muted/50 active:bg-muted"
                   )}
                 >
                   <MessageSquare className="h-4 w-4 flex-shrink-0" />
                   <span className="flex-1 text-left">{community.label}</span>
                   {isCurrentCommunity && (
-                    <span className="text-[10px] font-medium text-[#ffb500] bg-[#ffb500]/10 px-2 py-0.5 rounded-full">Active</span>
+                    <span className="text-[10px] font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">Active</span>
                   )}
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
                 </button>
