@@ -8,6 +8,8 @@ import { CommunityEventsSection } from '@/components/community/CommunityEventsSe
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
 import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { PostRichEditor } from '@/components/community/PostRichEditor'
+import { chronologicalMessages } from '@/lib/community-message-order'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -248,7 +250,8 @@ export default function WorkspaceCommunity() {
   const [editingPostTitle, setEditingPostTitle] = useState('')
 
   // Comments state
-  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
+  const [threadPostId, setThreadPostId] = useState<string | null>(null)
+  const messageScrollRef = useRef<HTMLDivElement>(null)
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [commentImageFiles, setCommentImageFiles] = useState<Record<string, File | null>>({})
@@ -880,16 +883,8 @@ export default function WorkspaceCommunity() {
 
   // Comments functions
   const toggleComments = async (postId: string) => {
-    const newExpanded = new Set(expandedComments)
-    if (newExpanded.has(postId)) {
-      newExpanded.delete(postId)
-    } else {
-      newExpanded.add(postId)
-      if (!postComments[postId]) {
-        await fetchCommentsForPost(postId)
-      }
-    }
-    setExpandedComments(newExpanded)
+    setThreadPostId(postId)
+    await fetchCommentsForPost(postId)
   }
 
   const fetchCommentsForPost = async (postId: string) => {
@@ -1215,18 +1210,20 @@ export default function WorkspaceCommunity() {
     }
   }
 
-  // Filter posts by active category, then sort with pinned first
-  const filteredPosts = (activeCategory === 'all'
+  const filteredPosts = chronologicalMessages((activeCategory === 'all'
     ? posts
     : posts.filter(p => p.category === activeCategory)
-  ).filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())).slice().sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1
-    if (!a.pinned && b.pinned) return 1
-    if (a.pinned && b.pinned) {
-      return new Date(b.pinned_at || b.created_at).getTime() - new Date(a.pinned_at || a.created_at).getTime()
-    }
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  })
+  ).filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())))
+  const latestMessageId = filteredPosts.at(-1)?.id
+  useEffect(() => {
+    if (communityView !== 'feed' || loading) return
+    const frame = requestAnimationFrame(() => {
+      const scroll = messageScrollRef.current
+      if (scroll) scroll.scrollTop = scroll.scrollHeight
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [program, activeCategory, communityView, loading, latestMessageId, messageSearch])
+  useEffect(() => { setThreadPostId(null) }, [program, activeCategory])
 
   const handleTogglePin = async (post: Post) => {
     const newPinned = !post.pinned
@@ -1363,7 +1360,7 @@ export default function WorkspaceCommunity() {
   }
   const categoryNav = (mobile = false) => (
     <div className={mobile ? 'community-mobile-categories' : 'community-category-list'}>
-      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
+      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}`} />}{cat.label}
       </Button>)}
     </div>
@@ -1396,7 +1393,7 @@ export default function WorkspaceCommunity() {
           </div>
           <div className="md:hidden">{categoryNav(true)}</div>
           {searchOpen && <div className="border-b border-border bg-card px-4 py-2"><Input autoFocus placeholder="Search messages..." value={messageSearch} onChange={e => setMessageSearch(e.target.value)} /></div>}
-          <div className="community-scroll">
+          <div className="community-scroll" ref={messageScrollRef}>
             <AIChat hideLauncher />
             {communityView === 'events' && (
               <CommunityEventsSection program={program} />
@@ -1857,19 +1854,85 @@ export default function WorkspaceCommunity() {
                               <ThumbsUp className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
                               {post.likes_count > 0 && post.likes_count}
                             </button>
-                            <button 
-                              onClick={() => toggleComments(post.id)}
-                              className="flex items-center gap-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => toggleComments(post.id)} className="h-7 px-1 gap-1.5 text-xs" aria-label={`Open thread for ${post.title || post.author_name}`}>
                               <MessageCircle className="h-4 w-4" />
-                              {post.comments_count > 0 && post.comments_count}
-                            </button>
+                              {post.comments_count > 0 ? `${post.comments_count} replies` : 'Thread'}
+                            </Button>
                             <PostViewers postId={post.id} userId={user?.id} canSeeViewers={isAdmin || isOwner} />
                           </div>
 
-                          {/* Comments Section */}
-                          {expandedComments.has(post.id) && (
-                            <div className="mt-3 pt-3 border-t border-border/30 space-y-3">
+
+                        </div>
+
+                        {(post.user_id === user?.id || isAdmin || isOwner) && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {(isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => handleTogglePin(post)}>
+                                  {post.pinned ? (
+                                    <><PinOff className="h-3.5 w-3.5 mr-2" /> Unpin Post</>
+                                  ) : (
+                                    <><Pin className="h-3.5 w-3.5 mr-2" /> Pin Post</>
+                                  )}
+                                </DropdownMenuItem>
+                              )}
+                              {(post.user_id === user?.id || isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => {
+                                  setEditingPostId(post.id);
+                                  setEditingPostContent(post.content);
+                                  setEditingPostTitle(post.title || '');
+                                  setEditingPostCategory(post.category || 'discussion');
+                                  const postDate = new Date(post.created_at);
+                                  setEditingPostDate(postDate.toISOString().split('T')[0]);
+                                }}>
+                                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                                  Edit Post
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
+                                Delete Post
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  </div>
+                ))
+              )}
+            </div>
+            </>
+            )}
+          </div>
+          {communityView === 'feed' && <form className="community-composer" onSubmit={e => { e.preventDefault(); handleCreatePost() }}>
+            <Button type="button" variant="ghost" size="icon" className="rounded-full bg-muted shrink-0" title="Add attachments or create a full post" aria-label="Add attachments or create a full post" onClick={() => setMobilePostOpen(true)}><Plus /></Button>
+            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className="h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 bg-secondary/30 text-[11px] px-2"><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+            <Button type="button" variant="ghost" size="icon" className="hidden md:inline-flex rounded-full bg-muted shrink-0" title="Record a voice message" aria-label="Record a voice message" onClick={() => setMobilePostOpen(true)}><Mic /></Button>
+            <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || !newPost.trim()}><ArrowUp /></Button>
+          </form>}
+          </div>
+
+          <aside className="community-right-rail">
+            {pinnedPost && <section><div className="community-rail-title"><h3 className="community-rail-heading"><Pin />Pinned</h3></div><Button variant="ghost" className="h-auto w-full justify-start rounded-lg bg-secondary/15 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span className="min-w-0"><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1.5 block text-[11px] leading-relaxed font-normal text-muted-foreground line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
+            <section><CommunityMembersList program={program} compact /></section>
+          </aside>
+        </div>
+
+      <Sheet open={!!threadPostId} onOpenChange={open => { if (!open) setThreadPostId(null) }}>
+        <SheetContent side="right" className="community-thread-panel sm:max-w-[440px]" onOpenAutoFocus={e => e.preventDefault()}>
+          <SheetHeader className="border-b border-border p-5 text-left">
+            <SheetTitle className="text-base">Thread</SheetTitle>
+            <SheetDescription className="sr-only">Replies to the selected community message</SheetDescription>
+          </SheetHeader>
+          {posts.filter(post => post.id === threadPostId).map(post => <div key={post.id} className="community-thread-content">
+            <div className="mb-5 border-b border-border pb-4"><p className="text-xs font-semibold">{post.author_name}</p>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}</div>
+<div className="mt-3 pt-3 border-t border-border/30 space-y-3">
                               {/* Existing comments */}
                               {(postComments[post.id] || []).map(comment => (
                                 <div key={comment.id} className="flex items-start gap-2 group/comment">
@@ -1934,7 +1997,7 @@ export default function WorkspaceCommunity() {
                                   <div className="flex gap-1.5">
                                     <MentionTextarea
                                       ref={(el) => { commentTextareaRefs.current[post.id] = el }}
-                                      placeholder="Write a comment..."
+                                      placeholder="Reply in thread..."
                                       value={commentText[post.id] || ''}
                                       onChange={(v) => {
                                         setCommentText(prev => ({ ...prev, [post.id]: v }))
@@ -1949,7 +2012,7 @@ export default function WorkspaceCommunity() {
                                         }
                                       }}
                                     />
-                                    <Button size="sm" className="h-9 px-2 self-end" onClick={() => handleSubmitComment(post.id)}>
+                                    <Button aria-label="Send reply" size="sm" className="h-9 px-2 self-end" onClick={() => handleSubmitComment(post.id)}>
                                       <Send className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
@@ -1988,80 +2051,21 @@ export default function WorkspaceCommunity() {
                                       <Mic className="h-3 w-3" />
                                     </Button>
                                     {commentImageFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">📷 attached</span>
+                                      <span className="text-[10px] text-muted-foreground">Photo attached</span>
                                     )}
                                     {commentVideoFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">🎥 attached</span>
+                                      <span className="text-[10px] text-muted-foreground">Video attached</span>
                                     )}
                                     {commentAudioFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">🎤 attached</span>
+                                      <span className="text-[10px] text-muted-foreground">Audio attached</span>
                                     )}
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          )}
-                        </div>
-
-                        {(post.user_id === user?.id || isAdmin || isOwner) && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {(isAdmin || isOwner) && (
-                                <DropdownMenuItem onClick={() => handleTogglePin(post)}>
-                                  {post.pinned ? (
-                                    <><PinOff className="h-3.5 w-3.5 mr-2" /> Unpin Post</>
-                                  ) : (
-                                    <><Pin className="h-3.5 w-3.5 mr-2" /> Pin Post</>
-                                  )}
-                                </DropdownMenuItem>
-                              )}
-                              {(post.user_id === user?.id || isAdmin || isOwner) && (
-                                <DropdownMenuItem onClick={() => {
-                                  setEditingPostId(post.id);
-                                  setEditingPostContent(post.content);
-                                  setEditingPostTitle(post.title || '');
-                                  setEditingPostCategory(post.category || 'discussion');
-                                  const postDate = new Date(post.created_at);
-                                  setEditingPostDate(postDate.toISOString().split('T')[0]);
-                                }}>
-                                  <Pencil className="h-3.5 w-3.5 mr-2" />
-                                  Edit Post
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
-                                Delete Post
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </div>
-                ))
-              )}
-            </div>
-            </>
-            )}
-          </div>
-          {communityView === 'feed' && <form className="community-composer" onSubmit={e => { e.preventDefault(); handleCreatePost() }}>
-            <Button type="button" variant="ghost" size="icon" className="rounded-full bg-muted shrink-0" title="Add attachments or create a full post" aria-label="Add attachments or create a full post" onClick={() => setMobilePostOpen(true)}><Plus /></Button>
-            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className="h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 bg-secondary/30 text-[11px] px-2"><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
-            <Button type="button" variant="ghost" size="icon" className="hidden md:inline-flex rounded-full bg-muted shrink-0" title="Record a voice message" aria-label="Record a voice message" onClick={() => setMobilePostOpen(true)}><Mic /></Button>
-            <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || !newPost.trim()}><ArrowUp /></Button>
-          </form>}
-          </div>
-
-          <aside className="community-right-rail">
-            {pinnedPost && <section><div className="community-rail-title"><h3 className="community-rail-heading"><Pin />Pinned</h3></div><Button variant="ghost" className="h-auto w-full justify-start rounded-lg bg-secondary/15 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span className="min-w-0"><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1.5 block text-[11px] leading-relaxed font-normal text-muted-foreground line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
-            <section><CommunityMembersList program={program} compact /></section>
-          </aside>
-        </div>
+          </div>)}
+        </SheetContent>
+      </Sheet>
 
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
