@@ -339,7 +339,7 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-mobile-brand { display: none; }
 .community-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 18px 32px 24px; scrollbar-width: thin; }
 .community-pinned-banner { width: 100%; height: auto; min-height: 40px; margin-bottom: 14px; background: hsl(var(--secondary) / .2); border-radius: 10px; font-size: 12px; }
-.community-message-list { display: flex; flex-direction: column; gap: 20px; }
+.community-message-list { display: flex; flex-direction: column; gap: 34px; }
 .community-day-label { text-align: center; color: hsl(var(--muted-foreground)); font-size: 11px; margin-bottom: 20px; }
 .community-message { border: 0; box-shadow: none; background: transparent; border-radius: 0; width: min(88%, 560px); }
 .community-message-own { margin-left: auto; }
