@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Community message redesign
+- [x] Preserve full posting tools, match message and top bar colors, and clean up the right sidebar; checked with sample accounts on desktop, tablet, and phone
 - [x] Match desktop and phone community references while preserving post tools and comments
 - [x] Skip mobile Welcome and open an eligible community, keeping VIP/software-only restrictions
 - [x] Verify entry rules and desktop/tablet/phone layouts with sample accounts
