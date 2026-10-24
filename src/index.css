@@ -330,15 +330,14 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-category-list { padding: 0 14px; display: flex; flex-direction: column; gap: 4px; }
 .community-category { justify-content: flex-start; min-height: 42px; border-radius: 10px; font-size: 12px; font-weight: 600; gap: 10px; }
 .community-category.is-active { background: hsl(var(--community-own)); color: hsl(var(--primary)); }
-.community-category.category-all { background: hsl(var(--community-all)); color: hsl(var(--foreground)); }
-.community-category.category-discussion { background: hsl(var(--community-discussion)); color: hsl(var(--foreground)); }
-.community-category.category-all.is-active, .community-category.category-discussion.is-active { box-shadow: inset 0 0 0 2px hsl(var(--sidebar-background)); }
 .community-thread-panel { background: hsl(var(--card)); display: flex; flex-direction: column; width: 100%; max-width: 440px; padding: 0; }
 .community-thread-content { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; }
 .community-thread-content > div { border-top: 0; margin-top: 0; padding-top: 0; }
 .community-thread-content > div > div:last-child { position: sticky; bottom: 0; background: hsl(var(--card)); padding-top: 12px; }
 .community-category-dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--secondary)); }
 .community-category.is-active .community-category-dot { background: currentColor; }
+.community-category-dot.category-all { background: hsl(var(--community-all)); }
+.community-category-dot.category-discussion { background: hsl(var(--community-discussion)); }
 .community-category-dot.category-wins { background: hsl(var(--success)); }
 .community-category-dot.category-updates { background: hsl(var(--community-updates)); }
 .community-category-dot.category-recordings { background: hsl(var(--community-recordings)); }
