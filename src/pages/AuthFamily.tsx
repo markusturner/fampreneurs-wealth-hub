@@ -28,27 +28,11 @@ export default function AuthFamily() {
     checkUser()
   }, [])
 
-  const cleanupAuthState = () => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key)
-      }
-    })
-    Object.keys(sessionStorage || {}).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        sessionStorage.removeItem(key)
-      }
-    })
-  }
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      cleanupAuthState()
-      try { await supabase.auth.signOut({ scope: 'global' }) } catch (err) {}
-
       if (familySecretCode) {
         try {
           const { data: codeValidation, error: codeError } = await supabase.functions.invoke(
