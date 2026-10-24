@@ -1405,7 +1405,7 @@ export default function WorkspaceCommunity() {
 
             {communityView === 'feed' && (
             <>
-            {pinnedPost && <Button variant="ghost" className="community-pinned-banner" onClick={() => openPost(pinnedPost.id)}><Pin className="h-4 w-4 shrink-0" /><span className="min-w-0 flex-1 text-left whitespace-normal">Pinned: {pinnedPost.title || pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 90)}</span><ChevronRight className="shrink-0" /></Button>}
+            {pinnedPost && <div className="community-pinned-sticky"><Button variant="ghost" className="community-pinned-banner" onClick={() => openPost(pinnedPost.id)}><Pin className="h-4 w-4 shrink-0" /><span className="min-w-0 flex-1 text-left whitespace-normal">Pinned: {pinnedPost.title || pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 90)}</span><ChevronRight className="shrink-0" /></Button></div>}
             {/* Bulk delete toolbar (admins & owners only) */}
             {(isAdmin || isOwner) && filteredPosts.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">

@@ -345,7 +345,9 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-message-header { min-height: 62px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
 .community-mobile-brand { display: none; }
 .community-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 18px 32px 24px; scrollbar-width: thin; }
-.community-pinned-banner { width: 100%; height: auto; min-height: 40px; margin-bottom: 14px; background: hsl(var(--secondary) / .2); border-radius: 10px; font-size: 12px; }
+.community-pinned-sticky { position: sticky; top: 0; z-index: 5; background: hsl(var(--community-canvas)); padding-bottom: 14px; }
+.community-pinned-sticky::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 18px; background: hsl(var(--community-canvas)); }
+.community-pinned-banner { width: 100%; height: auto; min-height: 40px; background: hsl(var(--secondary) / .2); border-radius: 10px; font-size: 12px; }
 .community-message-list { display: flex; flex-direction: column; gap: 34px; }
 .community-day-label { text-align: center; color: hsl(var(--muted-foreground)); font-size: 11px; margin-bottom: 20px; }
 .community-message { border: 0; box-shadow: none; background: transparent; border-radius: 0; width: min(88%, 560px); }
@@ -401,6 +403,7 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
   .community-mobile-categories { display: flex; gap: 6px; overflow-x: auto; padding: 6px 16px 9px; background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); }
   .community-category { flex-shrink: 0; min-height: 34px; border-radius: 22px; background: hsl(var(--community-bubble)); padding: 6px 15px; }
   .community-scroll { padding: 14px 16px 28px; }
+  .community-pinned-sticky::before { height: 14px; }
   .community-message-list { gap: 30px; }
   .community-message { width: 95%; }
   .community-bubble { padding: 10px 12px; }
