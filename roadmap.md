@@ -1,5 +1,9 @@
 # Roadmap
 
+## Persistent login
+- [ ] Remove login-time global sign-outs and prevent redirects while session recovery runs
+- [ ] Test recovery, reload persistence, and explicit sign-out; verify hosted session limits if accessible
+
 ## Community message redesign
 - [x] Replace the plus dialog with compact posting options and move Events/Leaderboard to the right rail; sample posting and layout checks passed on desktop, tablet, and phone
 - [x] Add desktop Reply menus and mobile hold-to-open actions with original-message context; checked using sample accounts on desktop, tablet, and phone
