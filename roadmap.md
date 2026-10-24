@@ -1,11 +1,14 @@
 # Roadmap
 
 ## Persistent login
+- [x] Keep login through republish by saving a backup outside web storage; sample check stayed signed in after storage wipe on all sizes
 - [x] Remove login-time global sign-outs and prevent redirects while session recovery runs
 - [x] Test recovery, reload persistence, and explicit local sign-out: 12 unit tests pass; synthetic browser sessions pass on desktop, phone, and tablet
 - [ ] Verify real-device persistence and hosted session limits: external unmanaged authentication prevents real-account testing; hosted session-settings read is unavailable
 
 ## Community message redesign
+- [x] Instant mobile message loading from last-seen copy, newest 40 first with Show earlier; checked on phone
+- [x] Select from the message menu (3 dots or hold), then Select all and multi-select delete; checked on desktop, tablet, and phone
 - [x] Replace the plus dialog with compact posting options and move Events/Leaderboard to the right rail; sample posting and layout checks passed on desktop, tablet, and phone
 - [x] Add desktop Reply menus and mobile hold-to-open actions with original-message context; checked using sample accounts on desktop, tablet, and phone
 - [x] Put newest messages at the bottom with automatic scrolling, separate reply threads, and distinct All/Discussion colors; sample-account checks passed on desktop, tablet, and phone

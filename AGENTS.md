@@ -8,6 +8,8 @@
 - AuthContext holds route guards during deduplicated server-validated recovery using `session-persistence`; preserve backups on transient failures but discard rejected tokens. Why: recovery must finish before navigation and must never bypass revocation.
 - Login handlers never clear auth storage or sign out before password login; personal/expiry logout uses local scope, while explicit account-security lockdown retains global scope and clears the backup. Why: signing in or out on one device must not revoke unrelated device sessions.
 
+- The session recovery token is mirrored to IndexedDB and native app storage and reseeds localStorage when it is wiped; every copy is cleared on personal logout or security lockdown. Why: republishing or app updates can erase web storage, and copies only request server-validated refreshes.
+
 ## VIP workbook navigation
 - Keep the mastermind navigation destination on the existing protection-workbook route and use workbook eligibility helpers rather than creating community records; this preserves workbook submissions and onboarding.
 
@@ -17,6 +19,7 @@
 - Mobile Welcome redirects through the shared mobile-entry helper after account setup checks; keep VIP and software-only destinations separate to preserve access restrictions.
 
 ## Community presentation
+- Community feeds render from a per-user cached copy first and refresh in the background; phones render the newest window first. Why: opening a community must feel instant without changing post data.
 - Workspace communities share a full-height message shell with category navigation and a docked composer; reuse existing post handlers and event/leaderboard compact views so presentation does not fork community data.
 - Community reply threads reuse the existing comment state and handlers in a separate sheet, and message order uses the shared chronological helper to keep all category feeds consistent.
 
