@@ -44,5 +44,6 @@ export function canDeleteSelection(posts: { id: string; user_id: string }[], sel
   if (selectedIds.length === 0) return false
   if (isAdminOrOwner) return true
   const selected = new Set(selectedIds)
-  return posts.filter(p => selected.has(p.id)).every(p => p.user_id === userId) && posts.some(p => selected.has(p.id))
+  const chosen = posts.filter(p => selected.has(p.id))
+  return chosen.length === selected.size && chosen.every(p => p.user_id === userId)
 }
