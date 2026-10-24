@@ -13,6 +13,7 @@ import { chronologicalMessages } from '@/lib/community-message-order'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -1249,13 +1250,7 @@ export default function WorkspaceCommunity() {
 
   const categoryLabel = categories.find(c => c.value === postCategory)
 
-  // Mobile post composer dialog state
-  const [mobilePostOpen, setMobilePostOpen] = useState(false)
-
-  const handleMobilePost = async () => {
-    const posted = await handleCreatePost()
-    if (posted) setMobilePostOpen(false)
-  }
+  const [postOptionsOpen, setPostOptionsOpen] = useState(false)
 
   // If no program selected, show loading if resolving from post param, otherwise prompt
   if (!program) {
@@ -1388,8 +1383,6 @@ export default function WorkspaceCommunity() {
           <p className="px-5 pb-2 text-[10px] font-semibold uppercase text-muted-foreground">Categories</p>
           {categoryNav()}
           <div className="mt-auto space-y-1 border-t border-border p-3">
-            <Button variant="ghost" className="w-full justify-start text-xs" onClick={() => setCommunityView('events')}><CalendarDays /> Events</Button>
-            <Button variant="ghost" className="w-full justify-start text-xs" onClick={() => setCommunityView('leaderboard')}><Trophy /> Leaderboard</Button>
             <Button variant="ghost" className="w-full justify-start text-xs" onClick={() => setSettingsOpen(true)}><Settings /> Community settings</Button>
           </div>
         </aside>
@@ -1412,202 +1405,6 @@ export default function WorkspaceCommunity() {
 
             {communityView === 'feed' && (
             <>
-            {/* Mobile Post Dialog - Skool style */}
-            <Dialog open={mobilePostOpen} onOpenChange={setMobilePostOpen}>
-              <DialogContent className="community-post-dialog fixed inset-0 max-w-full md:max-w-2xl md:inset-auto md:h-[85dvh] md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col z-[70] [&>button]:hidden">
-                {/* Top bar */}
-                <div className="grid grid-cols-3 items-center px-4 py-3 border-b border-border/50 bg-background">
-                  <div className="flex justify-start">
-                    <button
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      onClick={() => setMobilePostOpen(false)}
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                  <span className="text-sm font-semibold text-center">New Post</span>
-                  <div className="flex justify-end">
-                    <Button
-                      size="sm"
-                      onClick={handleMobilePost}
-                      disabled={isPosting || (!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim()))}
-                      className="rounded-full px-5 h-8 text-xs font-bold hover:bg-secondary hover:text-foreground transition-colors"
-                    >
-                      {isPosting ? 'POSTING...' : 'POST'}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Send to all toggle for admins */}
-                {(isAdmin || isOwner) && (
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-border/30 bg-muted/30">
-                    <span className="text-xs text-muted-foreground">Send email to all members</span>
-                    <button
-                      className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${postToAll ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}
-                      onClick={() => setPostToAll(!postToAll)}
-                    >
-                      {postToAll ? 'ON' : 'OFF'}
-                    </button>
-                  </div>
-                )}
-
-                {/* Owner-only custom date/time */}
-                {isOwner && (
-                  <div className="px-4 py-2 border-b border-border/30 bg-muted/30 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Custom date & time</span>
-                      <button
-                        className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${useCustomDateTime ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}
-                        onClick={() => setUseCustomDateTime(!useCustomDateTime)}
-                      >
-                        {useCustomDateTime ? 'ON' : 'OFF'}
-                      </button>
-                    </div>
-                    {useCustomDateTime && (
-                      <div className="flex gap-2">
-                        <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs flex-1" />
-                        <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-28" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-
-                <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-                  <Avatar className="h-11 w-11 flex-shrink-0">
-                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                      {getInitials(profile?.display_name || 'U')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="leading-tight">
-                    <p className="font-semibold text-sm">{profile?.display_name || 'You'}</p>
-                    <p className="text-xs text-muted-foreground">
-                      posting in <span className="font-medium text-foreground">{programName.length > 28 ? programName.slice(0, 28) + '…' : programName}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Content area */}
-                <div className="flex-1 px-4 overflow-y-auto">
-                  <Input
-                    placeholder="Title (optional)"
-                    value={newPostTitle}
-                    onChange={(e) => setNewPostTitle(e.target.value)}
-                    className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
-                  />
-                  <PostRichEditor
-                    placeholder="Share something with the community..."
-                    value={newPost}
-                    onChange={setNewPost}
-                    program={program}
-                    minHeight="180px"
-                    autoFocus
-                  />
-
-                  {/* Poll editor */}
-                  {pollEnabled && (
-                    <div className="mt-2">
-                      <PollDraftEditor
-                        question={pollQuestion}
-                        options={pollOptions}
-                        onChange={(q, o) => { setPollQuestion(q); setPollOptions(o) }}
-                        onRemove={() => { setPollEnabled(false); setPollQuestion(''); setPollOptions(['', '']) }}
-                      />
-                    </div>
-                  )}
-
-                  {/* GIF preview */}
-                  {postGifUrl && (
-                    <div className="relative inline-block mt-3">
-                      <img src={postGifUrl} alt="GIF" className="max-h-48 rounded-xl" />
-                      <button onClick={() => setPostGifUrl(null)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Live video link preview */}
-                  {(() => {
-                    const link = extractFirstVideoUrl(newPost)
-                    if (!link) return null
-                    return renderVideoEmbed(link)
-                  })()}
-
-                  {/* Attachment previews */}
-                  {(postImagePreview || postVideoPreview || postAudioFile) && (
-                    <div className="flex flex-wrap gap-2 mt-3 pb-2">
-                      {postImagePreview && (
-                        <div className="relative inline-block">
-                          <img src={postImagePreview} alt="Preview" className="h-24 rounded-xl object-cover" />
-                          <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )}
-                      {postVideoPreview && (
-                        <div className="relative inline-block">
-                          <video src={postVideoPreview} className="h-24 rounded-xl object-cover" />
-                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )}
-                      {postAudioFile && (
-                        <div className="relative inline-flex items-center gap-2 bg-muted rounded-xl px-3 py-2">
-                          <Mic className="h-4 w-4 text-primary" />
-                          <span className="text-xs font-medium">{postAudioFile.name.slice(0, 20)}</span>
-                          <button onClick={() => setPostAudioFile(null)}>
-                            <X className="h-3 w-3 text-muted-foreground" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom toolbar */}
-                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)] flex-wrap">
-                  <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-                  <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
-                  <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                  <Button variant="ghost" size="icon" title="Add photos" aria-label="Add photos" className="h-9 w-9 text-muted-foreground" onClick={() => imageInputRef.current?.click()}>
-                    <Image className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" title="Add video" aria-label="Add video" className="h-9 w-9 text-muted-foreground" onClick={() => videoInputRef.current?.click()}>
-                    <Video className="h-5 w-5" />
-                  </Button>
-                  <button
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isRecording ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
-                    onClick={isRecording ? stopRecording : startRecording}
-                  >
-                    {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                  </button>
-                  <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} />
-                  <GifButton onPick={(url) => setPostGifUrl(url)} />
-                  <button
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${pollEnabled ? 'text-secondary bg-secondary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
-                    onClick={() => setPollEnabled(v => !v)}
-                    aria-label="Add poll"
-                  >
-                    <ListChecks className="h-5 w-5" />
-                  </button>
-                  <div className="ml-auto">
-                    <Select value={postCategory} onValueChange={setPostCategory}>
-                      <SelectTrigger className="h-9 w-auto text-xs rounded-full border-border/70 bg-background px-3">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(c => (
-                          <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-
             {pinnedPost && <Button variant="ghost" className="community-pinned-banner" onClick={() => openPost(pinnedPost.id)}><Pin className="h-4 w-4 shrink-0" /><span className="min-w-0 flex-1 text-left whitespace-normal">Pinned: {pinnedPost.title || pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 90)}</span><ChevronRight className="shrink-0" /></Button>}
             {/* Bulk delete toolbar (admins & owners only) */}
             {(isAdmin || isOwner) && filteredPosts.length > 0 && (
@@ -1933,16 +1730,40 @@ export default function WorkspaceCommunity() {
             </>
             )}
           </div>
-          {communityView === 'feed' && <form className="community-composer" onSubmit={e => { e.preventDefault(); handleCreatePost() }}>
-            <Button type="button" variant="ghost" size="icon" className="rounded-full bg-muted shrink-0" title="Add attachments or create a full post" aria-label="Add attachments or create a full post" onClick={() => setMobilePostOpen(true)}><Plus /></Button>
+          {communityView === 'feed' && <div className="shrink-0 bg-card">
+            <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+            <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+            <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
+            {(pollEnabled || postImagePreview || postVideoPreview || postAudioFile || postGifUrl) && <div className="px-4 pt-3 max-h-60 overflow-y-auto border-t border-border">
+              {pollEnabled && <PollDraftEditor question={pollQuestion} options={pollOptions} onChange={(q,o) => { setPollQuestion(q); setPollOptions(o) }} onRemove={() => setPollEnabled(false)} />}
+              <div className="flex gap-2 flex-wrap">{postImagePreview && <div className="relative"><img src={postImagePreview} alt="Photo preview" className="h-20 rounded object-cover" /><Button variant="ghost" size="icon" aria-label="Remove photo" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => { setPostImageFile(null); setPostImagePreview(null) }}><X /></Button></div>}{postVideoPreview && <div className="relative"><video src={postVideoPreview} className="h-20 rounded" /><Button variant="ghost" size="icon" aria-label="Remove video" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }}><X /></Button></div>}{postGifUrl && <div className="relative"><img src={postGifUrl} alt="GIF preview" className="h-20 rounded" /><Button variant="ghost" size="icon" aria-label="Remove GIF" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => setPostGifUrl(null)}><X /></Button></div>}{postAudioFile && <Button variant="ghost" size="sm" onClick={() => setPostAudioFile(null)}><Mic />{postAudioFile.name}<X /></Button>}</div>
+            </div>}
+            <form className="community-composer" onSubmit={e => { e.preventDefault(); handleCreatePost() }}>
+              <Popover open={postOptionsOpen} onOpenChange={setPostOptionsOpen}>
+                <PopoverTrigger asChild><Button type="button" variant="ghost" size="icon" className="rounded-full bg-muted shrink-0" title="Posting options" aria-label="Posting options"><Plus /></Button></PopoverTrigger>
+                <PopoverContent side="top" align="start" className="w-72 max-w-[calc(100vw-2rem)] p-3" aria-label="Posting options">
+                  <div className="flex items-center gap-1 border-b border-border pb-2 mb-3">
+                    <Button type="button" variant="ghost" size="icon" title="Add photos" aria-label="Add photos" onClick={() => imageInputRef.current?.click()}><Image /></Button>
+                    <Button type="button" variant="ghost" size="icon" title="Add video" aria-label="Add video" onClick={() => videoInputRef.current?.click()}><Video /></Button>
+                    <Button type="button" variant="ghost" size="icon" title="Record audio" aria-label="Record audio" onClick={isRecording ? stopRecording : startRecording}>{isRecording ? <MicOff /> : <Mic />}</Button>
+                    <EmojiButton onPick={e => setNewPost(prev => prev + e)} />
+                    <GifButton onPick={url => setPostGifUrl(url)} />
+                    <Button type="button" variant="ghost" size="icon" title="Add poll" aria-label="Add poll" onClick={() => { setPollEnabled(v => !v); setPostOptionsOpen(false) }}><ListChecks /></Button>
+                  </div>
+                  {(isAdmin || isOwner) && <div className="space-y-2"><Label className="text-xs">Email to all members</Label><Select value={postToAll ? 'all' : 'none'} onValueChange={v => setPostToAll(v === 'all')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Do not email</SelectItem><SelectItem value="all">Email all members</SelectItem></SelectContent></Select></div>}
+                  {isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
+                </PopoverContent>
+              </Popover>
             <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className="h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 bg-secondary/30 text-[11px] px-2"><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
-            <Button type="button" variant="ghost" size="icon" className="hidden md:inline-flex rounded-full bg-muted shrink-0" title="Record a voice message" aria-label="Record a voice message" onClick={() => setMobilePostOpen(true)}><Mic /></Button>
-            <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || !newPost.trim()}><ArrowUp /></Button>
-          </form>}
+              <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
+            </form>
+          </div>}
           </div>
 
           <aside className="community-right-rail">
             {pinnedPost && <section><div className="community-rail-title"><h3 className="community-rail-heading"><Pin />Pinned</h3></div><Button variant="ghost" className="h-auto w-full justify-start rounded-lg bg-secondary/15 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span className="min-w-0"><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1.5 block text-[11px] leading-relaxed font-normal text-muted-foreground line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
+            <section><div className="community-rail-title"><h3 className="community-rail-heading"><CalendarDays />Upcoming events</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('events')}>View all</Button></div><CommunityEventsSection program={program} compact onViewAll={() => setCommunityView('events')} /></section>
+            <section><div className="community-rail-title"><h3 className="community-rail-heading"><Trophy />Leaderboard</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('leaderboard')}>View all</Button></div><CommunityLeaderboardSection program={program} compact /></section>
             <section><CommunityMembersList program={program} compact /></section>
           </aside>
         </div>
