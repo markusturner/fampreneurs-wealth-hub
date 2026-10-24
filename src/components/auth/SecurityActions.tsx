@@ -28,6 +28,7 @@ export function SecurityActions() {
       // Sign the user out of every active session on every device.
       // Clear the self-healing session backup so it does not restore the session.
       try { localStorage.removeItem('truheirs_session_backup') } catch {}
+      clearDurableBackup()
       const { error } = await supabase.auth.signOut({ scope: 'global' })
       if (error) throw error
       toast({
