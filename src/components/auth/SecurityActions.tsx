@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Lock, FileWarning, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { clearDurableBackup } from '@/lib/durable-session'
 import { useToast } from '@/hooks/use-toast'
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ export function SecurityActions() {
       // Sign the user out of every active session on every device.
       // Clear the self-healing session backup so it does not restore the session.
       try { localStorage.removeItem('truheirs_session_backup') } catch {}
+      clearDurableBackup()
       const { error } = await supabase.auth.signOut({ scope: 'global' })
       if (error) throw error
       toast({

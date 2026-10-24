@@ -347,6 +347,10 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 18px 32px 24px; scrollbar-width: thin; }
 .community-pinned-sticky { position: sticky; top: 0; z-index: 5; background: hsl(var(--community-canvas)); padding-bottom: 14px; }
 .community-pinned-sticky::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 18px; background: hsl(var(--community-canvas)); }
+.community-select-bar { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; padding: 8px 12px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); box-shadow: 0 4px 16px -8px hsl(var(--foreground) / 0.2); }
+.community-select-dot { margin-top: 8px; display: inline-flex; height: 20px; width: 20px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 9999px; border: 1.5px solid hsl(var(--muted-foreground) / 0.5); background: hsl(var(--card)); color: hsl(var(--secondary-foreground)); }
+.community-select-dot.is-checked { border-color: hsl(var(--secondary)); background: hsl(var(--secondary)); }
+.community-message-selected { background: hsl(var(--secondary) / 0.12); border-radius: 14px; }
 .community-pinned-banner { width: 100%; height: auto; min-height: 40px; background: hsl(var(--secondary) / .2); border-radius: 10px; font-size: 12px; }
 .community-message-list { display: flex; flex-direction: column; gap: 34px; }
 .community-day-label { text-align: center; color: hsl(var(--muted-foreground)); font-size: 11px; margin-bottom: 20px; }
