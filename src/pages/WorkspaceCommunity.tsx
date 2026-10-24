@@ -252,6 +252,13 @@ export default function WorkspaceCommunity() {
 
   // Comments state
   const [threadPostId, setThreadPostId] = useState<string | null>(null)
+  const [messageMenuId, setMessageMenuId] = useState<string | null>(null)
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const holdStartRef = useRef<{ x: number; y: number } | null>(null)
+  const cancelMessageHold = () => {
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
+    holdTimerRef.current = null
+  }
   const messageScrollRef = useRef<HTMLDivElement>(null)
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
   const [commentText, setCommentText] = useState<Record<string, string>>({})
@@ -1675,7 +1682,20 @@ export default function WorkspaceCommunity() {
                 filteredPosts.map((post, index) => (
                   <div key={post.id}>
                     {(index === 0 || new Date(filteredPosts[index - 1].created_at).toDateString() !== new Date(post.created_at).toDateString()) && <p className="community-day-label">{new Date(post.created_at).toDateString() === new Date().toDateString() ? 'Today' : formatPostDate(post.created_at)}</p>}
-                  <Card id={`community-post-${post.id}`} className={`community-message ${post.user_id === user?.id ? 'community-message-own' : ''}`}>
+                  <Card id={`community-post-${post.id}`} className={`community-message ${post.user_id === user?.id ? 'community-message-own' : ''}`}
+                    onPointerDown={e => {
+                      if (e.pointerType !== 'touch' || window.innerWidth >= 768 || (e.target as HTMLElement).closest('button, input, textarea, a, video, audio')) return
+                      cancelMessageHold()
+                      holdStartRef.current = { x: e.clientX, y: e.clientY }
+                      holdTimerRef.current = setTimeout(() => { setMessageMenuId(post.id); holdTimerRef.current = null }, 500)
+                    }}
+                    onPointerMove={e => {
+                      const start = holdStartRef.current
+                      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) cancelMessageHold()
+                    }}
+                    onPointerUp={cancelMessageHold} onPointerCancel={cancelMessageHold}
+                    onContextMenu={e => { if (window.innerWidth < 768) { e.preventDefault(); cancelMessageHold(); setMessageMenuId(post.id) } }}
+                  >
                     <CardContent className="community-message-body">
                       <div className="community-message-row">
                         {selectMode && (isAdmin || isOwner) && (
@@ -1865,14 +1885,17 @@ export default function WorkspaceCommunity() {
 
                         </div>
 
-                        {(post.user_id === user?.id || isAdmin || isOwner) && (
-                          <DropdownMenu>
+                        <DropdownMenu open={messageMenuId === post.id} onOpenChange={open => setMessageMenuId(open ? post.id : null)}>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                              <Button variant="ghost" size="icon" aria-label={`Message actions for ${post.title || post.author_name}`} className="h-8 w-8 flex-shrink-0 invisible md:visible">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onSelect={() => {
+                                toggleComments(post.id)
+                                window.setTimeout(() => commentTextareaRefs.current[post.id]?.focus(), 350)
+                              }}><MessageCircle className="h-3.5 w-3.5 mr-2" />Reply</DropdownMenuItem>
                               {(isAdmin || isOwner) && (
                                 <DropdownMenuItem onClick={() => handleTogglePin(post)}>
                                   {post.pinned ? (
@@ -1895,12 +1918,11 @@ export default function WorkspaceCommunity() {
                                   Edit Post
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
+                              {(post.user_id === user?.id || isAdmin || isOwner) && <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
                                 Delete Post
-                              </DropdownMenuItem>
+                              </DropdownMenuItem>}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1932,7 +1954,7 @@ export default function WorkspaceCommunity() {
             <SheetDescription className="sr-only">Replies to the selected community message</SheetDescription>
           </SheetHeader>
           {posts.filter(post => post.id === threadPostId).map(post => <div key={post.id} className="community-thread-content">
-            <div className="mb-5 border-b border-border pb-4"><p className="text-xs font-semibold">{post.author_name}</p>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}</div>
+            <div className="mb-5 border-l-2 border-accent bg-muted/50 rounded-r-md p-3"><p className="text-[11px] text-muted-foreground mb-1">Replying to</p><p className="text-xs font-semibold">{post.author_name}</p>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}{post.video_url && renderVideoEmbed(post.video_url)}{post.audio_url && <audio controls src={post.audio_url} className="mt-2 w-full" />}</div>
 <div className="mt-3 pt-3 border-t border-border/30 space-y-3">
                               {/* Existing comments */}
                               {(postComments[post.id] || []).map(comment => (
