@@ -1733,7 +1733,8 @@ export default function WorkspaceCommunity() {
                     </CardContent>
                   </Card>
                   </div>
-                ))
+                ))}
+                </>
               )}
             </div>
             </>
