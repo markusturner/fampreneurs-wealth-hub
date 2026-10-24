@@ -1692,7 +1692,7 @@ export default function WorkspaceCommunity() {
 
                         <DropdownMenu open={messageMenuId === post.id} onOpenChange={open => setMessageMenuId(open ? post.id : null)}>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label={`Message actions for ${post.title || post.author_name}`} className="h-8 w-8 flex-shrink-0 invisible md:visible">
+                              <Button variant="ghost" size="icon" aria-label={`Message actions for ${post.title || post.author_name}`} className={`h-8 w-8 flex-shrink-0 invisible ${selectMode ? "" : "md:visible"}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
