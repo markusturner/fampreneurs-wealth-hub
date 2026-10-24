@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { initPushNotifications } from '@/lib/push-notifications'
 import { clearRequestCache } from '@/lib/request-cache'
+import { recoverStoredSession, SESSION_BACKUP_KEY, PERSONAL_SIGN_OUT_SCOPE } from '@/lib/session-persistence'
 
 interface Profile {
   id: string
@@ -57,21 +58,6 @@ interface AuthProviderProps {
 // can be wiped when a single token refresh fails (idle device, refresh token
 // reuse). We keep a separate copy so an unexpected sign-out can be silently
 // healed instead of sending the user to the sign-in page.
-const SESSION_BACKUP_KEY = 'truheirs_session_backup'
-
-const isPublicAuthPath = () => {
-  if (typeof window === 'undefined') return true
-  const p = window.location.pathname
-  return (
-    p.startsWith('/auth') ||
-    p === '/signup' ||
-    p.startsWith('/reset-password') ||
-    p.startsWith('/setup-login') ||
-    p.startsWith('/invite/') ||
-    p === '/'
-  )
-}
-
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -85,7 +71,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Set to true right before a sign-out we caused on purpose (user button,
   // expired program), so the self-healing backup does not resurrect the session.
   const intentionalSignOut = useRef(false)
-  const lastRestoreAttempt = useRef(0)
+  const restoreInFlight = useRef<Promise<Session | null> | null>(null)
 
   const saveSessionBackup = (s: Session | null) => {
     try {
@@ -111,40 +97,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // token refresh after a device slept). Try the backed-up refresh token: if the
   // server still accepts it, the user stays signed in with no visible change.
   const tryRestoreSession = async () => {
-    if (isPublicAuthPath()) return
-    if (Date.now() - lastRestoreAttempt.current < 30_000) return
-    lastRestoreAttempt.current = Date.now()
-
-    let backup: { refresh_token?: string } | null = null
-    try {
-      const raw = localStorage.getItem(SESSION_BACKUP_KEY)
-      if (raw) backup = JSON.parse(raw)
-    } catch {
-      backup = null
-    }
-    if (!backup?.refresh_token) {
-      clearSessionBackup()
-      return
-    }
-
-    try {
-      const { data: { session }, error } = await supabase.auth.refreshSession({
-        refresh_token: backup.refresh_token,
-      })
-      if (error || !session) {
-        clearSessionBackup()
-        return
-      }
-      const { data, error: userError } = await supabase.auth.getUser()
-      if (userError || !data?.user) {
-        await supabase.auth.signOut().catch(() => {})
-        clearSessionBackup()
-        return
-      }
-      saveSessionBackup(session)
-    } catch {
-      clearSessionBackup()
-    }
+    if (intentionalSignOut.current) return null
+    if (restoreInFlight.current) return restoreInFlight.current
+    const attempt = recoverStoredSession(supabase.auth, localStorage)
+    restoreInFlight.current = attempt
+    try { return await attempt } finally { restoreInFlight.current = null }
   }
 
   const fetchProfile = async (userId: string, force = false) => {
@@ -178,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           sessionStorage.setItem('access_block_reason', `Your program ended on ${end}, so your access is paused. To keep using the TruHeirs software, reach out to us to start your TruHeirs subscription ($247 per quarter).`)
           intentionalSignOut.current = true
           clearSessionBackup()
-          await supabase.auth.signOut()
+          await supabase.auth.signOut({ scope: PERSONAL_SIGN_OUT_SCOPE })
           window.location.href = '/auth'
           return
         }
@@ -199,12 +156,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
+    let active = true
+    const applySession = (current: Session | null) => {
+      if (!active) return
+      setSession(current)
+      setUser(current?.user ?? null)
+      if (current) {
+        saveSessionBackup(current)
+        setTimeout(() => { if (active) void fetchProfile(current.user.id) }, 0)
+      } else {
+        setProfile(null)
+        lastProfileFetch.current = null
+        clearRequestCache()
+      }
+      setLoading(false)
+    }
+    const recover = async () => {
+      try {
+        const restored = await tryRestoreSession()
+        applySession(intentionalSignOut.current ? null : restored)
+      } catch {
+        // Keep the current screen and retry when connectivity returns.
+      }
+    }
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
+        if (!active) return
 
         // Redirect to reset-password page on PASSWORD_RECOVERY event
         if (event === 'PASSWORD_RECOVERY' && session) {
@@ -214,29 +193,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
 
-        // Keep the self-healing backup fresh on every signed-in event
         if (session) {
-          saveSessionBackup(session)
-        } else if (event === 'SIGNED_OUT' && !intentionalSignOut.current) {
-          // supabase-js dropped the session on its own (failed refresh, stale
-          // token after sleep). Try to silently restore before giving up.
-          setTimeout(() => {
-            void tryRestoreSession()
-          }, 0)
+          intentionalSignOut.current = false
+          applySession(session)
+        } else if (event === 'SIGNED_OUT') {
+          if (intentionalSignOut.current || !localStorage.getItem(SESSION_BACKUP_KEY)) {
+            applySession(null)
+          } else {
+            // Route guards must wait until the server accepts or rejects recovery.
+            setLoading(true)
+            setTimeout(() => { if (active) void recover() }, 0)
+          }
         }
-
-        // Defer profile fetching to prevent deadlocks
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id)
-          }, 0)
-        } else {
-          setProfile(null)
-          lastProfileFetch.current = null
-          clearRequestCache()
-        }
-
-        setLoading(false)
       }
     )
 
@@ -245,35 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // auth listener above registers, so the SIGNED_OUT event may never be seen),
     // attempt the silent restore before giving up and dropping the user on the
     // sign-in page.
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        try {
-          const raw = localStorage.getItem(SESSION_BACKUP_KEY)
-          if (raw) {
-            const backup = JSON.parse(raw) as { refresh_token?: string }
-            if (backup?.refresh_token) {
-              const attempt = tryRestoreSession()
-              const timeout = new Promise((resolve) => setTimeout(resolve, 8000))
-              await Promise.race([attempt, timeout])
-              const { data: { session: after } } = await supabase.auth.getSession()
-              session = after
-            }
-          }
-        } catch {
-          // Ignore malformed backups; fall through to the signed-out state.
-        }
-      }
-      setSession(session)
-      setUser(session?.user ?? null)
-
-      if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id)
-        }, 0)
-      }
-
-      setLoading(false)
-    })
+    void recover()
 
     // When the tab wakes up after being idle, refresh a near-expiry token right
     // away so it cannot go stale while the browser throttles background timers.
@@ -281,7 +221,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (document.visibilityState !== 'visible') return
       try {
         const { data: { session: current } } = await supabase.auth.getSession()
-        if (!current) return
+        if (!current) { await recover(); return }
         const secondsLeft = (current.expires_at ?? 0) - Math.floor(Date.now() / 1000)
         if (secondsLeft < 120) {
           await supabase.auth.refreshSession()
@@ -291,31 +231,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
+    const onOnline = () => { void recover() }
+    window.addEventListener('online', onOnline)
 
     return () => {
+      active = false
       subscription.unsubscribe()
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('online', onOnline)
     }
   }, [])
 
   const signOut = async () => {
     try {
       intentionalSignOut.current = true
-      // Clean up auth state
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key)
-        }
-      })
       clearSessionBackup()
 
-      // Attempt global sign out
+      // Personal logout does not revoke sessions on other devices.
       try {
-        await supabase.auth.signOut({ scope: 'global' })
+        await supabase.auth.signOut({ scope: PERSONAL_SIGN_OUT_SCOPE })
       } catch (err) {
         // Ignore errors
       }
 
+      // Clear this project's local session even if the logout request was offline.
+      localStorage.removeItem('sb-tbofkvyezmpovoezjyyl-auth-token')
       // Force page reload for clean state
       window.location.href = '/auth'
     } catch (error) {

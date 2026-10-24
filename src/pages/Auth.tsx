@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -11,6 +12,10 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { toast } = useToast()
+  const { session, loading } = useAuth()
+  useEffect(() => {
+    if (!loading && session) window.location.replace('/welcome')
+  }, [loading, session])
   const [blockReason] = useState<string | null>(() => {
     try { return sessionStorage.getItem('access_block_reason') } catch { return null }
   })
@@ -42,27 +47,11 @@ export default function Auth() {
     }
   }, [])
 
-  const cleanupAuthState = () => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key)
-      }
-    })
-    Object.keys(sessionStorage || {}).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        sessionStorage.removeItem(key)
-      }
-    })
-  }
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      cleanupAuthState()
-      try { await supabase.auth.signOut({ scope: 'global' }) } catch (err) {}
-
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
