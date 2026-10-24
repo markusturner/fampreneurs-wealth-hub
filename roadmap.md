@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Persistent login
-- [ ] Remove login-time global sign-outs and prevent redirects while session recovery runs
-- [ ] Test recovery, reload persistence, and explicit sign-out; verify hosted session limits if accessible
+- [x] Remove login-time global sign-outs and prevent redirects while session recovery runs
+- [x] Test recovery, reload persistence, and explicit local sign-out: 12 unit tests pass; synthetic browser sessions pass on desktop, phone, and tablet
+- [ ] Verify real-device persistence and hosted session limits: external unmanaged authentication prevents real-account testing; hosted session-settings read is unavailable
 
 ## Community message redesign
 - [x] Replace the plus dialog with compact posting options and move Events/Leaderboard to the right rail; sample posting and layout checks passed on desktop, tablet, and phone
