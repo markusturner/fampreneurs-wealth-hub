@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import DOMPurify from 'dompurify'
 import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
 import { EmojiButton, GifButton, PollDraftEditor } from '@/components/community/PostComposerExtras'

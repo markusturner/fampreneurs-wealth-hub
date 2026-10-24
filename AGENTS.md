@@ -17,6 +17,7 @@
 
 ## Community presentation
 - Workspace communities share a full-height message shell with category navigation and a docked composer; reuse existing post handlers and event/leaderboard compact views so presentation does not fork community data.
+- Community reply threads reuse the existing comment state and handlers in a separate sheet, and message order uses the shared chronological helper to keep all category feeds consistent.
 
 ## Markus knowledge ingestion
 - Store incremental source content separately from persona uploads and retrieve bounded, approved excerpts through a service-role-only search function; this preserves existing knowledge without growing every chat prompt indefinitely.
