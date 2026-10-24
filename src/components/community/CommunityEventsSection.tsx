@@ -425,7 +425,7 @@ export function CommunityEventsSection({ program, compact, onViewAll }: Props) {
     <div className="space-y-2">
       {instances.filter(e => !isPast(new Date(e.instance_at))).slice(0, 2).map(e => (
         <Button key={`${e.id}-${e.instance_at}`} variant="outline" onClick={onViewAll} className="h-auto w-full justify-start gap-3 rounded-lg bg-card p-3 text-left whitespace-normal">
-          <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-md bg-muted text-xs font-semibold"><span>{format(new Date(e.instance_at), 'MMM')}</span><span className="text-lg">{format(new Date(e.instance_at), 'd')}</span></span>
+          <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-[3px] bg-muted text-xs font-semibold"><span>{format(new Date(e.instance_at), 'MMM')}</span><span className="text-lg">{format(new Date(e.instance_at), 'd')}</span></span>
           <span className="min-w-0"><span className="block text-xs font-semibold">{e.title}</span><span className="block text-[10px] text-muted-foreground">{format(new Date(e.instance_at), 'h:mm a')}</span></span>
         </Button>
       ))}
