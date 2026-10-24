@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Lock, FileWarning, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { clearDurableBackup } from '@/lib/durable-session'
 import { useToast } from '@/hooks/use-toast'
 import {
   AlertDialog,
