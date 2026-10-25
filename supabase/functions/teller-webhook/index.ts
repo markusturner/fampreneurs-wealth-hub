@@ -8,7 +8,7 @@ import { syncUserTellerAccounts } from '../_shared/teller.ts'
 // HMAC is computed over "<t>.<raw request body>" with the webhook signing
 // secret. Deliveries older than ~5 minutes are rejected (replay protection).
 
-function verifyTellerSignature(rawBody: string, header: string, secret: string): boolean {
+async function verifyTellerSignature(rawBody: string, header: string, secret: string): Promise<boolean> {
   try {
     const parts: Record<string, string[]> = {}
     for (const piece of header.split(',')) {
@@ -29,9 +29,8 @@ function verifyTellerSignature(rawBody: string, header: string, secret: string):
     const keyData = encoder.encode(secret)
     const signedPayload = encoder.encode(`${timestamp}.${rawBody}`)
     // SubtleCrypto verify runs constant-time under the hood
-    return crypto.subtle
-      .verify('HMAC', crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']), hexToBytes(signatures[0]), signedPayload)
-      .catch(() => false)
+    const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
+    return await crypto.subtle.verify('HMAC', key, hexToBytes(signatures[0]), signedPayload)
   } catch (_) {
     return false
   }

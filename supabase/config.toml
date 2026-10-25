@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.ttv-recordings-sync]
 verify_jwt = false
+
+[functions.teller-webhook]
+verify_jwt = false
