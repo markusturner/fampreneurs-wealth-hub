@@ -10,6 +10,8 @@ import { CommunityLeaderboardSection } from '@/components/community/CommunityLea
 import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { PostRichEditor } from '@/components/community/PostRichEditor'
 import { chronologicalMessages } from '@/lib/community-message-order'
+import { withCoachMarkus, type CommunityCategory } from '@/lib/community-coach'
+import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
 import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
@@ -134,8 +136,6 @@ const PROGRAM_UPGRADE_MAP: Record<string, string> = {
   tfba: 'tffm',
 }
 
-type CommunityCategory = { label: string; value: string; emoji: string }
-
 const DEFAULT_CATEGORIES: CommunityCategory[] = [
   { label: 'Discussion', value: 'discussion', emoji: '💬' },
   { label: 'Wins', value: 'wins', emoji: '🏆' },
@@ -151,10 +151,10 @@ const loadCategories = (program: string): CommunityCategory[] => {
     const raw = localStorage.getItem(categoriesKey(program))
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length) return parsed
+      if (Array.isArray(parsed) && parsed.length) return withCoachMarkus(parsed)
     }
   } catch {}
-  return DEFAULT_CATEGORIES
+  return withCoachMarkus(DEFAULT_CATEGORIES)
 }
 
 
@@ -219,8 +219,9 @@ export default function WorkspaceCommunity() {
   }, [program])
 
   const saveCategories = (next: CommunityCategory[]) => {
-    setCategories(next)
-    try { localStorage.setItem(categoriesKey(program), JSON.stringify(next)) } catch {}
+    const restored = withCoachMarkus(next)
+    setCategories(restored)
+    try { localStorage.setItem(categoriesKey(program), JSON.stringify(restored)) } catch {}
   }
 
   const [communityPhoto, setCommunityPhoto] = useState<string | null>(null)
@@ -1397,7 +1398,7 @@ export default function WorkspaceCommunity() {
   }
   const categoryNav = (mobile = false) => (
     <div className={mobile ? 'community-mobile-categories' : 'community-category-list'}>
-      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
+      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}${toneOf(cat.value)}`} />}{cat.label}
       </Button>)}
     </div>
@@ -1428,7 +1429,7 @@ export default function WorkspaceCommunity() {
           </div>
           <div className="md:hidden">{categoryNav(true)}</div>
           {searchOpen && <div className="border-b border-border bg-card px-4 py-2"><Input autoFocus placeholder="Search messages..." value={messageSearch} onChange={e => setMessageSearch(e.target.value)} /></div>}
-          <div className="community-scroll" ref={messageScrollRef}>
+          {activeCategory === 'coach' && communityView === 'feed' ? <CoachMarkusChat /> : <div className="community-scroll" ref={messageScrollRef}>
             <AIChat hideLauncher />
             {communityView === 'events' && (
               <CommunityEventsSection program={program} />
@@ -1744,7 +1745,8 @@ export default function WorkspaceCommunity() {
             </>
             )}
           </div>
-          {communityView === 'feed' && <div className="shrink-0 bg-card">
+          }
+          {communityView === 'feed' && activeCategory !== 'coach' && <div className="shrink-0 bg-card">
             <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
             <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
             <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
@@ -1768,7 +1770,7 @@ export default function WorkspaceCommunity() {
                   {isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
                 </PopoverContent>
               </Popover>
-            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className={`community-message-tag category-${postCategory}${toneOf(postCategory)} h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 text-[11px] px-2`}><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className={`community-message-tag category-${postCategory}${toneOf(postCategory)} h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 text-[11px] px-2`}><SelectValue /></SelectTrigger><SelectContent>{categories.filter(c => c.value !== 'coach').map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
               <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
             </form>
           </div>}
