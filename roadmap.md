@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Shared community Coach Markus
-- [ ] Restore blue Coach Markus category and add shared Welcome chats, folders, and new-chat controls
-- [ ] Verify shared history and community chat interactions
+- [x] Restore blue Coach Markus category and add shared Welcome chats, folders, and new-chat controls
+- [x] Verify shared history, follow-up conversation IDs, folders, and new chats using sample services on desktop, tablet, and phone; 3 unit tests pass
+- [ ] Verify live AI replies and saving with a real account; external unmanaged authentication prevents signed-in checks
 
 ## Persistent login
 - [x] Keep login through republish by saving a backup outside web storage; sample check stayed signed in after storage wipe on all sizes
