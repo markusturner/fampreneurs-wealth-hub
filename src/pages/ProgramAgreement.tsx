@@ -13,6 +13,7 @@ import { Loader2, CheckCircle2, Shield, Upload, Mail, Clock, FileCheck, PenTool,
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL } from '@/lib/agreement-texts'
 
 function AgreementText({ text }: { text: string }) {
   const startMarker = 'The program will include:'
@@ -448,48 +449,10 @@ You acknowledge and agree to all charges associated with this program and you wi
 
 By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
-const VIP_WEEKEND_AGREEMENT = `VIP Weekend Agreement
-
-Thank you for choosing The Fampreneurs VIP Weekend experience, an exclusive Done-For-You program that sets up your trusts and moves your assets for you.
-
-This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
-
-Section 1. Program Details
-Program: VIP Weekend Mastermind.
-The Client receives:
-
-A Done-For-You (DFY) 3-day in-person mastermind event (one mastermind only) where The Fampreneurs set up the Client's 3 domestic irrevocable trusts and move the Client's assets into them
-
-1-1 Onboarding call to set up your plan
-
-1-1 In-Person Mastermind Event (Choice Between Atlanta or Medellin)
-
-Free 3-Month Digital Family Office access (then $247/qtr)
-
-3 months of 24/7 Markus AI support after the event
-
-One 1-1 call per month for 3 months with our Family Office Team, if questions come up
-
-The VIP Weekend includes Digital Family Office access only. It does not include access to the community or course content sections.
-
-Section 2. Payment
-The total VIP Weekend investment is Fifty Thousand Dollars ($50,000.00). For today only, the Client may enroll at the discounted rate of Thirty Thousand Dollars ($30,000.00). The discounted rate applies to enrollments completed today. All sales are final. No refunds will be issued for the VIP Weekend experience.
-
-Section 3. Attendance
-Lodging, food, and transportation during the event are included for the Client and the one (1) complimentary guest. The Client is responsible for their own travel to and from the selected event city (Atlanta or Medellin) unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
-
-Section 4. Conduct
-The Client agrees to conduct themselves professionally and respectfully during the VIP Weekend. The Fampreneurs reserve the right to remove any attendee whose behavior is deemed disruptive.
-
-Section 5. Chargebacks
-The Client acknowledges and agrees to all charges associated with the VIP Weekend and will not initiate a chargeback. Chargebacks constitute fraud and will be pursued legally.
-
-By signing below, the parties agree to all terms and conditions of this agreement.`
-
 const AGREEMENT_MAP: Record<string, string> = {
   'The Trust Vault': TFV_AGREEMENT,
   'The Private Estate Accelerator': TFBA_AGREEMENT,
-  'VIP Weekend Mastermind': VIP_WEEKEND_AGREEMENT,
+  'VIP Weekend Mastermind': VIP_WEEKEND_AGREEMENT_FULL,
   'The Legacy InnerCircle': TFFM_AGREEMENT,
 }
 

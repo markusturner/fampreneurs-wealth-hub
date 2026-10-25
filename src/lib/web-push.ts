@@ -4,6 +4,12 @@ import { supabase } from '@/integrations/supabase/client'
 type AnyRec = Record<string, any>
 const SDK_URL = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'
 export const WEB_PUSH_PROMPT_KEY = 'truheirs_web_push_prompted'
+// Set when a member turns desktop alerts Off, so page loads never re-enable them.
+export const WEB_PUSH_DISABLED_KEY = 'truheirs_web_push_disabled'
+
+function isWebPushDisabled() {
+  return typeof window !== 'undefined' && localStorage.getItem(WEB_PUSH_DISABLED_KEY) === '1'
+}
 
 let initPromise: Promise<AnyRec | null> | null = null
 
@@ -77,7 +83,7 @@ async function saveWebSubscription(userId: string, OneSignal: AnyRec) {
 
 /** Links an already-permitted browser to the member silently. */
 export async function syncWebPush(userId: string) {
-  if (!isWebPushSupported() || Notification.permission !== 'granted') return
+  if (!isWebPushSupported() || isWebPushDisabled() || Notification.permission !== 'granted') return
   const OneSignal = await initWebPush()
   if (!OneSignal) return
   try {
@@ -89,6 +95,7 @@ export async function syncWebPush(userId: string) {
 
 /** Asks for permission and registers this browser. Returns true when enabled. */
 export async function enableWebPush(userId: string): Promise<boolean> {
+  localStorage.removeItem(WEB_PUSH_DISABLED_KEY)
   const OneSignal = await initWebPush()
   if (!OneSignal) return false
   try {
@@ -104,6 +111,7 @@ export async function enableWebPush(userId: string): Promise<boolean> {
 }
 
 export async function disableWebPush(userId: string) {
+  localStorage.setItem(WEB_PUSH_DISABLED_KEY, '1')
   const OneSignal = await initWebPush()
   const id = OneSignal?.User?.PushSubscription?.id
   try { await OneSignal?.User?.PushSubscription?.optOut() } catch { /* ignore */ }
@@ -111,7 +119,7 @@ export async function disableWebPush(userId: string) {
 }
 
 export function isWebPushOn(): boolean {
-  if (!isWebPushSupported()) return false
+  if (!isWebPushSupported() || isWebPushDisabled()) return false
   const OneSignal = (window as AnyRec).OneSignal
   return Notification.permission === 'granted' && OneSignal?.User?.PushSubscription?.optedIn !== false
 }
