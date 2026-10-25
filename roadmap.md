@@ -1,5 +1,9 @@
 # Roadmap
 
+## Shared community Coach Markus
+- [ ] Restore blue Coach Markus category and add shared Welcome chats, folders, and new-chat controls
+- [ ] Verify shared history and community chat interactions
+
 ## Persistent login
 - [x] Keep login through republish by saving a backup outside web storage; sample check stayed signed in after storage wipe on all sizes
 - [x] Remove login-time global sign-outs and prevent redirects while session recovery runs
