@@ -1197,7 +1197,10 @@ export default function WorkspaceCommunity() {
     return url
   }
 
-  const renderVideoEmbed = (url: string, className = 'aspect-video w-full mt-3 rounded-lg overflow-hidden border') => (
+  const renderVideoEmbed = (url: string, className = 'aspect-video w-full mt-3 rounded-lg overflow-hidden border', title?: string, subtitle?: string) => (
+    <RecordingPreview url={url} embedUrl={getEmbedUrl(url)} title={title} subtitle={subtitle} />
+  )
+  const renderRawEmbed = (url: string, className = 'aspect-video w-full mt-3 rounded-lg overflow-hidden border') => (
     <div className={className}>
       <iframe
         src={getEmbedUrl(url)}
@@ -1655,7 +1658,7 @@ export default function WorkspaceCommunity() {
                           )}
                           {post.video_url && (
                             isEmbeddableVideoUrl(post.video_url) ? (
-                              renderVideoEmbed(post.video_url)
+                              renderVideoEmbed(post.video_url, undefined, post.title, post.author_name)
                             ) : (
                               <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
                             )
@@ -1663,7 +1666,7 @@ export default function WorkspaceCommunity() {
                           {!post.video_url && post.content && (() => {
                             const videoLink = extractFirstVideoUrl(post.content)
                             if (!videoLink) return null
-                            return renderVideoEmbed(videoLink)
+                            return renderVideoEmbed(videoLink, undefined, post.title, post.author_name)
                           })()}
                           {post.audio_url && (
                             <audio src={post.audio_url} controls className="mt-3 w-full" />
@@ -1764,7 +1767,7 @@ export default function WorkspaceCommunity() {
                   {isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
                 </PopoverContent>
               </Popover>
-            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className="h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 bg-secondary/30 text-[11px] px-2"><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+            <div className="community-composer-field"><Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger className={`community-message-tag category-${postCategory} h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 text-[11px] px-2`}><SelectValue /></SelectTrigger><SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select><Input aria-label="Community message" placeholder="Message" value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
               <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
             </form>
           </div>}
@@ -2044,6 +2047,36 @@ export default function WorkspaceCommunity() {
         </DialogContent>
       </Dialog>
 
+    </div>
+  )
+}
+
+function recordingSource(url: string) {
+  if (/fathom\./.test(url)) return 'Fathom'
+  if (/youtu/.test(url)) return 'YouTube'
+  if (/loom\./.test(url)) return 'Loom'
+  if (/vimeo\./.test(url)) return 'Vimeo'
+  if (/tella\./.test(url)) return 'Tella'
+  return 'Recording'
+}
+
+function RecordingPreview({ url, embedUrl, title, subtitle }: { url: string; embedUrl: string; title?: string; subtitle?: string }) {
+  const [open, setOpen] = useState(false)
+  if (open) return (
+    <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
+      <iframe src={embedUrl} className="w-full h-full" title="Video preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    </div>
+  )
+  return (
+    <div className="recording-preview">
+      <div className="min-w-0 flex-1">
+        <p className="recording-preview-source">{recordingSource(url)}</p>
+        <a href={url} target="_blank" rel="noreferrer" className="recording-preview-title">{title || 'Watch recording'}</a>
+        {subtitle && <p className="recording-preview-sub">{subtitle}</p>}
+      </div>
+      <button type="button" onClick={() => setOpen(true)} className="recording-preview-thumb" aria-label="Play recording">
+        <Play className="h-5 w-5" />
+      </button>
     </div>
   )
 }
