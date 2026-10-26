@@ -69,7 +69,7 @@ import ResetPassword from "./pages/ResetPassword";
 import TrustDesignBooking from "./pages/TrustDesignBooking";
 import Apply from "./pages/Apply";
 import Welcome from "./pages/Welcome";
-import CommunityEventsSection from "@/components/community/CommunityEventsSection";
+import { CommunityEventsSection } from "@/components/community/CommunityEventsSection";
 
 
 import { initializeMobileServices } from "./lib/mobile";
