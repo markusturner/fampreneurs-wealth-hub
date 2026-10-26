@@ -181,7 +181,9 @@ function AppWithNotifications() {
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         
         <Route path="/survey/" element={<SurveyPublic />} />
+        <Route path="/__event-check" element={<div style={{ padding: 24 }}><CommunityEventsSection program="tfba" compact /></div>} />
         <Route path="*" element={<NotFound />} />
+
       </Routes>
       <MobileBottomNav />
     </>
