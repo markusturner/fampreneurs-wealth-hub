@@ -380,8 +380,6 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-category.category-coach { color: hsl(var(--community-coach)); }
 .community-category.category-coach.is-active { background: hsl(var(--community-coach)); color: hsl(var(--accent-foreground)); }
 .community-category-dot.category-gems { background: hsl(var(--community-gems)); }
-.community-event-card { transition: transform .2s ease, box-shadow .2s ease; }
-.community-event-card:hover { background: hsl(var(--card)) !important; color: inherit !important; transform: translateY(-2px); box-shadow: 0 8px 20px -10px hsl(var(--foreground) / .35); }
 .recording-preview { margin-top: 12px; display: flex; gap: 14px; align-items: flex-start; max-width: 460px; padding: 12px 14px; border-left: 4px solid hsl(var(--accent)); border-radius: 6px; background: hsl(var(--foreground) / .06); color: hsl(var(--foreground)); }
 .community-message-own .recording-preview { background: hsl(var(--card)); color: hsl(var(--card-foreground)); box-shadow: 0 6px 18px -10px hsl(0 0% 0% / .5); }
 .community-message-own .recording-preview-title { color: hsl(var(--sidebar-background)) !important; }
