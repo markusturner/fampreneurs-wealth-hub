@@ -1,5 +1,10 @@
 # Roadmap
 
+## Copied Trust Vault recording controls
+- [x] Allow admins and owners to pin and edit copied recordings while protecting source links
+- [x] Verify admin/owner pin, unpin and edit, member restrictions, source-link protection and continued mirroring with rolled-back database tests
+- [ ] Verify through a real signed-in browser; external unmanaged authentication prevents this check
+
 ## Shared community Coach Markus
 - [x] Restore blue Coach Markus category and add shared Welcome chats, folders, and new-chat controls
 - [x] Verify shared history, follow-up conversation IDs, folders, and new chats using sample services on desktop, tablet, and phone; 3 unit tests pass

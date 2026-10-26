@@ -31,3 +31,4 @@
 
 ## Community recording imports
 - Mirror PEA community recording posts into Trust Vault using a database trigger and a unique source-post link, so copies are immediate and media updates cannot create duplicates; direct Fathom polling is disabled.
+- Copied recording updates allow server-validated admins and owners, but direct source-link creation or changes remain blocked; source edits still synchronize content while local pins remain independent.
