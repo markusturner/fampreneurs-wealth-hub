@@ -70,6 +70,7 @@ import TrustDesignBooking from "./pages/TrustDesignBooking";
 import Apply from "./pages/Apply";
 import Welcome from "./pages/Welcome";
 
+
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -180,6 +181,7 @@ function AppWithNotifications() {
         
         <Route path="/survey/" element={<SurveyPublic />} />
         <Route path="*" element={<NotFound />} />
+
       </Routes>
       <MobileBottomNav />
     </>
