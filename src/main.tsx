@@ -69,7 +69,6 @@ import ResetPassword from "./pages/ResetPassword";
 import TrustDesignBooking from "./pages/TrustDesignBooking";
 import Apply from "./pages/Apply";
 import Welcome from "./pages/Welcome";
-import { CommunityEventsSection } from "@/components/community/CommunityEventsSection";
 
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -128,7 +127,6 @@ function AppWithNotifications() {
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/onboarding-explanation" element={<OnboardingExplanation />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/__event-check" element={<div className="p-6 max-w-sm"><CommunityEventsSection program="tfv" compact /></div>} />
         <Route path="/program-agreement" element={<ProgramAgreement />} />
         <Route path="/profile-photo" element={<ProfilePhotoUpload />} />
         <Route path="/trust-design-booking" element={<TrustDesignBooking />} />
