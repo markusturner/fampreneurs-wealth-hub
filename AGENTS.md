@@ -14,6 +14,7 @@
 - Keep the mastermind navigation destination on the existing protection-workbook route and use workbook eligibility helpers rather than creating community records; this preserves workbook submissions and onboarding.
 
 ## Welcome AI chat
+- Markus assistant replies use shared Markdown-aware presentation blocks across Welcome, Coach Markus and AI Chat; keep stored messages and AI context intact so older conversations gain the same readability without data rewrites.
 - History navigation uses an inline bounded list, not a portal or overlay, so opening history cannot cover the welcome content or composer. This navigation-only change leaves transcript, composer, and chat transport intact.
 - Welcome chat uses the existing chat_projects, chat_conversations, and ai_chat_history tables with the rachel persona and explicit user filters, so its projects and history stay shared with the full AI chat page.
 - Community Coach Markus reuses useWelcomeChat and WelcomeChatLibrary with the same private user-scoped conversations; never store AI exchanges as public community posts. This keeps Welcome and community chat history and folders shared.
