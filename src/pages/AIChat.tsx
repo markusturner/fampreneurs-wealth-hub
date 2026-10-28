@@ -883,7 +883,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
                             ))}
                           </div>
                         )}
-                        {message.role === 'assistant' && activePersona === 'rachel' ? <MarkusReply content={message.content} bubbleClassName="bg-muted text-foreground" /> : message.role === 'assistant' ? (
+                        {message.role === 'assistant' && activePersona === 'rachel' ? <MarkusReply content={message.content} bubbleClassName="bg-muted text-foreground text-sm" /> : message.role === 'assistant' ? (
                           <div className="prose prose-sm dark:prose-invert max-w-none
                             [&>*]:m-0 [&>*+*]:mt-3
                             [&_h1]:text-base [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
