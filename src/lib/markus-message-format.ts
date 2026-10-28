@@ -2,6 +2,12 @@ import { unified } from 'unified'
 import remarkParse from 'remark-parse'
 
 const parser = unified().use(remarkParse)
+// Older webviews may not provide sentence segmentation yet.
+const SentenceSegmenter = (Intl as typeof Intl & {
+  Segmenter?: new (locale: string, options: { granularity: 'sentence' }) => {
+    segment(input: string): Iterable<{ segment: string }>
+  }
+}).Segmenter
 
 /** Presentation only: saved replies and the context sent to AI remain untouched. */
 export function markusThoughts(content: string): string[] {
@@ -27,7 +33,9 @@ export function markusThoughts(content: string): string[] {
       if (node.children.every(child => child.type === 'text')) {
         parts = parts.flatMap(paragraph => {
           if (paragraph.length <= 420) return [paragraph]
-          const sentences = Array.from(new Intl.Segmenter('en', { granularity: 'sentence' }).segment(paragraph), item => item.segment)
+          const sentences = SentenceSegmenter
+            ? Array.from(new SentenceSegmenter('en', { granularity: 'sentence' }).segment(paragraph), item => item.segment)
+            : paragraph.split(/(?<=[.!?])\s+(?=[A-Z])/)
           const chunks: string[] = []
           for (let i = 0; i < sentences.length; i += 3) chunks.push(sentences.slice(i, i + 3).join('').trim())
           return chunks

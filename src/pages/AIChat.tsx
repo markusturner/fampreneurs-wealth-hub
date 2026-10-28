@@ -873,7 +873,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
                           </AvatarFallback>
                         </Avatar>
                       )}
-                      <div className={`min-w-0 max-w-[80%] text-sm ${message.role === 'user' ? 'rounded-lg px-4 py-3 bg-primary text-primary-foreground' : persona === 'rachel' ? '' : 'rounded-lg px-4 py-3 bg-muted'}`}>
+                      <div className={`min-w-0 max-w-[80%] text-sm ${message.role === 'user' ? 'rounded-lg px-4 py-3 bg-primary text-primary-foreground' : activePersona === 'rachel' ? '' : 'rounded-lg px-4 py-3 bg-muted'}`}>
                         {message.attachments && (
                           <div className="flex flex-wrap gap-1 mb-2">
                             {message.attachments.map((a, i) => (
@@ -883,7 +883,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
                             ))}
                           </div>
                         )}
-                        {message.role === 'assistant' && persona === 'rachel' ? <MarkusReply content={message.content} bubbleClassName="bg-muted text-foreground" /> : message.role === 'assistant' ? (
+                        {message.role === 'assistant' && activePersona === 'rachel' ? <MarkusReply content={message.content} bubbleClassName="bg-muted text-foreground" /> : message.role === 'assistant' ? (
                           <div className="prose prose-sm dark:prose-invert max-w-none
                             [&>*]:m-0 [&>*+*]:mt-3
                             [&_h1]:text-base [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
