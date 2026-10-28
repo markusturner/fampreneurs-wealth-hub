@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import ReactMarkdown from 'react-markdown'
+import { MarkusReply } from '@/components/chat/MarkusReply'
 import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat'
 import { WelcomeChatLibrary } from '@/components/chat/WelcomeChatLibrary'
 import { mobileEntryPath } from '@/lib/mobile-entry'
@@ -696,8 +697,8 @@ export default function Welcome() {
               >
                 {welcomeChat.messages.map(message => <div key={message.id} className={`min-w-0 break-words py-2 ${message.role === 'user' ? 'border-b border-border/60' : ''}`}>
                   <p className="mb-1 text-[10px] font-semibold text-muted-foreground">{message.role === 'user' ? 'You' : 'Markus AI'}</p>
-                  <div className="prose prose-sm max-w-none [&_p]:my-2 [overflow-wrap:anywhere]">
-                <ReactMarkdown
+                  {message.role === 'assistant' ? <MarkusReply
+                  content={message.content}
                   components={{
                     a: ({ href, children, ...props }) => {
                       const isInternal = !!href && href.startsWith('/')
@@ -719,10 +720,7 @@ export default function Welcome() {
                       )
                     },
                   }}
-                >
-                  {message.content}
-                </ReactMarkdown>
-                  </div>
+                /> : <div className="prose prose-sm max-w-none [&_p]:my-2 [overflow-wrap:anywhere]"><ReactMarkdown>{message.content}</ReactMarkdown></div>}
                 </div>)}
               </div>
               <div

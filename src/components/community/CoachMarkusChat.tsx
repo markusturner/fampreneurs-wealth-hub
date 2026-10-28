@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { MarkusReply } from '@/components/chat/MarkusReply'
 import { ArrowUp, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -71,9 +72,9 @@ export function CoachMarkusChat() {
       <div className="flex flex-col gap-5">
         {chat.messages.map(message => <div key={message.id} className={`min-w-0 max-w-[90%] sm:max-w-[85%] ${message.role === 'user' ? 'self-end' : 'self-start'}`}>
           <p className="mb-1 text-[11px] font-semibold text-muted-foreground">{message.role === 'user' ? 'You' : 'Markus AI'}</p>
-          <div className={`rounded-lg px-4 py-3 text-sm ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-card text-card-foreground'}`}>
+          {message.role === 'assistant' ? <MarkusReply content={message.content} /> : <div className="rounded-lg px-4 py-3 text-sm bg-accent text-accent-foreground">
             <div className="prose prose-sm max-w-none text-inherit [overflow-wrap:anywhere] [&_pre]:overflow-x-auto [&_a]:text-inherit [&_a]:underline"><ReactMarkdown>{message.content}</ReactMarkdown></div>
-          </div>
+          </div>}
         </div>)}
         {pending && <div className="max-w-[90%] self-end rounded-lg bg-accent px-4 py-3 text-sm text-accent-foreground whitespace-pre-wrap [overflow-wrap:anywhere]">{pending}</div>}
         {chat.busy && <div role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{pending ? 'Markus is thinking...' : 'Opening chat...'}</div>}
