@@ -10,7 +10,7 @@ import { CommunityLeaderboardSection } from '@/components/community/CommunityLea
 import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { PostRichEditor } from '@/components/community/PostRichEditor'
 import { chronologicalMessages } from '@/lib/community-message-order'
-import { hasEveryoneMention, postingCategory } from '@/lib/community-posting'
+import { postingCategory } from '@/lib/community-posting'
 import { withCoachMarkus, type CommunityCategory } from '@/lib/community-coach'
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
 import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
@@ -644,8 +644,7 @@ export default function WorkspaceCommunity() {
         await supabase.from('community_polls').insert(pollRows as any)
       }
 
-      // Notify mentioned users (fire and forget)
-      if (insertedPostIds[0]) notifyMentionedUsers(newPost.trim(), insertedPostIds[0], 'post')
+      // Mention alerts are generated atomically by the saved-post trigger.
 
       if (pendingVideoUpload && videoUrl) {
         uploadProgressStore.finish(pendingVideoUpload.jobId, 'done', 'Video uploaded and attached')
@@ -981,8 +980,7 @@ export default function WorkspaceCommunity() {
 
       if (error) throw error
 
-      // Notify mentioned users
-      if (text) notifyMentionedUsers(text, postId, 'comment')
+      // Mention alerts are generated atomically by the saved-reply trigger.
 
       setCommentText(prev => ({ ...prev, [postId]: '' }))
       setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
@@ -1117,53 +1115,6 @@ export default function WorkspaceCommunity() {
     }
 
     return parts.length > 0 ? parts : linkifyText(content, 'all')
-  }
-
-  const extractMentions = (content: string): string[] => {
-    const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
-    const mentions: string[] = []
-    let match
-    while ((match = mentionRegex.exec(content)) !== null) {
-      mentions.push(match[1])
-    }
-    return mentions
-  }
-
-  const notifyMentionedUsers = async (content: string, referenceId: string, type: 'post' | 'comment') => {
-    if (!user?.id) return
-    // The database sends one community-scoped alert per recipient for @everyone.
-    if (hasEveryoneMention(content)) return
-    const mentions = extractMentions(content)
-    if (mentions.length === 0) return
-
-    try {
-      // Look up mentioned users by display_name
-      const { data: mentionedProfiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('display_name', mentions)
-
-      if (!mentionedProfiles || mentionedProfiles.length === 0) return
-
-      const notifications = mentionedProfiles
-        .filter(p => p.user_id !== user.id)
-        .map(p => ({
-          user_id: p.user_id,
-          sender_id: user.id,
-          notification_type: 'community_post',
-          title: type === 'post' ? 'You were mentioned in a post' : 'You were mentioned in a comment',
-          message: `${profile?.display_name || 'Someone'} mentioned you: "${content.substring(0, 100)}${content.length > 100 ? '...' : ''}"`,
-          reference_id: referenceId,
-          link: `/workspace-community?program=${program}&post=${referenceId}`,
-          is_read: false,
-        }))
-
-      if (notifications.length > 0) {
-        await supabase.from('notifications').insert(notifications)
-      }
-    } catch (error) {
-      console.error('Error notifying mentioned users:', error)
-    }
   }
 
   const isEmbeddableVideoUrl = (url: string): boolean => {
@@ -1779,7 +1730,7 @@ export default function WorkspaceCommunity() {
                   {isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
                 </PopoverContent>
               </Popover>
-            <div className="community-composer-field">{activeCategory === 'all' ? <Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger aria-label="Message category" className={`community-message-tag category-${postCategory}${toneOf(postCategory)} h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 text-[11px] px-2`}><SelectValue /></SelectTrigger><SelectContent>{categories.filter(c => c.value !== 'coach').map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select> : <Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge>}<Input aria-label="Community message" placeholder={`Message ${categories.find(c => c.value === postingCategory(activeCategory, postCategory))?.label || 'Discussion'}`} value={newPost} onChange={e => setNewPost(e.target.value)} className="h-10 min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+            <div className="community-composer-field">{activeCategory === 'all' ? <Select value={postCategory} onValueChange={setPostCategory}><SelectTrigger aria-label="Message category" className={`community-message-tag category-${postCategory}${toneOf(postCategory)} h-8 w-auto max-w-[120px] shrink-0 rounded-full border-0 text-[11px] px-2`}><SelectValue /></SelectTrigger><SelectContent>{categories.filter(c => c.value !== 'coach').map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select> : <Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge>}<MentionTextarea program={program} rows={1} aria-label="Community message" placeholder={`Message ${categories.find(c => c.value === postingCategory(activeCategory, postCategory))?.label || 'Discussion'}`} value={newPost} onChange={setNewPost} className="h-10 min-h-10 max-h-32 resize-none min-w-0 flex-1 border-0 bg-transparent p-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
               <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
             </form>
           </div>}

@@ -5,42 +5,8 @@ import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { supabase } from '@/integrations/supabase/client'
-
-const PROGRAM_NAMES: Record<string, string> = {
-  fbu: 'Family Business University',
-  tfv: 'The Trust Vault',
-  tfba: 'The Private Estate Accelerator',
-  tffm: 'The Legacy InnerCircle',
-}
-
-interface MemberOption {
-  user_id: string
-  display_name: string
-  avatar_url: string | null
-}
-
-let cachedProgram: string | null = null
-let cachedMembers: MemberOption[] = []
-
-async function loadMembers(program: string): Promise<MemberOption[]> {
-  if (cachedProgram === program && cachedMembers.length) return cachedMembers
-  const assigned = PROGRAM_NAMES[program]
-  let query = supabase
-    .from('profiles')
-    .select('user_id, display_name, avatar_url, program_name')
-    .not('display_name', 'is', null)
-    .order('display_name')
-    .limit(500)
-  if (assigned) query = query.ilike('program_name', `%${assigned}%`)
-  const { data } = await query
-  const rows = (data || [])
-    .filter(r => !!r.display_name && !(assigned && String(r.program_name || '').includes('(VIP Weekend)')))
-    .map(r => ({ user_id: r.user_id, display_name: r.display_name as string, avatar_url: r.avatar_url }))
-  cachedProgram = program
-  cachedMembers = rows
-  return rows
-}
+import { Button } from '@/components/ui/button'
+import { loadMentionMembers, mentionOptions, type MemberOption } from '@/lib/community-mentions'
 
 /* ---------- markdown <-> html ---------- */
 
@@ -144,7 +110,12 @@ export function PostRichEditor({
   const [mention, setMention] = useState<{ query: string; from: number; top: number; left: number } | null>(null)
   const [highlight, setHighlight] = useState(0)
 
-  useEffect(() => { loadMembers(program).then(setMembers) }, [program])
+  useEffect(() => {
+    let active = true
+    setMembers([])
+    loadMentionMembers(program).then(rows => { if (active) setMembers(rows) }).catch(() => { if (active) setMembers([]) })
+    return () => { active = false }
+  }, [program])
 
   const editor = useEditor({
     extensions: [
@@ -219,12 +190,7 @@ export function PostRichEditor({
 
   if (!editor) return null
 
-  const filtered = mention
-    ? (mention.query
-        ? members.filter(m => m.display_name.toLowerCase().includes(mention.query.toLowerCase()))
-        : members
-      ).slice(0, 6)
-    : []
+  const filtered = mention ? mentionOptions(members, mention.query) : []
 
   const applyMention = (m: MemberOption) => {
     if (!mention) return
@@ -260,15 +226,16 @@ export function PostRichEditor({
 
       {mention && filtered.length > 0 && (
         <div
-          className="absolute z-50 w-64 max-h-56 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg py-1"
-          style={{ top: mention.top, left: mention.left }}
+          role="listbox" aria-label="Mention members"
+          className="absolute bottom-full left-0 mb-1 z-50 w-64 max-w-[calc(100vw-2rem)] max-h-56 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg py-1"
         >
           {filtered.map((m, i) => (
-            <button
+            <Button variant="ghost" role="option" aria-selected={i === highlight}
               key={m.user_id}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); applyMention(m) }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-sm ${i === highlight ? 'bg-muted' : 'hover:bg-muted/60'}`}
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => applyMention(m)}
+              className={`h-auto rounded-none justify-start w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-sm ${i === highlight ? 'bg-muted' : 'hover:bg-muted/60'}`}
             >
               <Avatar className="h-6 w-6">
                 {m.avatar_url && <AvatarImage src={m.avatar_url} />}
@@ -276,8 +243,8 @@ export function PostRichEditor({
                   {m.display_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="truncate">{m.display_name}</span>
-            </button>
+              <span className="truncate">{m.user_id === 'everyone' ? '@everyone' : m.display_name}</span>
+            </Button>
           ))}
         </div>
       )}

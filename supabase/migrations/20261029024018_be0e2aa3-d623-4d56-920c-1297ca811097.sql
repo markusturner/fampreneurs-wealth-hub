@@ -1,0 +1,1 @@
+ALTER FUNCTION public.get_community_mention_members(text) SECURITY INVOKER;

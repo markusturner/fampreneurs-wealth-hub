@@ -21,6 +21,8 @@
 - Mobile Welcome redirects through the shared mobile-entry helper after account setup checks; keep VIP and software-only destinations separate to preserve access restrictions.
 
 ## Community presentation
+- Community composers share a membership-scoped mention picker; post and reply triggers resolve tagged recipients atomically so client failures cannot drop or duplicate alerts.
+- Published update alerts enter through a Standard Webhooks-verified Lovable event receiver with a service-only event ledger; never send release alerts from development edits or browser startup.
 - Community posting uses the selected category as the destination, with a picker only in All; server-side membership selection drives @everyone post/reply alerts and post emails to prevent cross-community delivery.
 - Community feeds render from a per-user cached copy first and refresh in the background; phones render the newest window first. Why: opening a community must feel instant without changing post data.
 - Workspace communities share a full-height message shell with category navigation and a docked composer; reuse existing post handlers and event/leaderboard compact views so presentation does not fork community data.

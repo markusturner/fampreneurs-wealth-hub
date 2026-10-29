@@ -1,5 +1,12 @@
 # Roadmap
 
+## Software update alerts and member mentions
+- [ ] Activate mobile/desktop published-update alerts: receiver and duplicate-safe fan-out are ready, but external endpoint returns 404; Events & Hooks destination and signing secret must be connected once live
+- [x] Show community members and everyone when typing @ in messages and replies
+- [x] Deliver tagged alerts using community-scoped, server-validated recipients
+- [x] Run 8 focused tests, rolled-back database audience/deduplication tests, and sample picker interactions on desktop and phone
+- [ ] Verify real-device alert delivery: external unmanaged sign-in prevents authenticated end-to-end checks
+
 ## Category posting and everyone mentions
 - [x] Make the composer follow the selected category and keep All as the combined feed
 - [x] Notify only the current community for @everyone in messages and replies; scope existing post emails to saved-post membership
