@@ -4,7 +4,7 @@ import { AdminMassNotification } from '@/components/dashboard/admin-mass-notific
 import { AdminPushTest } from '@/components/dashboard/admin-push-test'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { ApiKeyManager } from '@/components/dashboard/api-key-manager'
-import { AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
+import { AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-admin'
@@ -108,12 +108,6 @@ export function AdminSettings() {
               settingKey="tutorial_video_url"
               title="Welcome Page Tutorial Video"
               description="Welcome to TruHeirs!"
-            />
-            <AdminUpgradeVideoManager />
-            <AdminVideoManager
-              settingKey="workspace_video_url"
-              title="Workspace Tutorial Video"
-              description="Tutorial video shown on the Workspace page to help users learn the workspace tools"
             />
           </TabsContent>
         )}
