@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AffiliateLinksManager } from '@/components/dashboard/affiliate-links-manager'
@@ -20,6 +21,7 @@ export function ProfileSettings() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const [settingsTab, setSettingsTab] = useState('account')
 
   return (
     <div className="container mx-auto py-3 md:py-6 px-3 sm:px-4 space-y-4 md:space-y-6 pb-16 md:pb-6">
@@ -50,7 +52,7 @@ export function ProfileSettings() {
         </div>
       </div>
 
-      <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
+      <Tabs value={settingsTab} onValueChange={setSettingsTab} className="space-y-4 md:space-y-6">
         <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="account" className="flex items-center gap-1 md:gap-2 text-sm">
             <User className="h-4 w-4 shrink-0" />
@@ -82,7 +84,7 @@ export function ProfileSettings() {
           <TwoFactorSetup
             email={user?.email || ''}
             onComplete={() => {}}
-            onSkip={() => {}}
+            onSkip={() => setSettingsTab('account')}
           />
           <SecurityActions />
         </TabsContent>

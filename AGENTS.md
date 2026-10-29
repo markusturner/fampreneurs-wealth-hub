@@ -5,6 +5,7 @@
 - Webhook endpoint: https://tbofkvyezmpovoezjyyl.supabase.co/functions/v1/teller-webhook (Teller-Signature HMAC verification, TELLER_WEBHOOK_SECRET).
 
 ## Session self-healing
+- Profile security phone/app enrollment uses Supabase Auth MFA verification, never custom OTP hashes or external QR services; onboarding email identity verification stays separate from login MFA enforcement.
 - AuthContext holds route guards during deduplicated server-validated recovery using `session-persistence`; preserve backups on transient failures but discard rejected tokens. Why: recovery must finish before navigation and must never bypass revocation.
 - Login handlers never clear auth storage or sign out before password login; personal/expiry logout uses local scope, while explicit account-security lockdown retains global scope and clears the backup. Why: signing in or out on one device must not revoke unrelated device sessions.
 
