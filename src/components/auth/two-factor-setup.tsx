@@ -79,7 +79,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
         })
 
         if (error || !data?.success) {
-          const details = await error.context?.json?.().catch(() => null)
+          const details = await error?.context?.json?.().catch(() => null)
           throw new Error(details?.error || data?.error || error?.message || 'The verification email could not be sent.')
         }
 
