@@ -6560,6 +6560,10 @@ export type Database = {
       cleanup_expired_verification_codes: { Args: never; Returns: undefined }
       cleanup_sensitive_audit_logs: { Args: never; Returns: undefined }
       community_has_everyone: { Args: { p_content: string }; Returns: boolean }
+      community_mentions_name: {
+        Args: { p_content: string; p_name: string }
+        Returns: boolean
+      }
       community_notification_recipients: {
         Args: { p_program: string; p_sender: string }
         Returns: {
@@ -6577,6 +6581,14 @@ export type Database = {
       }
       get_coach_admin_details: { Args: { coach_id: string }; Returns: Json }
       get_coach_for_booking: { Args: { coach_id: string }; Returns: Json }
+      get_community_mention_members: {
+        Args: { p_program: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       get_community_profile: {
         Args: { p_user_id: string }
         Returns: {
