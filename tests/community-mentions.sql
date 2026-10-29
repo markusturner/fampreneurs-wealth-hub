@@ -18,7 +18,7 @@ BEGIN
  IF (SELECT count(*) FROM public.notifications WHERE reference_id=post_row.id)<>actual+expected THEN RAISE EXCEPTION 'Wrong reply mention audience'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.notifications WHERE reference_id=post_row.id AND user_id=target.user_id AND title LIKE 'You were mentioned%') THEN RAISE EXCEPTION 'Missing targeted alert'; END IF;
  event_key:='test-'||gen_random_uuid();
- SELECT count(*) INTO expected FROM public.profiles WHERE truheirs_access=true;
+ SELECT count(*) INTO expected FROM public.profiles p JOIN auth.users u ON u.id=p.user_id WHERE p.truheirs_access=true;
  IF public.notify_software_update(event_key)<>expected THEN RAISE EXCEPTION 'Wrong update audience'; END IF;
  IF public.notify_software_update(event_key)<>0 THEN RAISE EXCEPTION 'Duplicate publish sends alerts twice'; END IF;
  IF has_function_privilege('authenticated','public.notify_software_update(text)','execute') OR has_function_privilege('anon','public.notify_software_update(text)','execute') THEN RAISE EXCEPTION 'Public update broadcast privilege'; END IF;
