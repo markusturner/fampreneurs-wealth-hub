@@ -82,7 +82,7 @@ export function ProfileSettings() {
           <TwoFactorSetup
             email={user?.email || ''}
             onComplete={() => {}}
-            onSkip={() => {}}
+            onSkip={() => navigate('/profile-settings')}
           />
           <SecurityActions />
         </TabsContent>

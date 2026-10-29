@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, Smartphone, Mail, QrCode, Shield } from 'lucide-react'
+import { normalizeSecurityPhone, isSecurityCode } from '@/lib/two-factor-validation'
 
 interface TwoFactorSetupProps {
   email: string
@@ -20,20 +21,32 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
   const [phoneNumber, setPhoneNumber] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
   const [qrCodeSecret, setQrCodeSecret] = useState('')
+  const [qrCodeImage, setQrCodeImage] = useState('')
+  const [factorId, setFactorId] = useState('')
+  const [challengeId, setChallengeId] = useState('')
+  const [completedMethod, setCompletedMethod] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState<'setup' | 'verify'>('setup')
   const [isVerificationLoading, setIsVerificationLoading] = useState(false)
   
   const { toast } = useToast()
 
-  const generateQRSecret = () => {
-    // Generate a random secret for TOTP
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-    let secret = ''
-    for (let i = 0; i < 32; i++) {
-      secret += chars.charAt(Math.floor(Math.random() * chars.length))
+  useEffect(() => {
+    let active = true
+    supabase.auth.mfa.listFactors().then(({ data, error }) => {
+      if (!active || error) return
+      const verified = data?.all.find(f => f.status === 'verified')
+      if (verified) setCompletedMethod(verified.factor_type === 'totp' ? 'authenticator' : 'phone')
+    })
+    return () => { active = false }
+  }, [])
+
+  const resetSetup = async () => {
+    if (factorId && !completedMethod) {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId })
+      if (error) { toast({ title: 'Could not cancel setup', description: error.message, variant: 'destructive' }); return }
     }
-    return secret
+    setFactorId(''); setChallengeId(''); setQrCodeSecret(''); setQrCodeImage(''); setVerificationCode(''); setStep('setup')
   }
 
   const handleSetup = async () => {
@@ -41,21 +54,18 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
     
     try {
       if (selectedMethod === 'phone') {
-        if (!phoneNumber) {
-          toast({
-            title: "Phone number required",
-            description: "Please enter your phone number.",
-            variant: "destructive",
-          })
-          return
-        }
-
-        // Send SMS verification code
-        const { error } = await supabase.functions.invoke('send-sms-verification', {
-          body: { phoneNumber, email }
-        })
-
+        const phone = normalizeSecurityPhone(phoneNumber)
+        const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'phone', phone })
         if (error) throw error
+        setFactorId(data.id)
+        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: data.id, channel: 'sms' })
+        if (challengeError) {
+          await supabase.auth.mfa.unenroll({ factorId: data.id })
+          setFactorId('')
+          throw challengeError
+        }
+        setPhoneNumber(phone)
+        setChallengeId(challenge.id)
 
         toast({
           title: "Verification code sent",
@@ -68,9 +78,9 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
           body: { email }
         })
 
-        if (error) {
+        if (error || !data?.success) {
           const details = await error.context?.json?.().catch(() => null)
-          throw new Error(details?.error || data?.error || error.message)
+          throw new Error(details?.error || data?.error || error?.message || 'The verification email could not be sent.')
         }
 
         toast({
@@ -79,8 +89,11 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
         })
         
       } else if (selectedMethod === 'authenticator') {
-        const secret = generateQRSecret()
-        setQrCodeSecret(secret)
+        const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', issuer: 'TruHeirs' })
+        if (error) throw error
+        setFactorId(data.id)
+        setQrCodeSecret(data.totp.secret)
+        setQrCodeImage(data.totp.qr_code.startsWith('data:') ? data.totp.qr_code : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(data.totp.qr_code)}`)
         
         toast({
           title: "QR Code generated",
@@ -101,7 +114,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
   }
 
   const handleVerification = async () => {
-    if (!verificationCode || verificationCode.length < 6) {
+    if (!isSecurityCode(verificationCode)) {
       toast({
         title: "Invalid code",
         description: "Please enter a valid 6-digit verification code.",
@@ -113,27 +126,30 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
     setIsVerificationLoading(true)
 
     try {
-      // Verify the code with backend
-      const { data, error } = await supabase.functions.invoke('verify-2fa-code', {
-        body: {
-          email,
-          code: verificationCode,
-          method: selectedMethod,
-          phoneNumber: selectedMethod === 'phone' ? phoneNumber : undefined,
-          secret: selectedMethod === 'authenticator' ? qrCodeSecret : undefined
+      if (selectedMethod === 'email') {
+        const { data, error } = await supabase.functions.invoke('verify-2fa-code', { body: { email, code: verificationCode, method: 'email' } })
+        if (error || !data?.success) {
+          const details = await error?.context?.json?.().catch(() => null)
+          throw new Error(details?.error || data?.error || error?.message || 'Invalid verification code')
         }
-      })
-
-      if (error || !data?.success) {
-        const details = await error?.context?.json?.().catch(() => null)
-        throw new Error(details?.error || data?.error || error?.message || 'Invalid verification code')
+      } else {
+        if (!factorId) throw new Error('Start setup again before verifying.')
+        const result = selectedMethod === 'authenticator'
+          ? await supabase.auth.mfa.challengeAndVerify({ factorId, code: verificationCode })
+          : await supabase.auth.mfa.verify({ factorId, challengeId, code: verificationCode })
+        if (result.error) throw result.error
+        const { data, error } = await supabase.auth.mfa.listFactors()
+        if (error) throw error
+        if (!data.all.some(f => f.id === factorId && f.status === 'verified')) throw new Error('Verification has not been saved. Please try again.')
       }
 
       toast({
-        title: "2FA enabled successfully",
-        description: `Two-factor authentication has been set up using ${selectedMethod}.`,
+        title: selectedMethod === 'email' ? 'Email verified' : 'Security method verified',
+        description: selectedMethod === 'email' ? 'Your email verification was saved.' : 'Your verified security method was saved to your account.',
       })
 
+      setCompletedMethod(selectedMethod)
+      setQrCodeSecret(''); setQrCodeImage(''); setVerificationCode('')
       onComplete(selectedMethod)
     } catch (error: any) {
       toast({
@@ -146,15 +162,13 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
     }
   }
 
-  const getQRCodeUrl = () => {
-    const appName = "Fampreneurs Dashboard"
-    const issuer = "Fampreneurs"
-    return `otpauth://totp/${issuer}:${email}?secret=${qrCodeSecret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`
+  if (completedMethod) {
+    return <Card className="w-full"><CardHeader><CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Account Security</CardTitle><CardDescription>{completedMethod === 'email' ? 'Email verification saved' : `${completedMethod === 'phone' ? 'SMS' : 'Authenticator app'} verified`}</CardDescription></CardHeader><CardContent><Button variant="outline" onClick={() => { setCompletedMethod(''); setFactorId(''); setStep('setup') }}>Set up another method</Button></CardContent></Card>
   }
 
   if (step === 'verify') {
     return (
-      <Card className="w-full max-w-md">
+      <Card className="w-full">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-6 w-6 text-primary" />
@@ -171,9 +185,9 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
         <CardContent className="space-y-4">
           {selectedMethod === 'authenticator' && (
             <div className="text-center space-y-4">
-              <div className="p-4 bg-white rounded-lg border inline-block">
+              <div className="p-4 bg-card rounded-lg border inline-block">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(getQRCodeUrl())}`}
+                  src={qrCodeImage}
                   alt="QR Code for authenticator app"
                   className="w-48 h-48"
                 />
@@ -210,7 +224,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
           <div className="flex gap-2">
             <Button 
               variant="outline" 
-              onClick={() => setStep('setup')}
+              onClick={resetSetup}
               className="flex-1"
             >
               Back
@@ -218,7 +232,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
             <Button 
               onClick={handleVerification}
               className="flex-1"
-              disabled={isVerificationLoading || verificationCode.length < 6}
+              disabled={isVerificationLoading || !isSecurityCode(verificationCode)}
             >
               {isVerificationLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Verify & Complete
@@ -230,18 +244,18 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader className="text-center">
         <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
           <Shield className="h-6 w-6 text-primary" />
         </div>
         <CardTitle>Secure Your Account</CardTitle>
         <CardDescription>
-          Choose your preferred two-factor authentication method
+          Verify your phone, email, or authenticator app
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={selectedMethod} onValueChange={(value) => setSelectedMethod(value as any)}>
+        <Tabs value={selectedMethod} onValueChange={(value) => { if (value === 'phone' || value === 'email' || value === 'authenticator') { setSelectedMethod(value); setVerificationCode('') } }}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="phone" className="text-xs">
               <Smartphone className="h-4 w-4 mr-1" />
@@ -279,7 +293,7 @@ export function TwoFactorSetup({ email, onComplete, onSkip }: TwoFactorSetupProp
               <Label>Email Address</Label>
               <Input value={email} disabled />
               <p className="text-xs text-muted-foreground">
-                We'll send a verification code to your email
+                Verify your email address. Email verification is not a sign-in second factor.
               </p>
             </div>
           </TabsContent>
