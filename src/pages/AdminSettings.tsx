@@ -104,6 +104,11 @@ export function AdminSettings() {
 
         {(isAdmin || isOwner) && (
           <TabsContent value="content" className="space-y-6">
+            <AdminVideoManager
+              settingKey="tutorial_video_url"
+              title="Welcome Page Tutorial Video"
+              description="Welcome to TruHeirs!"
+            />
             <AdminUpgradeVideoManager />
             <AdminVideoManager
               settingKey="workspace_video_url"
