@@ -49,13 +49,13 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
         .from("app_settings")
         .upsert({ 
           id: 1,
-          [settingKey]: videoUrl,
+          [settingKey]: videoUrl.trim(),
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
 
-      setCurrentUrl(videoUrl);
+      setCurrentUrl(videoUrl.trim());
       toast({
         title: "Success",
         description: "Video URL updated successfully.",
@@ -243,8 +243,10 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
           <div className="space-y-2">
             <Label>Current Video</Label>
             <div className="aspect-video w-full">
-              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo") || currentUrl.includes("tella.tv")) ? (
+              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("youtu.be") || currentUrl.includes("loom") || currentUrl.includes("vimeo") || currentUrl.includes("tella.tv")) ? (
                 <iframe
+                  key={currentUrl}
+                  title="Welcome tutorial video preview"
                   src={getEmbedUrl(currentUrl)}
                   className="w-full h-full rounded-lg border"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
