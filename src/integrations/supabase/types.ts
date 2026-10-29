@@ -5369,6 +5369,24 @@ export type Database = {
           },
         ]
       }
+      software_update_deliveries: {
+        Row: {
+          created_at: string
+          event_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sop_lesson_links: {
         Row: {
           created_at: string
@@ -6719,6 +6737,7 @@ export type Database = {
         }
         Returns: number
       }
+      notify_software_update: { Args: { p_event_id: string }; Returns: number }
       program_display_name: { Args: { p_code: string }; Returns: string }
       program_group_names: { Args: { p_key: string }; Returns: string[] }
       remove_user_role: {
