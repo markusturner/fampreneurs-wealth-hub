@@ -6559,6 +6559,13 @@ export type Database = {
       }
       cleanup_expired_verification_codes: { Args: never; Returns: undefined }
       cleanup_sensitive_audit_logs: { Args: never; Returns: undefined }
+      community_has_everyone: { Args: { p_content: string }; Returns: boolean }
+      community_notification_recipients: {
+        Args: { p_program: string; p_sender: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       decrypt_ssn: { Args: { p_value: string }; Returns: string }
       encrypt_ssn: { Args: { p_value: string }; Returns: string }
       expire_ended_programs: { Args: never; Returns: undefined }
