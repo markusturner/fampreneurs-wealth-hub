@@ -1,5 +1,10 @@
 # Roadmap
 
+## Profile security section
+- [ ] Match the section width to other settings
+- [ ] Replace simulated phone/app setup with real verification and show saved status
+- [ ] Verify choices, errors, completion and layout; real SMS and email delivery require hosted service checks
+
 ## Software update alerts and member mentions
 - [ ] Activate mobile/desktop published-update alerts: receiver and duplicate-safe fan-out are ready, but external endpoint returns 404; Events & Hooks destination and signing secret must be connected once live
 - [x] Show community members and everyone when typing @ in messages and replies
