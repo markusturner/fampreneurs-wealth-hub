@@ -1,5 +1,10 @@
 # Roadmap
 
+## Category posting and everyone mentions
+- [ ] Make the composer follow the selected category and keep All as the combined feed
+- [ ] Notify only the current community for @everyone in messages and replies
+- [ ] Test category routing and community-scoped notification recipients
+
 ## Markus AI readable thoughts
 - [x] Separate assistant thoughts and space paragraphs across Welcome, Coach Markus and AI Chat, including saved replies
 - [x] Verify formatting with 7 passing tests and sample desktop/phone rendering, including 24px paragraph spacing, without changing saved conversations
