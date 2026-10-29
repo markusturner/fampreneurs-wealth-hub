@@ -1,5 +1,10 @@
 # Roadmap
 
+## Workbook account records
+- [ ] Show completed Family Protection Workbooks under Account Record All Forms, including existing submissions
+- [ ] Check whether D'Juan submitted his workbook and verify his saved record
+- [ ] Run focused form-record tests and verify available live data
+
 ## Profile security section
 - [x] Match the section width to other settings
 - [x] Replace simulated phone/app setup in the profile panel with Supabase MFA verification, local QR display, saved factor status, and working skip/back controls
