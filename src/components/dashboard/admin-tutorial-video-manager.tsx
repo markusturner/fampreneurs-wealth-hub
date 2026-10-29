@@ -216,7 +216,12 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
                 onChange={(e) => setVideoUrl(e.target.value)}
               />
             </div>
-            <Button onClick={handleUrlSave}>Save URL</Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleUrlSave}>Save URL</Button>
+              {currentUrl && (
+                <Button variant="outline" onClick={handleUrlDelete}>Delete Video</Button>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="upload" className="space-y-4">
