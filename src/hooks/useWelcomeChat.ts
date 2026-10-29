@@ -6,6 +6,14 @@ export type WelcomeConversation = Database['public']['Tables']['chat_conversatio
 export type WelcomeProject = Database['public']['Tables']['chat_projects']['Row']
 export type WelcomeMessage = Pick<Database['public']['Tables']['ai_chat_history']['Row'], 'id' | 'content' | 'role'>
 
+const cacheKey = (userId: string, part: string) => `markus-chat:${userId}:${part}`
+const readCache = <T,>(key: string): T | null => {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as T : null } catch { return null }
+}
+const writeCache = (key: string, value: unknown) => {
+  try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* storage full */ }
+}
+
 export function useWelcomeChat(userId: string | undefined) {
   const [conversations, setConversations] = useState<WelcomeConversation[]>([])
   const [projects, setProjects] = useState<WelcomeProject[]>([])
@@ -32,6 +40,8 @@ export function useWelcomeChat(userId: string | undefined) {
       if (chats.error || folders.error) throw chats.error || folders.error
       setConversations(chats.data ?? [])
       setProjects(folders.data ?? [])
+      writeCache(cacheKey(userId, 'chats'), chats.data ?? [])
+      writeCache(cacheKey(userId, 'folders'), folders.data ?? [])
     } catch {
       if (identityRef.current === userId) setLibraryError(true)
     } finally {
@@ -41,8 +51,8 @@ export function useWelcomeChat(userId: string | undefined) {
 
   useEffect(() => {
     setMessages([])
-    setConversations([])
-    setProjects([])
+    setConversations(userId ? readCache<WelcomeConversation[]>(cacheKey(userId, 'chats')) ?? [] : [])
+    setProjects(userId ? readCache<WelcomeProject[]>(cacheKey(userId, 'folders')) ?? [] : [])
     setActiveConversation(null)
     setProjectId(null)
     void refresh()
@@ -57,14 +67,19 @@ export function useWelcomeChat(userId: string | undefined) {
 
   const openConversation = async (conversation: WelcomeConversation) => {
     if (!userId || busyRef.current) return
+    const cached = readCache<WelcomeMessage[]>(cacheKey(userId, `msgs:${conversation.id}`))
+    setActiveConversation(conversation)
+    setProjectId(conversation.project_id)
+    setMessages(cached ?? [])
     busyRef.current = true
-    setBusy(true)
+    setBusy(!cached)
     try {
       const { data, error } = await supabase.from('ai_chat_history').select('id,content,role,created_at')
         .eq('user_id', userId).eq('conversation_id', conversation.id).order('created_at', { ascending: true })
       if (error) throw error
       if (identityRef.current !== userId) return
       setMessages(data ?? [])
+      writeCache(cacheKey(userId, `msgs:${conversation.id}`), data ?? [])
       setActiveConversation(conversation)
       setProjectId(conversation.project_id)
     } finally {
