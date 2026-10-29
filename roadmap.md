@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Category posting and everyone mentions
-- [ ] Make the composer follow the selected category and keep All as the combined feed
-- [ ] Notify only the current community for @everyone in messages and replies
-- [ ] Test category routing and community-scoped notification recipients
+- [x] Make the composer follow the selected category and keep All as the combined feed
+- [x] Notify only the current community for @everyone in messages and replies; scope existing post emails to saved-post membership
+- [x] Test category routing with 8 passing tests and community-scoped recipients with rolled-back database tests across all four communities and replies
+- [ ] Verify real signed-in posting and delivered alerts; external unmanaged authentication prevents this check
 
 ## Markus AI readable thoughts
 - [x] Separate assistant thoughts and space paragraphs across Welcome, Coach Markus and AI Chat, including saved replies
