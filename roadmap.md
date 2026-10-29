@@ -1,5 +1,11 @@
 # Roadmap
 
+## Software update alerts and member mentions
+- [ ] Send mobile and desktop alerts once per published software update
+- [ ] Show community members and everyone when typing @ in messages and replies
+- [ ] Deliver tagged alerts using community-scoped, server-validated recipients
+- [ ] Run focused tests and verify the picker on desktop and phone
+
 ## Category posting and everyone mentions
 - [x] Make the composer follow the selected category and keep All as the combined feed
 - [x] Notify only the current community for @everyone in messages and replies; scope existing post emails to saved-post membership
