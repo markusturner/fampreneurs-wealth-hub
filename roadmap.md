@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Profile security section
-- [ ] Match the section width to other settings
-- [ ] Replace simulated phone/app setup with real verification and show saved status
-- [ ] Verify choices, errors, completion and layout; real SMS and email delivery require hosted service checks
+- [x] Match the section width to other settings
+- [x] Replace simulated phone/app setup in the profile panel with Supabase MFA verification, local QR display, saved factor status, and working skip/back controls
+- [x] Run 2 validation tests and sample-service checks for equal widths, method tabs, email send/back, SMS verification and authenticator completion
+- [ ] Verify live SMS/email/app setup and hosted MFA availability: external unmanaged authentication prevents real-account checks; email identity verification is not login MFA and login enforcement is unchanged
 
 ## Software update alerts and member mentions
 - [ ] Activate mobile/desktop published-update alerts: receiver and duplicate-safe fan-out are ready, but external endpoint returns 404; Events & Hooks destination and signing secret must be connected once live
