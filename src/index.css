@@ -425,6 +425,19 @@ body:has(.profile-settings) :is([role="dialog"], [role="alertdialog"]) :is(butto
   border-color: hsl(var(--accent)) !important;
 }
 
+.admin-content-card button:not([role="tab"]):not([role="switch"]):not([role="radio"]):not([aria-pressed]),
+body:has(.admin-content-card) :is([role="dialog"], [role="alertdialog"]) button:not([role="tab"]):not([role="switch"]):not([aria-pressed]) {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border-color: hsl(var(--secondary)) !important;
+}
+.admin-content-card button:not([role="tab"]):not([role="switch"]):not([role="radio"]):not([aria-pressed]):hover,
+body:has(.admin-content-card) :is([role="dialog"], [role="alertdialog"]) button:not([role="tab"]):not([role="switch"]):not([aria-pressed]):hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  border-color: hsl(var(--accent)) !important;
+}
+
 .community-event-card { background: hsl(var(--card)) !important; color: hsl(var(--card-foreground)) !important; border-color: hsl(var(--border)) !important; transition: transform .15s ease, box-shadow .15s ease; }
 .community-event-card:hover { background: hsl(var(--card)) !important; color: hsl(var(--card-foreground)) !important; border-color: hsl(var(--border)) !important; transform: translateY(-1px); box-shadow: 0 6px 16px -10px hsl(var(--foreground) / .35); }
 .community-event-card .bg-muted { background: hsl(var(--muted)) !important; color: hsl(var(--foreground)) !important; }

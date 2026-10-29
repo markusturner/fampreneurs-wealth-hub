@@ -70,6 +70,34 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
     }
   };
 
+  const handleUrlDelete = async () => {
+    try {
+      const { error } = await (supabase as any)
+        .from("app_settings")
+        .upsert({
+          id: 1,
+          [settingKey]: null,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      setCurrentUrl("");
+      setVideoUrl("");
+      toast({
+        title: "Success",
+        description: "Video removed successfully.",
+      });
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete video URL.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -157,7 +185,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
   };
 
   return (
-    <Card>
+    <Card className="admin-content-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Video className="h-5 w-5" />
@@ -188,7 +216,12 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
                 onChange={(e) => setVideoUrl(e.target.value)}
               />
             </div>
-            <Button onClick={handleUrlSave}>Save URL</Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleUrlSave}>Save URL</Button>
+              {currentUrl && (
+                <Button variant="outline" onClick={handleUrlDelete}>Delete Video</Button>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="upload" className="space-y-4">
