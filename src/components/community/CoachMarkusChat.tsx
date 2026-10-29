@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { MarkusReply } from '@/components/chat/MarkusReply'
 import { ArrowUp, Loader2 } from 'lucide-react'
@@ -19,15 +19,16 @@ export function CoachMarkusChat() {
   const log = useRef<HTMLDivElement>(null)
   const initialized = useRef(false)
 
-  useEffect(() => {
-    if (initialized.current || chat.libraryLoading || chat.libraryError || !chat.conversations.length) return
+  // Open the most recent chat from the saved copy right away instead of waiting for the network.
+  useLayoutEffect(() => {
+    if (initialized.current || !chat.conversations.length) return
     initialized.current = true
     void chat.openConversation(chat.conversations[0]).catch(() => {
       toast({ title: 'Could not open recent chat', description: 'Please select it from Chats.', variant: 'destructive' })
     })
-  }, [chat.libraryLoading, chat.libraryError, chat.conversations])
+  }, [chat.conversations])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = log.current
     if (element) element.scrollTop = element.scrollHeight
   }, [chat.messages, pending])
