@@ -1,48 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { supabase } from '@/integrations/supabase/client'
-
-const PROGRAM_NAMES: Record<string, string> = {
-  fbu: 'Family Business University',
-  tfv: 'The Trust Vault',
-  tfba: 'The Private Estate Accelerator',
-  tffm: 'The Legacy InnerCircle',
-}
-
-interface MemberOption {
-  user_id: string
-  display_name: string
-  avatar_url: string | null
-}
+import { Button } from '@/components/ui/button'
+import { loadMentionMembers, mentionOptions, type MemberOption } from '@/lib/community-mentions'
 
 interface Props extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string
   onChange: (val: string) => void
   program?: string
   onKeyDownExtra?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
-}
-
-let cachedProgram: string | null = null
-let cachedMembers: MemberOption[] = []
-
-async function loadMembers(program: string): Promise<MemberOption[]> {
-  if (cachedProgram === program && cachedMembers.length) return cachedMembers
-  const assigned = PROGRAM_NAMES[program]
-  let query = supabase
-    .from('profiles')
-    .select('user_id, display_name, avatar_url, program_name')
-    .not('display_name', 'is', null)
-    .order('display_name')
-    .limit(500)
-  if (assigned) query = query.ilike('program_name', `%${assigned}%`)
-  const { data } = await query
-  const rows = (data || []).filter(r => !!r.display_name && !(assigned && String((r as any).program_name || '').includes('(VIP Weekend)'))).map(r => ({
-    user_id: r.user_id, display_name: r.display_name as string, avatar_url: r.avatar_url,
-  }))
-  cachedProgram = program
-  cachedMembers = rows
-  return rows
 }
 
 export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function MentionTextarea(
@@ -57,11 +23,14 @@ export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function M
   const [triggerStart, setTriggerStart] = useState<number | null>(null)
   const [highlight, setHighlight] = useState(0)
 
-  useEffect(() => { loadMembers(program).then(setMembers) }, [program])
+  useEffect(() => {
+    let active = true
+    setMembers([])
+    loadMentionMembers(program).then(rows => { if (active) setMembers(rows) }).catch(() => { if (active) setMembers([]) })
+    return () => { active = false }
+  }, [program])
 
-  const filtered = query
-    ? members.filter(m => m.display_name.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
-    : members.slice(0, 6)
+  const filtered = mentionOptions(members, query)
 
   const detect = useCallback((val: string, cursor: number) => {
     const upToCursor = val.slice(0, cursor)
@@ -103,6 +72,8 @@ export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function M
         {...rest}
         ref={textareaRef}
         value={value}
+        aria-expanded={open && filtered.length > 0}
+        aria-autocomplete="list"
         onChange={(e) => {
           onChange(e.target.value)
           detect(e.target.value, e.target.selectionStart ?? e.target.value.length)
@@ -111,7 +82,7 @@ export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function M
           if (open && filtered.length > 0) {
             if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => (h + 1) % filtered.length); return }
             if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => (h - 1 + filtered.length) % filtered.length); return }
-            if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); applyMention(filtered[highlight]); return }
+            if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); const member = filtered[highlight]; if (member) applyMention(member); return }
             if (e.key === 'Escape') { setOpen(false); return }
           }
           onKeyDown?.(e)
@@ -120,13 +91,17 @@ export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function M
         onBlur={() => setTimeout(() => setOpen(false), 150)}
       />
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 bottom-full mb-1 left-0 w-64 max-h-64 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg py-1">
+        <div role="listbox" aria-label="Mention members" className="absolute z-50 bottom-full mb-1 left-0 w-64 max-w-[calc(100vw-2rem)] max-h-64 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg py-1">
           {filtered.map((m, i) => (
-            <button
+            <Button
+              variant="ghost"
+              role="option"
+              aria-selected={i === highlight}
               key={m.user_id}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); applyMention(m) }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-sm ${i === highlight ? 'bg-muted' : 'hover:bg-muted/60'}`}
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => applyMention(m)}
+              className={`h-auto rounded-none justify-start w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-sm ${i === highlight ? 'bg-muted' : 'hover:bg-muted/60'}`}
             >
               <Avatar className="h-6 w-6">
                 {m.avatar_url && <AvatarImage src={m.avatar_url} />}
@@ -134,8 +109,8 @@ export const MentionTextarea = forwardRef<HTMLTextAreaElement, Props>(function M
                   {m.display_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="truncate">{m.display_name}</span>
-            </button>
+              <span className="truncate">{m.user_id === 'everyone' ? '@everyone' : m.display_name}</span>
+            </Button>
           ))}
         </div>
       )}
