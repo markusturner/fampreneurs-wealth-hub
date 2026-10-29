@@ -412,6 +412,19 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-right-rail .shadow-sm ol .text-sm { font-size: 12px; }
 .community-right-rail .shadow-sm > div > .flex.mb-3 { display: none; }
 .community-right-rail section > .space-y-2 > button { border: 0; padding: 8px 0; }
+.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"]):not([role="checkbox"]):not([role="radio"]),
+body:has(.profile-settings) :is([role="dialog"], [role="alertdialog"]) :is(button, a[role="button"]):not([role="switch"]):not([role="checkbox"]):not([role="radio"]) {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border-color: hsl(var(--secondary)) !important;
+}
+.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"]):not([role="checkbox"]):not([role="radio"]):hover,
+body:has(.profile-settings) :is([role="dialog"], [role="alertdialog"]) :is(button, a[role="button"]):not([role="switch"]):not([role="checkbox"]):not([role="radio"]):hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border-color: hsl(var(--accent)) !important;
+}
+
 .community-event-card { background: hsl(var(--card)) !important; color: hsl(var(--card-foreground)) !important; border-color: hsl(var(--border)) !important; transition: transform .15s ease, box-shadow .15s ease; }
 .community-event-card:hover { background: hsl(var(--card)) !important; color: hsl(var(--card-foreground)) !important; border-color: hsl(var(--border)) !important; transform: translateY(-1px); box-shadow: 0 6px 16px -10px hsl(var(--foreground) / .35); }
 .community-event-card .bg-muted { background: hsl(var(--muted)) !important; color: hsl(var(--foreground)) !important; }
