@@ -1,5 +1,11 @@
 # Roadmap
 
+## Workbook account records
+- [x] Show completed Family Protection Workbooks in their own section under Account Record All Forms, including existing submissions, dates, and answers; surface loading errors instead of empty records
+- [x] Check D'Juan's live records: no trust submissions exist for his account, so no completed workbook is saved
+- [x] Run focused form-record and workbook tests: 12 passed; preview build OK; live data confirms existing completed workbooks are stored in the queried table
+- [ ] Verify Account Record through a real signed-in browser: external unmanaged authentication prevents authenticated checks
+
 ## Profile security section
 - [x] Match the section width to other settings
 - [x] Replace simulated phone/app setup in the profile panel with Supabase MFA verification, local QR display, saved factor status, and working skip/back controls
