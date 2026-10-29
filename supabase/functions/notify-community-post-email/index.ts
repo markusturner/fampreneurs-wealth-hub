@@ -29,7 +29,12 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
-    const { post_id, user_id, content, program, category } = await req.json();
+    const { post_id } = await req.json();
+    // Always derive content and audience from the saved post, never request fields.
+    const { data: post, error: postError } = await supabase.from('community_posts')
+      .select('user_id,content,program,category').eq('id', post_id).single();
+    if (postError || !post) throw new Error('Community post not found');
+    const { user_id, content, program, category } = post;
     console.log('Processing community post email notification:', { post_id, user_id });
 
     // Get poster's profile
@@ -43,11 +48,23 @@ const handler = async (req: Request): Promise<Response> => {
       `${posterProfile?.first_name || ''} ${posterProfile?.last_name || ''}`.trim() ||
       'A member';
 
-    // Get all users except the poster, using auth.users for login email
-    const { data: allProfiles } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, email')
-      .neq('user_id', user_id);
+    // Page the server-selected membership audience so larger communities are included.
+    const memberIds: string[] = [];
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await supabase.rpc('community_notification_recipients', {
+        p_program: program, p_sender: user_id,
+      }).order('user_id').range(offset, offset + 999);
+      if (error) throw error;
+      memberIds.push(...(data || []).map((member: { user_id: string }) => member.user_id));
+      if (!data || data.length < 1000) break;
+    }
+    const allProfiles: { user_id: string; display_name: string | null; email: string | null }[] = [];
+    for (let offset = 0; offset < memberIds.length; offset += 200) {
+      const { data, error } = await supabase.from('profiles').select('user_id, display_name, email')
+        .in('user_id', memberIds.slice(offset, offset + 200));
+      if (error) throw error;
+      allProfiles.push(...(data || []));
+    }
 
     if (!allProfiles || allProfiles.length === 0) {
       return new Response(
@@ -100,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
             <body>
               <div class="container">
                 <div class="header">
-                  <h1 style="margin: 0; font-size: 24px;">📢 New Community Post</h1>
+                  <h1 style="margin: 0; font-size: 24px;">New Community Post</h1>
                   <p style="margin: 8px 0 0; opacity: 0.9;">${communityLabel}</p>
                 </div>
                 <div class="content">
@@ -110,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <p style="margin: 0; white-space: pre-wrap;">${previewContent}</p>
                   </div>
                   <p>Log in to view the full post and join the conversation.</p>
-                  <a href="${appUrl}/community" class="button">View Post</a>
+                  <a href="${appUrl}/workspace-community?program=${encodeURIComponent(program || '')}&amp;post=${encodeURIComponent(post_id)}" class="button">View Post</a>
                   <div class="footer">
                     <p>This is an automated notification from Fampreneurs Wealth Hub.</p>
                   </div>
