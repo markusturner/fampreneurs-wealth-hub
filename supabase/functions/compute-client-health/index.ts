@@ -214,7 +214,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript: transcriptResult.text, summary: summary.slice(0, 1500), invitees,
+          transcript: (transcriptResult.text || "").slice(0, 8000), summary: summary.slice(0, 1500), invitees,
           speakers,
           share_url: m.share_url ?? m.url,
           identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`.slice(0, 1500),
@@ -274,7 +274,7 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
       return {
         meeting: {
           ...m,
-          transcript: transcriptResult.text || m.transcript,
+          transcript: (transcriptResult.text || m.transcript || "").slice(0, 8000),
           summary: summary || m.summary,
           speakers,
           identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`.slice(0, 1500),
@@ -337,7 +337,7 @@ function fuzzyTokenMatch(haystack: string, token: string): boolean {
   if (!token || token.length < 4) return false
   // Pull word tokens (3+ chars) from haystack and compare via Levenshtein ≤ 1
   const words = haystack.toLowerCase().match(/[a-z]{3,}/g) ?? []
-  return words.some((w) => Math.abs(w.length - token.length) <= 1 && levenshtein(w, token) <= 1)
+  return words.slice(0, 400).some((w) => Math.abs(w.length - token.length) <= 1 && levenshtein(w, token) <= 1)
 }
 
 function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: string | null | undefined, firstNameCounts: Map<string, number>, lastNameCounts: Map<string, number>): number {
@@ -570,6 +570,7 @@ Deno.serve(async (req) => {
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
+        const historyCap = 20000
         const sorted = [...myMeetings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         const latestMeeting = sorted[0]
         lastFathomDays = Math.floor((Date.now() - new Date(latestMeeting.created_at).getTime()) / 86400000)
@@ -591,7 +592,7 @@ Deno.serve(async (req) => {
         if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
 
         const latestBlob = `${latestMeeting.summary ?? ''} ${latestMeeting.transcript ?? ''}`.toLowerCase()
-        const historyBlob = sorted.slice(1).map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
+        const historyBlob = sorted.slice(1, 6).map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').slice(0, historyCap).toLowerCase()
         const negRe = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i
         const posRe = /(love|amazing|excited|referral|expand|upgrade|grateful|huge win|game.?changer|breakthrough)/i
         const latestNeg = negRe.test(latestBlob)
