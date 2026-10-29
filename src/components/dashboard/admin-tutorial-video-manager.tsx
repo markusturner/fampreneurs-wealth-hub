@@ -274,10 +274,3 @@ export const AdminTutorialVideoManager = () => (
   />
 );
 
-export const AdminUpgradeVideoManager = () => (
-  <AdminVideoManager 
-    settingKey="upgrade_video_url" 
-    title="Upgrade Video Manager" 
-    description="Manage the video shown when users try to access locked content" 
-  />
-);
