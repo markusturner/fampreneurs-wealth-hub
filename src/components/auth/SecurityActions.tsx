@@ -83,7 +83,7 @@ export function SecurityActions() {
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" disabled={locking}>
+              <Button variant="destructive" size="sm" disabled={locking} className="profile-lock-account hover:bg-success hover:text-success-foreground hover:border-success">
                 <Lock className="h-4 w-4 mr-1" /> Lock account
               </Button>
             </AlertDialogTrigger>

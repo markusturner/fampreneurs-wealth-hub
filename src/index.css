@@ -412,13 +412,13 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-right-rail .shadow-sm ol .text-sm { font-size: 12px; }
 .community-right-rail .shadow-sm > div > .flex.mb-3 { display: none; }
 .community-right-rail section > .space-y-2 > button { border: 0; padding: 8px 0; }
-.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed]),
+.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed], .profile-lock-account),
 body:has(.profile-settings) :is([role="dialog"], [role="alertdialog"]) :is(button, a[role="button"]):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed]) {
   background: hsl(var(--secondary)) !important;
   color: hsl(var(--secondary-foreground)) !important;
   border-color: hsl(var(--secondary)) !important;
 }
-.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed]):hover,
+.profile-settings :is(button, a[role="button"], label.inline-flex):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed], .profile-lock-account):hover,
 body:has(.profile-settings) :is([role="dialog"], [role="alertdialog"]) :is(button, a[role="button"]):not([role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [aria-pressed]):hover {
   background: hsl(var(--accent)) !important;
   color: hsl(var(--secondary-foreground)) !important;
