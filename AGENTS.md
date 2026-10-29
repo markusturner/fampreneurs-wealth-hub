@@ -13,6 +13,7 @@
 
 ## VIP workbook navigation
 - Keep the mastermind navigation destination on the existing protection-workbook route and use workbook eligibility helpers rather than creating community records; this preserves workbook submissions and onboarding.
+- Account Record All Forms reads workbook submissions from the existing user-scoped trust_submissions query and separates completed workbooks from other trust forms; this includes past and future submissions without duplicating private records.
 
 ## Welcome AI chat
 - Markus assistant replies use shared Markdown-aware presentation blocks across Welcome, Coach Markus and AI Chat; keep stored messages and AI context intact so older conversations gain the same readability without data rewrites.

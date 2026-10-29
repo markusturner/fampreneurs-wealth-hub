@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { TruHeirsSubscriptionPanel } from './TruHeirsSubscriptionPanel'
 import { supabase } from '@/integrations/supabase/client'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
+import { accountFormRecords } from '@/lib/account-form-records'
 import { computeContractEndDate, programDurationDays, todayISO } from '@/lib/contract-duration'
 
 import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image, Link2 } from 'lucide-react'
@@ -197,6 +198,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   const [memberView, setMemberView] = useState<'active' | 'pending'>('active')
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[], assetUploads: any[], legacyMeetingUploads: any[]}>({ onboarding: null, agreements: [], trustForms: [], assetUploads: [], legacyMeetingUploads: [] })
   const [loadingForms, setLoadingForms] = useState(false)
+  const [formsError, setFormsError] = useState<string | null>(null)
+  const accountForms = accountFormRecords(formsData.trustForms, formsUserId || '')
   const [resendingAgreementId, setResendingAgreementId] = useState<string | null>(null)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
@@ -1022,6 +1025,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   const handleOpenForms = async (userId: string) => {
     setFormsUserId(userId)
     setLoadingForms(true)
+    setFormsError(null)
     try {
       const [onboardingRes, agreementsRes, trustRes, assetUploadsRes, legacyMeetingRes] = await Promise.all([
         supabase.from('onboarding_responses' as any).select('*').eq('user_id', userId).maybeSingle(),
@@ -1030,6 +1034,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
         supabase.from('trust_asset_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('legacy_meeting_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ])
+      const queryError = [onboardingRes, agreementsRes, trustRes, assetUploadsRes, legacyMeetingRes].find(result => result.error)?.error
+      if (queryError) throw queryError
       setFormsData({
         onboarding: onboardingRes.data,
         agreements: agreementsRes.data || [],
@@ -1039,6 +1045,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
       })
     } catch (err) {
       console.error('Error fetching forms:', err)
+      setFormsError('We could not load these records. Please try again.')
     } finally {
       setLoadingForms(false)
     }
@@ -3171,15 +3178,54 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
               User Forms & Submissions
             </DialogTitle>
             <DialogDescription>
-              {users.find(u => u.user_id === formsUserId)?.display_name || 'User'}'s onboarding form, agreements, and trust forms
+              {users.find(u => u.user_id === formsUserId)?.display_name || 'User'}'s onboarding form, agreements, protection workbook, and trust forms
             </DialogDescription>
           </DialogHeader>
           {loadingForms ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
+          ) : formsError ? (
+            <div className="space-y-3 py-4">
+              <p className="text-sm text-destructive">{formsError}</p>
+              <Button variant="outline" onClick={() => formsUserId && handleOpenForms(formsUserId)}>Try Again</Button>
+            </div>
           ) : (
-            <Accordion type="multiple" className="space-y-2">
+            <Accordion type="multiple" defaultValue={accountForms.workbooks.length ? ['protection-workbook'] : []} className="space-y-2">
+              <AccordionItem value="protection-workbook" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2 flex-wrap text-left">
+                    <Badge variant="secondary">Family Protection Workbook</Badge>
+                    <Badge variant={accountForms.workbooks.length ? 'default' : 'outline'}>
+                      {accountForms.workbooks.length ? `${accountForms.workbooks.length} Completed` : 'Not Submitted'}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {accountForms.workbooks.length ? accountForms.workbooks.map(form => (
+                    <div key={form.id} className="space-y-3 border-b py-3 text-sm last:border-b-0">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Submitted</span>
+                        <span>{new Date(form.submitted_at || form.created_at).toLocaleString()}</span>
+                      </div>
+                      {form.submitter_name && <p>{form.submitter_name}</p>}
+                      {form.form_data && typeof form.form_data === 'object' ? (
+                        <details>
+                          <summary className="cursor-pointer text-muted-foreground">View Workbook Answers</summary>
+                          <div className="divide-y mt-2">
+                            {Object.entries(form.form_data).map(([key, value]) => (
+                              <div key={key} className="grid gap-1 py-2">
+                                <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                                <span className="whitespace-pre-wrap break-words">{value == null || value === '' ? 'Not provided' : typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      ) : null}
+                    </div>
+                  )) : <p className="text-sm text-muted-foreground py-2">No completed workbook has been submitted.</p>}
+                </AccordionContent>
+              </AccordionItem>
               {/* Onboarding Form */}
               <AccordionItem value="onboarding" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline py-3">
@@ -3315,13 +3361,13 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                 <AccordionTrigger className="hover:no-underline py-3">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Trust Forms</Badge>
-                    <Badge className={formsData.trustForms.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.trustForms.length > 0 ? "default" : "outline"}>
-                      {formsData.trustForms.length > 0 ? `${formsData.trustForms.length} Submitted` : 'None'}
+                    <Badge className={accountForms.trustForms.length > 0 ? "bg-green-600 text-white" : ""} variant={accountForms.trustForms.length > 0 ? "default" : "outline"}>
+                      {accountForms.trustForms.length > 0 ? `${accountForms.trustForms.length} Submitted` : 'None'}
                     </Badge>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  {formsData.trustForms.map((form: any) => (
+                  {accountForms.trustForms.map((form: any) => (
                     <div key={form.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm mb-2">
                       <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
                         <span className="text-muted-foreground">Type</span>
