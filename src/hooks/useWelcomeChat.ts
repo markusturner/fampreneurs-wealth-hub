@@ -15,8 +15,8 @@ const writeCache = (key: string, value: unknown) => {
 }
 
 export function useWelcomeChat(userId: string | undefined) {
-  const [conversations, setConversations] = useState<WelcomeConversation[]>([])
-  const [projects, setProjects] = useState<WelcomeProject[]>([])
+  const [conversations, setConversations] = useState<WelcomeConversation[]>(() => userId ? readCache<WelcomeConversation[]>(cacheKey(userId, 'chats')) ?? [] : [])
+  const [projects, setProjects] = useState<WelcomeProject[]>(() => userId ? readCache<WelcomeProject[]>(cacheKey(userId, 'folders')) ?? [] : [])
   const [messages, setMessages] = useState<WelcomeMessage[]>([])
   const [activeConversation, setActiveConversation] = useState<WelcomeConversation | null>(null)
   const [projectId, setProjectId] = useState<string | null>(null)
@@ -26,6 +26,8 @@ export function useWelcomeChat(userId: string | undefined) {
   const busyRef = useRef(false)
   const identityRef = useRef(userId)
   identityRef.current = userId
+  const loadedUserRef = useRef(userId)
+  const openRequestRef = useRef(0)
 
   const refresh = useCallback(async () => {
     if (!userId) return
@@ -50,16 +52,21 @@ export function useWelcomeChat(userId: string | undefined) {
   }, [userId])
 
   useEffect(() => {
-    setMessages([])
-    setConversations(userId ? readCache<WelcomeConversation[]>(cacheKey(userId, 'chats')) ?? [] : [])
-    setProjects(userId ? readCache<WelcomeProject[]>(cacheKey(userId, 'folders')) ?? [] : [])
-    setActiveConversation(null)
-    setProjectId(null)
+    // Initial cached state comes from the useState initializers; only reset when the account changes.
+    if (loadedUserRef.current !== userId) {
+      loadedUserRef.current = userId
+      setMessages([])
+      setConversations(userId ? readCache<WelcomeConversation[]>(cacheKey(userId, 'chats')) ?? [] : [])
+      setProjects(userId ? readCache<WelcomeProject[]>(cacheKey(userId, 'folders')) ?? [] : [])
+      setActiveConversation(null)
+      setProjectId(null)
+    }
     void refresh()
-  }, [refresh])
+  }, [refresh, userId])
 
   const newChat = (folder: string | null = null) => {
     if (busyRef.current) return
+    openRequestRef.current++
     setActiveConversation(null)
     setMessages([])
     setProjectId(folder)
@@ -71,20 +78,19 @@ export function useWelcomeChat(userId: string | undefined) {
     setActiveConversation(conversation)
     setProjectId(conversation.project_id)
     setMessages(cached ?? [])
-    busyRef.current = true
-    setBusy(!cached)
+    const request = ++openRequestRef.current
+    // With a cached copy the chat is usable right away; the refresh runs quietly in the background.
+    if (!cached) { busyRef.current = true; setBusy(true) }
     try {
       const { data, error } = await supabase.from('ai_chat_history').select('id,content,role,created_at')
         .eq('user_id', userId).eq('conversation_id', conversation.id).order('created_at', { ascending: true })
-      if (error) throw error
+      if (error) { if (cached) return; throw error }
       if (identityRef.current !== userId) return
-      setMessages(data ?? [])
       writeCache(cacheKey(userId, `msgs:${conversation.id}`), data ?? [])
-      setActiveConversation(conversation)
-      setProjectId(conversation.project_id)
+      if (request !== openRequestRef.current || busyRef.current && cached) return
+      setMessages(data ?? [])
     } finally {
-      busyRef.current = false
-      setBusy(false)
+      if (!cached) { busyRef.current = false; setBusy(false) }
     }
   }
 
@@ -135,12 +141,23 @@ export function useWelcomeChat(userId: string | undefined) {
         { user_id: userId, conversation_id: conversation.id, role: 'assistant', content: reply, created_at: new Date(Date.now() + 1).toISOString() },
       ]
       const saved = await supabase.from('ai_chat_history').insert(pair).select('id,content,role,created_at').order('created_at', { ascending: true })
-      setMessages(previous => [...previous, ...(saved.data ?? pair.map((entry, i) => ({ ...entry, id: `${Date.now()}-${i}` })))])
+      openRequestRef.current++
+      const added = saved.data ?? pair.map((entry, i) => ({ ...entry, id: `${Date.now()}-${i}` }))
+      const conversationId = conversation.id
+      setMessages(previous => {
+        const next = [...previous, ...added]
+        writeCache(cacheKey(userId, `msgs:${conversationId}`), next)
+        return next
+      })
       const updatedAt = new Date().toISOString()
       const updated = await supabase.from('chat_conversations').update({ updated_at: updatedAt }).eq('id', conversation.id).eq('user_id', userId)
       const current = { ...conversation, updated_at: updatedAt }
       setActiveConversation(current)
-      setConversations(previous => [current, ...previous.filter(chat => chat.id !== current.id)])
+      setConversations(previous => {
+        const next = [current, ...previous.filter(chat => chat.id !== current.id)]
+        writeCache(cacheKey(userId, 'chats'), next)
+        return next
+      })
       return { reply, saved: !saved.error && !updated.error }
     } finally {
       busyRef.current = false
