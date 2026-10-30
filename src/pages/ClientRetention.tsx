@@ -979,6 +979,8 @@ export default function ClientRetention() {
   const displayClients = useMemo(() => {
     const invitedIds = new Set(pendingInvites.flatMap((p) => [p.user_id, p.id]).filter(Boolean))
     const mapped = baseDisplayClients.map((c) => {
+      const override = notesMap[c.user_id]?.status_override
+      if (override) return { ...c, status: clientQueueStage(c.status, override) }
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
       const pending = ids.some((id) => invitedIds.has(id))
       if (pending && !notesMap[c.user_id]?.status_override) return { ...c, full_name: c.email?.split(" · ")[0] || c.full_name, status: "invited" as Status }
