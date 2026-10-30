@@ -1,5 +1,9 @@
 # Roadmap
 
+## Duplicate invited client
+- [x] Stop cleared Invited User placeholders from appearing in Non-Active; preserve the signed-up account's stage
+- [ ] Verify corrected invite selection against live D'Juan records and run queue regression tests
+
 ## Client Queue stages and page width
 - [x] Add Follow-up and Deal Lost to queue columns, status choices and history, preserving manual placements
 - [x] Extend the queue across the available page width and give columns more vertical room

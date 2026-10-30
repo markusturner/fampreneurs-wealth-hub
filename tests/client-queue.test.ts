@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test'
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage } from '../src/lib/client-queue'
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isPendingClientInvite } from '../src/lib/client-queue'
 
 // Continuity, Follow-up and Deal Lost are no longer queue columns, but stored
 // overrides with those values must still bucket safely instead of crashing.
@@ -21,4 +21,16 @@ test('legacy continuity override still buckets without breaking the queue', () =
 
 test('clearing a manual queue stage restores automatic health placement', () => {
   expect(clientQueueStage('slipping', null)).toBe('slipping')
+})
+
+test("D'Juan's cleared old invite does not appear in Non-Active", () => {
+  expect(isPendingClientInvite(false, false)).toBe(false)
+})
+
+test('a pending invite still appears in Non-Active before activation', () => {
+  expect(isPendingClientInvite(true, false)).toBe(true)
+})
+
+test('an active client is not treated as a pending invite', () => {
+  expect(isPendingClientInvite(true, true)).toBe(false)
 })

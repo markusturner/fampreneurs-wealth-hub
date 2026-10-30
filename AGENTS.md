@@ -1,6 +1,7 @@
 
 ## Client Queue
 - Define manual queue stages and bucket creation in the shared client-queue helper, and store placements in existing retention status overrides; this keeps drag-and-drop and selectors consistent without changing automatic health scoring.
+- Pending queue cards require an explicit needs_profile_completion flag and incomplete activation; display names must not revive cleared invites.
 
 ## Teller bank connections
 - New bank connections use Teller (mTLS), not Plaid. Why: user switched providers; Plaid stays only for existing linked accounts (update-mode) until removed.

@@ -31,7 +31,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, type ClientQueueStage } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -874,8 +874,8 @@ export default function ClientRetention() {
     if (!(isAdmin || isOwner)) return
     supabase
       .from("profiles")
-      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name")
-      .or("needs_profile_completion.eq.true,display_name.eq.Invited User")
+      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name, needs_profile_completion")
+      .eq("needs_profile_completion", true)
       .limit(5000)
       .then(async ({ data }) => {
         const rows = (data ?? []) as any[]
@@ -898,7 +898,7 @@ export default function ClientRetention() {
             program_name: p.program_name ?? null,
           })))
         setPendingInvites(rows
-          .filter((p) => !isActive(p))
+          .filter((p) => isPendingClientInvite(p.needs_profile_completion, isActive(p)))
           .map((p) => ({
             id: p.id,
             user_id: p.user_id,
