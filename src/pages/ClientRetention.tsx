@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Repeat, Link2, Users, Paperclip, X as XIcon, FileText } from "lucide-react"
+import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Link2, Users, Paperclip, X as XIcon, FileText } from "lucide-react"
 
 import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
 import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
@@ -1668,9 +1668,6 @@ export default function ClientRetention() {
                 <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="follow_up" title="Follow-up" icon={<RefreshCw className="h-3.5 w-3.5" />} clients={sortedBuckets.follow_up} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="deal_lost" title="Deal Lost" icon={<XIcon className="h-3.5 w-3.5" />} clients={sortedBuckets.deal_lost} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
               </div>
             </DndContext>
           ) : (
@@ -1945,9 +1942,6 @@ export default function ClientRetention() {
                                               <SelectItem value="slipping">Slipping</SelectItem>
                                               <SelectItem value="stable">Healthy</SelectItem>
                                               <SelectItem value="expansion_ready">Ascension</SelectItem>
-                                              <SelectItem value="continuity">Continuity</SelectItem>
-                                              <SelectItem value="follow_up">Follow-up</SelectItem>
-                                              <SelectItem value="deal_lost">Deal Lost</SelectItem>
                                             </SelectContent>
                                           </Select>
                                         </div>
@@ -2010,9 +2004,6 @@ export default function ClientRetention() {
                             <SelectItem value="slipping">Slipping</SelectItem>
                             <SelectItem value="stable">Healthy</SelectItem>
                             <SelectItem value="expansion_ready">Ascension</SelectItem>
-                            <SelectItem value="continuity">Continuity</SelectItem>
-                            <SelectItem value="follow_up">Follow-up</SelectItem>
-                            <SelectItem value="deal_lost">Deal Lost</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
