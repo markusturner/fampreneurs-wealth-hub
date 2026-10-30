@@ -1,5 +1,11 @@
 # Roadmap
 
+## Client Queue stages and page width
+- [x] Add Follow-up and Deal Lost to queue columns, status choices and history, preserving manual placements
+- [x] Extend the queue across the available page width and give columns more vertical room
+- [ ] Run stage tests and browser checks
+- [ ] Verify real-account stage saving: external unmanaged authentication prevents signed-in checks
+
 ## Workbook account records
 - [x] Show completed Family Protection Workbooks in their own section under Account Record All Forms, including existing submissions, dates, and answers; surface loading errors instead of empty records
 - [x] Check D'Juan's live records: no trust submissions exist for his account, so no completed workbook is saved
