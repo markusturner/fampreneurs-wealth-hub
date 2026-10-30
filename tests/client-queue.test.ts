@@ -1,22 +1,22 @@
 import { test, expect } from 'bun:test'
 import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage } from '../src/lib/client-queue'
 
-test('Follow-up is an available queue stage and preserves a manual placement over automatic health', () => {
-  expect(CLIENT_QUEUE_STAGES).toContain('follow_up')
-  expect(clientQueueStage('expansion_ready', 'follow_up')).toBe('follow_up')
+// Continuity, Follow-up and Deal Lost are no longer queue columns, but stored
+// overrides with those values must still bucket safely instead of crashing.
+test('legacy follow_up and deal_lost overrides still bucket without breaking the queue', () => {
   const buckets = clientQueueBuckets<string>()
   buckets[clientQueueStage('invited', 'follow_up')].push('pending-client')
+  buckets[clientQueueStage('invited', 'deal_lost')].push('lost-client')
   expect(buckets.follow_up).toEqual(['pending-client'])
+  expect(buckets.deal_lost).toEqual(['lost-client'])
   expect(buckets.invited).toEqual([])
 })
 
-test('Deal Lost is an available queue stage and preserves a manual placement over automatic health', () => {
-  expect(CLIENT_QUEUE_STAGES).toContain('deal_lost')
-  expect(clientQueueStage('stable', 'deal_lost')).toBe('deal_lost')
+test('legacy continuity override still buckets without breaking the queue', () => {
   const buckets = clientQueueBuckets<string>()
-  buckets[clientQueueStage('invited', 'deal_lost')].push('pending-client')
-  expect(buckets.deal_lost).toEqual(['pending-client'])
-  expect(buckets.invited).toEqual([])
+  buckets[clientQueueStage('stable', 'continuity')].push('continuity-client')
+  expect(buckets.continuity).toEqual(['continuity-client'])
+  expect(buckets.stable).toEqual([])
 })
 
 test('clearing a manual queue stage restores automatic health placement', () => {
