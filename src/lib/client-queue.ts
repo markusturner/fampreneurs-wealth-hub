@@ -11,3 +11,7 @@ export function clientQueueBuckets<T>() {
 export function clientQueueStage(automatic: ClientQueueStage, override?: ClientQueueStage | null): ClientQueueStage {
   return override ?? automatic
 }
+
+export function isPendingClientInvite(needsProfileCompletion: boolean | null, isActive: boolean): boolean {
+  return needsProfileCompletion === true && !isActive
+}

@@ -1,5 +1,10 @@
 # Roadmap
 
+## Duplicate invited client
+- [x] Stop cleared Invited User placeholders from appearing in Non-Active; preserve the signed-up account's stage
+- [x] Live corrected invite query returns no D'Juan placeholder; all 6 queue tests pass and build OK
+- [ ] Verify signed-in queue display: external unmanaged authentication prevents real-account browser checks
+
 ## Client Queue stages and page width
 - [x] Add Follow-up and Deal Lost to queue columns, status choices and history, preserving manual placements
 - [x] Extend the queue across the available page width and give columns more vertical room
