@@ -31,8 +31,9 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, type ClientQueueStage } from "@/lib/client-queue"
 
-type Status = "invited" | "at_risk" | "slipping" | "stable" | "expansion_ready" | "continuity"
+type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
 type SortDirection = "asc" | "desc"
 
@@ -147,6 +148,8 @@ function outreachTopic(c: ClientScore): string {
     case "stable": return "Doing well — ask for a testimonial or a referral to a family they know."
     case "expansion_ready": return "Ready for the next tier — invite them to a strategy call about upgrading."
     case "continuity": return "Engaged but not upgrading — keep the relationship warm and confirm their renewal."
+    case "follow_up": return "Follow up on the last conversation and confirm their next step."
+    case "deal_lost": return "The deal did not move forward. Record the outcome and any future opportunity to reconnect."
   }
 }
 
@@ -177,9 +180,11 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
   stable: { label: "Healthy", color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
   expansion_ready: { label: "Ascension", color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
   continuity: { label: "Continuity", color: "text-blue-700", bg: "bg-blue-50", ring: "ring-blue-200" },
+  follow_up: { label: "Follow-up", color: "text-foreground", bg: "bg-secondary/20", ring: "ring-secondary/40" },
+  deal_lost: { label: "Deal Lost", color: "text-destructive", bg: "bg-destructive/10", ring: "ring-destructive/30" },
 }
 
-const STATUS_ORDER: Record<Status, number> = { invited: 0, at_risk: 1, slipping: 2, stable: 3, expansion_ready: 4, continuity: 5 }
+const STATUS_ORDER = Object.fromEntries(CLIENT_QUEUE_STAGES.map((stage, index) => [stage, index])) as Record<Status, number>
 
 export default function ClientRetention() {
   const navigate = useNavigate()
@@ -466,7 +471,7 @@ export default function ClientRetention() {
       return {
         ...c,
         score: nextScore,
-        status: nextStatus,
+        status: clientQueueStage(nextStatus, entry.status_override),
         referral_converted: referralConverted,
         referral_in_progress: referralInProgress,
         referrals_given: referralGiven,
@@ -974,6 +979,8 @@ export default function ClientRetention() {
   const displayClients = useMemo(() => {
     const invitedIds = new Set(pendingInvites.flatMap((p) => [p.user_id, p.id]).filter(Boolean))
     const mapped = baseDisplayClients.map((c) => {
+      const override = notesMap[c.user_id]?.status_override
+      if (override) return { ...c, status: clientQueueStage(c.status, override) }
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
       const pending = ids.some((id) => invitedIds.has(id))
       if (pending && !notesMap[c.user_id]?.status_override) return { ...c, full_name: c.email?.split(" · ")[0] || c.full_name, status: "invited" as Status }
@@ -997,7 +1004,7 @@ export default function ClientRetention() {
         program: null,
         program_name: p.program_name,
         score: 0,
-        status: "invited" as Status,
+        status: clientQueueStage("invited", notesMap[p.user_id || p.id]?.status_override),
         signals: [{ label: "Login access sent — waiting on signup and onboarding", severity: "info" }],
         arr_value: 0,
         last_active_at: null,
@@ -1273,7 +1280,7 @@ export default function ClientRetention() {
   }
 
   const stats = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { invited: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets = clientQueueBuckets<ClientScore>()
     displayClients.forEach((c) => buckets[c.status].push(c))
     const activeClients = displayClients.filter((c) => c.status !== "invited")
     const avg = activeClients.length ? (activeClients.reduce((s, c) => s + c.score, 0) / activeClients.length).toFixed(1) : "0.0"
@@ -1307,7 +1314,7 @@ export default function ClientRetention() {
   }, [displayClients, boardOrder, sortField, sortDirection, clientSearch])
 
   const sortedBuckets = useMemo(() => {
-    const buckets: Record<Status, ClientScore[]> = { invited: [], at_risk: [], slipping: [], stable: [], expansion_ready: [], continuity: [] }
+    const buckets = clientQueueBuckets<ClientScore>()
     sortedClients.forEach((client) => buckets[client.status].push(client))
     return buckets
   }, [sortedClients])
@@ -1345,7 +1352,7 @@ export default function ClientRetention() {
     if (!targetStatus) return
 
     // Build the order exactly as it looks on screen, then drop the card where the divider was shown
-    const statusSeq: Status[] = ["invited", "at_risk", "slipping", "stable", "expansion_ready", "continuity"]
+    const statusSeq = CLIENT_QUEUE_STAGES
     const visual = statusSeq.flatMap((s) => sortedBuckets[s].map((c) => c.user_id))
     const hidden = [...boardOrder, ...displayClients.map((c) => c.user_id)].filter((id, i, arr) => arr.indexOf(id) === i && !visual.includes(id))
     const withoutActive = [...visual, ...hidden].filter((id) => id !== activeId)
@@ -1475,7 +1482,7 @@ export default function ClientRetention() {
   const expansionList = stats.buckets.expansion_ready
 
   return (
-    <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl space-y-4">
+    <div className="w-full min-w-0 py-4 sm:py-6 px-3 sm:px-4 space-y-4">
       <Helmet><title>{pageView === 'attendance' ? 'Attendance Log' : 'Client Retention'} | TruHeirs Admin</title></Helmet>
       <BackToWelcome />
 
@@ -1655,13 +1662,15 @@ export default function ClientRetention() {
 
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleBoardDragStart} onDragOver={handleBoardDragOver} onDragEnd={handleBoardDragEnd} onDragCancel={() => { setDragActiveId(null); setDragOverId(null) }}>
-              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+              <div className="flex w-full min-w-0 gap-3 overflow-x-auto pb-3">
                 <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
                 <QueueGroup status="continuity" title="Continuity" icon={<Repeat className="h-3.5 w-3.5" />} clients={sortedBuckets.continuity} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="follow_up" title="Follow-up" icon={<RefreshCw className="h-3.5 w-3.5" />} clients={sortedBuckets.follow_up} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="deal_lost" title="Deal Lost" icon={<XIcon className="h-3.5 w-3.5" />} clients={sortedBuckets.deal_lost} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
               </div>
             </DndContext>
           ) : (
@@ -1866,7 +1875,7 @@ export default function ClientRetention() {
                     {(() => {
                       const hist = historyMap[selected.user_id] ?? []
                         const label = (s: string | null) =>
-                          s === "invited" ? "Non-Active" : s === "at_risk" ? "Urgent" : s === "slipping" ? "Slipping" : s === "stable" ? "Healthy" : s === "expansion_ready" ? "Ascension" : s === "continuity" ? "Continuity" : "—"
+                          CLIENT_QUEUE_STAGES.includes(s as Status) ? STATUS_META[s as Status].label : "—"
                       return (
                         <section>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -1937,6 +1946,8 @@ export default function ClientRetention() {
                                               <SelectItem value="stable">Healthy</SelectItem>
                                               <SelectItem value="expansion_ready">Ascension</SelectItem>
                                               <SelectItem value="continuity">Continuity</SelectItem>
+                                              <SelectItem value="follow_up">Follow-up</SelectItem>
+                                              <SelectItem value="deal_lost">Deal Lost</SelectItem>
                                             </SelectContent>
                                           </Select>
                                         </div>
@@ -2000,6 +2011,8 @@ export default function ClientRetention() {
                             <SelectItem value="stable">Healthy</SelectItem>
                             <SelectItem value="expansion_ready">Ascension</SelectItem>
                             <SelectItem value="continuity">Continuity</SelectItem>
+                            <SelectItem value="follow_up">Follow-up</SelectItem>
+                            <SelectItem value="deal_lost">Deal Lost</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -2135,7 +2148,7 @@ function QueueGroup({
         <h3 className="min-w-0 truncate text-xs font-semibold">{title}</h3>
         <span className="ml-auto rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{clients.length}</span>
       </div>
-      <div className="space-y-2 max-h-[calc(100vh-360px)] min-h-[120px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-hide">
+      <div className="space-y-2 max-h-[max(480px,calc(100dvh-240px))] min-h-[480px] overflow-y-auto overflow-x-hidden pr-1">
         {loading && clients.length === 0 && <>
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
