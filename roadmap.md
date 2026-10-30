@@ -3,7 +3,7 @@
 ## Client Queue stages and page width
 - [x] Add Follow-up and Deal Lost to queue columns, status choices and history, preserving manual placements
 - [x] Extend the queue across the available page width and give columns more vertical room
-- [ ] Run stage tests and browser checks
+- [x] Run 3 passing stage tests and sample browser saves/reloads for both stages; queue fills available width with no page overflow and build OK
 - [ ] Verify real-account stage saving: external unmanaged authentication prevents signed-in checks
 
 ## Workbook account records
