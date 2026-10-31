@@ -110,8 +110,9 @@ export function LegalConsentGate() {
             <label className="flex items-start gap-3 text-sm">
               <Checkbox checked={acceptTerms} onCheckedChange={v => setAcceptTerms(v === true)} className="mt-0.5" aria-describedby="consent-terms-text" />
               <span id="consent-terms-text">
-                I agree to the <Link to="/terms-of-service" target="_blank" className="underline">Terms of Service</Link> and{' '}
-                <Link to="/privacy-policy" target="_blank" className="underline">Privacy Policy</Link>, and I authorize processing of my personal data as described there. (Required)
+                I agree to the <Link to="/terms-of-service" target="_blank" className="underline">Terms of Service</Link>,{' '}
+                <Link to="/privacy-policy" target="_blank" className="underline">Privacy Policy</Link>, and{' '}
+                <Link to="/community-guidelines" target="_blank" className="underline">Community Guidelines</Link>, and I authorize processing of my personal data as described there. (Required)
               </span>
             </label>
             <label className="flex items-start gap-3 text-sm">

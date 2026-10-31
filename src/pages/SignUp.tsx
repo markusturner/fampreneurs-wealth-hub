@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard, ArrowRight } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Checkbox } from '@/components/ui/checkbox'
-import { isAdult, MINIMUM_AGE } from '@/lib/legal'
+import { isAdult, MINIMUM_AGE, LEGAL_DOCUMENT_VERSION } from '@/lib/legal'
 import { PROGRAMS, LITE_PRICING, type ProgramId } from '@/lib/stripe-programs'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -134,6 +134,7 @@ export default function SignUp() {
           zipCode,
           programName: program.name,
           programId: selectedProgram,
+          consent: { terms_version: LEGAL_DOCUMENT_VERSION, marketing_opt_in: acceptMarketing, accepted_at: new Date().toISOString() },
         },
       })
 
