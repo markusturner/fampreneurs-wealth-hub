@@ -1,3 +1,4 @@
+import { EducationalDisclaimer } from '@/components/legal/EducationalDisclaimer'
 import { useState, useEffect } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -452,6 +453,7 @@ export default function TrustCreation() {
   // Main selection view
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+      <EducationalDisclaimer />
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div>

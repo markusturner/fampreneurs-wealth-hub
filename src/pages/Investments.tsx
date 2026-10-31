@@ -1,3 +1,4 @@
+import { EducationalDisclaimer } from '@/components/legal/EducationalDisclaimer'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -286,6 +287,7 @@ export default function Investments() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
+      <EducationalDisclaimer />
       
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl">
         <div className="animate-fade-in">

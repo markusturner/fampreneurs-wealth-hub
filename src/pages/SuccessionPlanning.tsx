@@ -1,3 +1,4 @@
+import { EducationalDisclaimer } from '@/components/legal/EducationalDisclaimer'
 import { useEffect, useState } from "react"
 import { Helmet } from "react-helmet-async"
 import { useNavigate } from "react-router-dom"
@@ -150,6 +151,7 @@ export default function SuccessionPlanning() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+      <EducationalDisclaimer />
       <Helmet>
         <title>Succession Planning | TruHeirs</title>
         <meta name="description" content="Plan your family's succession with a step-by-step done-for-you process." />
