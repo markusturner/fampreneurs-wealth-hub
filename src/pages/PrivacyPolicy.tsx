@@ -112,6 +112,16 @@ const PrivacyPolicy = () => (
       </p>
     </section>
 
+    <section id="ai-chats">
+      <h3>Markus AI chats</h3>
+      <p>
+        Markus AI is an AI assistant, not a person or a licensed professional. Your chats and any files you attach are saved to your
+        account so you can return to them, and are sent to our AI model providers only to write a reply. We do not use your chats to
+        train outside AI models, and we do not show them to other members. You can delete chats in the app, and they are removed when
+        you delete your account.
+      </p>
+    </section>
+
     <section>
       <h2>8. Children</h2>
       <p>TruHeirs is only for adults 18 and older. We do not knowingly collect personal data from children. If you believe a child has given us data, contact us and we will delete it.</p>

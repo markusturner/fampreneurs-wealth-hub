@@ -10,6 +10,12 @@ export const COMPANY_LEGAL_NAME = 'VNCI, LLC'
 export const EDUCATIONAL_DISCLAIMER =
   'Educational only. Not legal, tax, or investment advice. Talk to a licensed attorney, CPA, or financial advisor before acting.'
 
+export const AI_DISCLOSURE =
+  'Markus AI is an AI assistant, not a person or licensed professional, and can make mistakes. Educational only, not legal, tax, or investment advice.'
+
+export const SUBSCRIPTION_RENEWAL_TERMS =
+  'Your plan renews automatically at the same price each billing period until you cancel. Cancel anytime online in a few clicks. You keep access until the end of the period you paid for.'
+
 export const TESTIMONIAL_DISCLOSURE =
   'Results shown are not typical and are not a guarantee. Each person\'s results depend on their own situation, effort, and many outside factors.'
 

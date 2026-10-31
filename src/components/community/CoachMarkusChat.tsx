@@ -1,3 +1,4 @@
+import { AI_DISCLOSURE } from '@/lib/legal'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { MarkusReply } from '@/components/chat/MarkusReply'
@@ -69,7 +70,7 @@ export function CoachMarkusChat() {
       <WelcomeChatLibrary chat={chat} onReset={reset} onNewChat={start} onOpen={open} />
     </div>
     <div ref={log} role="log" aria-label="Coach Markus messages" aria-live="polite" className="community-scroll">
-      {chat.messages.length === 0 && !pending && <div className="flex h-full min-h-40 items-center justify-center"><div className="text-center"><h2 className="text-lg font-semibold text-foreground">Ask Markus AI anything</h2><p className="mt-1 text-xs text-muted-foreground">Markus AI can make mistakes. Educational only, not legal, tax, or investment advice.</p></div></div>}
+      {chat.messages.length === 0 && !pending && <div className="flex h-full min-h-40 items-center justify-center"><div className="text-center"><h2 className="text-lg font-semibold text-foreground">Ask Markus AI anything</h2><p className="mt-1 text-xs text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p></div></div>}
       <div className="flex flex-col gap-5">
         {chat.messages.map(message => <div key={message.id} className={`min-w-0 max-w-[90%] sm:max-w-[85%] ${message.role === 'user' ? 'self-end' : 'self-start'}`}>
           <p className="mb-1 text-[11px] font-semibold text-muted-foreground">{message.role === 'user' ? 'You' : 'Markus AI'}</p>

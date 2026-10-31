@@ -75,7 +75,8 @@ const TermsOfService = () => (
         <li>Paid plans are billed in advance at the price shown when you buy.</li>
         <li>Fees are non-refundable except where the law or your program agreement says otherwise.</li>
         <li>We will give at least 30 days' notice before changing subscription prices.</li>
-        <li>You can cancel a subscription at any time. It ends at the close of the current billing period.</li>
+        <li>Subscriptions renew automatically at the same price each billing period (for example, every quarter) until you cancel. We show the price and renewal period before you pay.</li>
+        <li>You can cancel a subscription at any time online in Profile Settings, the same way you signed up. It ends at the close of the current billing period and you keep access until then.</li>
         <li>App store purchases are also governed by Apple's or Google's terms, and are managed in your store account.</li>
       </ul>
     </section>

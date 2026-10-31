@@ -11,6 +11,7 @@ import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
+import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import Disclaimer from "./pages/Disclaimer";
 import Dmca from "./pages/Dmca";
@@ -120,6 +121,7 @@ function AppWithNotifications() {
         Skip to main content
       </a>
       <LegalConsentGate />
+      <CookieConsentBanner />
       <Routes>
         {/* Public routes - no sidebar */}
         <Route path="/" element={<Auth />} />

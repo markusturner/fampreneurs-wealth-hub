@@ -8,7 +8,9 @@
 - [x] Push and community emails respect opt-outs; 5 age/consent tests pass
 - [ ] Server tool updates (delete-user, send-push-notification, notify-community-post-email) not live: external deploys keep running old code
 - [ ] Verify signed-in flows: external unmanaged authentication prevents real-account checks
-- [ ] Attorney review items listed in /mnt/documents/TruHeirs-Legal-Compliance-Checklist.md
+- [x] Cookie banner (GPC honored), AI chat disclosure, auto-renew terms and direct cancel button
+- [ ] Turn on Stripe renewal reminder emails (owner setting in Stripe)
+- [ ] Attorney review items listed in /mnt/documents/TruHeirs-Legal-Compliance-Checklist_v2.md
 
 ## Duplicate invited client
 - [x] Stop cleared Invited User placeholders from appearing in Non-Active; preserve the signed-up account's stage
