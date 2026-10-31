@@ -42,3 +42,8 @@
 ## Community recording imports
 - Mirror PEA community recording posts into Trust Vault using a database trigger and a unique source-post link, so copies are immediate and media updates cannot create duplicates; direct Fathom polling is disabled.
 - Copied recording updates allow server-validated admins and owners, but direct source-link creation or changes remain blocked; source edits still synchronize content while local pins remain independent.
+
+## Legal compliance
+- Consent, communication preferences, reports, blocks, DMCA notices, security incidents and privacy requests each have their own table; consent is append-only and versioned by LEGAL_DOCUMENT_VERSION in src/lib/legal.ts. Why: provable, auditable consent history.
+- LegalConsentGate (mounted in main.tsx) is the single place that enforces 18+ and Terms acceptance for all account-creation paths. Why: invites and admin-created accounts skip the signup page.
+- Self-service export/deletion runs through the deployed delete-user function (shared handler in _shared/account-privacy.ts) with a browser export and pending-request fallback. Why: new edge functions on this external project return 404.

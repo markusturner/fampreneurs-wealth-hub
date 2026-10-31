@@ -1,5 +1,15 @@
 # Roadmap
 
+## Legal compliance
+- [x] Privacy Policy, Terms, Guidelines, Disclaimer, DMCA pages; signup + one-time consent window with 18+ check
+- [x] Privacy settings: message switches, data download, account deletion (with admin-completed fallback)
+- [x] Report/block in community, admin Compliance tab (reports, DMCA, breach log, deletion requests)
+- [x] Education-only notices on trust/wealth/AI screens; removed specific investment picks and return targets
+- [x] Push and community emails respect opt-outs; 5 age/consent tests pass
+- [ ] Server tool updates (delete-user, send-push-notification, notify-community-post-email) not live: external deploys keep running old code
+- [ ] Verify signed-in flows: external unmanaged authentication prevents real-account checks
+- [ ] Attorney review items listed in /mnt/documents/TruHeirs-Legal-Compliance-Checklist.md
+
 ## Duplicate invited client
 - [x] Stop cleared Invited User placeholders from appearing in Non-Active; preserve the signed-up account's stage
 - [x] Live corrected invite query returns no D'Juan placeholder; all 6 queue tests pass and build OK
