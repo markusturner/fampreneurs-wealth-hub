@@ -1,0 +1,2 @@
+CREATE POLICY "Admins and owners can view all chat history" ON public.ai_chat_history FOR SELECT TO authenticated USING (public.is_current_user_admin() OR public.is_current_user_owner());
+CREATE POLICY "Admins and owners can view all chat conversations" ON public.chat_conversations FOR SELECT TO authenticated USING (public.is_current_user_admin() OR public.is_current_user_owner());
