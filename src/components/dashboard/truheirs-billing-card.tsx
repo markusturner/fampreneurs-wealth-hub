@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from 'sonner'
 import { CreditCard, PauseCircle, PlayCircle, Mail } from 'lucide-react'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { SUBSCRIPTION_RENEWAL_TERMS } from '@/lib/legal'
 
 async function readError(error: any) {
   try { const t = await error?.context?.text?.(); return JSON.parse(t).error || t } catch { return error?.message || 'Something went wrong' }
@@ -61,10 +62,16 @@ export function TruHeirsBillingCard() {
             <PlayCircle className="mr-2 h-4 w-4" /> Resume my account
           </Button>
         ) : (
-          <Button variant="ghost" onClick={() => setCancelOpen(true)} disabled={!!busy}>
-            Pause or cancel
-          </Button>
+          <>
+            <Button variant="ghost" onClick={() => setCancelOpen(true)} disabled={!!busy}>
+              Pause my account
+            </Button>
+            <Button variant="ghost" onClick={openPortal} disabled={!!busy}>
+              Cancel subscription
+            </Button>
+          </>
         )}
+        <p className="w-full text-xs text-muted-foreground">{SUBSCRIPTION_RENEWAL_TERMS}</p>
         {isAdminOrOwner && (
           <Button variant="outline" onClick={sendTestReport} disabled={!!busy}>
             <Mail className="mr-2 h-4 w-4" /> Send test Family Report
@@ -75,7 +82,7 @@ export function TruHeirsBillingCard() {
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Before you go, pause instead?</DialogTitle>
+            <DialogTitle>Pause your account</DialogTitle>
             <DialogDescription>
               For $29/mo we keep all your family office data safe. Come back anytime and pick up right where you left off.
             </DialogDescription>
@@ -85,7 +92,7 @@ export function TruHeirsBillingCard() {
               <PauseCircle className="mr-2 h-4 w-4" /> Pause for $29/mo
             </Button>
             <Button variant="ghost" className="text-muted-foreground" onClick={openPortal} disabled={!!busy}>
-              No thanks, cancel my subscription
+              Cancel my subscription instead
             </Button>
           </div>
         </DialogContent>
