@@ -65,7 +65,7 @@ export function LegalConsentGate() {
     if (!acceptTerms || !confirmAge) { setError('Please check both required boxes.'); return }
     if (sms && phone.replace(/\D/g, '').length < 10) { setError('Enter a valid mobile number for text messages.'); return }
     setSaving(true)
-    const base = { user_id: user.id, document_version: LEGAL_DOCUMENT_VERSION, source: 'consent_gate', user_agent: navigator.userAgent }
+    const base = { user_id: user.id, document_version: LEGAL_DOCUMENT_VERSION, source: 'consent_gate', user_agent: navigator.userAgent, metadata: {} }
     const { error: insertError } = await supabase.from('legal_consents').insert([
       { ...base, consent_type: 'terms_privacy', granted: true },
       { ...base, consent_type: 'age_18_plus', granted: true, metadata: { birth_date: birthDate } },
