@@ -56,6 +56,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Respect the member's in-app opt-out (Profile Settings, Privacy).
+    const { data: prefs } = await supabase
+      .from("communication_preferences")
+      .select("push_enabled")
+      .eq("user_id", user_id)
+      .maybeSingle();
+    if (prefs && prefs.push_enabled === false) {
+      console.log(`[PUSH] Skipped: user ${user_id} turned off push notifications`);
+      return new Response(JSON.stringify({ skipped: "opted_out" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Unread badge from DB
     const { count: unreadBadgeCount, error: countError } = await supabase
       .from("notifications")
