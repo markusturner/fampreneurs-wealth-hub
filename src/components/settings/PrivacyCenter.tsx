@@ -67,29 +67,49 @@ export function PrivacyCenter() {
   }
 
   const exportData = async () => {
+    if (!user) return
     setExporting(true)
-    const { data, error } = await supabase.functions.invoke('delete-user', { body: { action: 'export' } })
+    const { data: serverData, error } = await supabase.functions.invoke('delete-user', { body: { action: 'export' } })
+    // If the server export is unavailable, build the copy from everything this account can read.
+    const payload = !error && serverData?.data ? serverData : await exportInBrowser(user.id, user.email ?? null)
     setExporting(false)
-    if (error || !data) { toast({ title: 'Export failed', description: 'Please try again.', variant: 'destructive' }); return }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    if (!payload) { toast({ title: 'Export failed', description: 'Please try again.', variant: 'destructive' }); return }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = `truheirs-my-data-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(a.href)
+    toast({ title: 'Your data was downloaded' })
   }
 
   const deleteAccount = async () => {
+    if (!user) return
     setDeleting(true)
     const { data, error } = await supabase.functions.invoke('delete-user', { body: { action: 'delete', confirm: confirmText } })
-    setDeleting(false)
-    if (error || !data?.success) {
-      let message = data?.error || 'Please try again or email info@fampreneurs.com.'
-      try { const body = await (error as { context?: Response })?.context?.json(); if (body?.error) message = body.error } catch { /* keep default */ }
+    if (!error && data?.success) {
+      setDeleting(false)
+      toast({ title: 'Your account was deleted' })
+      await signOut()
+      return
+    }
+    let message = ''
+    try { const body = await (error as { context?: Response })?.context?.json(); message = body?.error || '' } catch { /* no body */ }
+    if (message.startsWith('Admin and owner accounts')) {
+      setDeleting(false)
       toast({ title: 'Account not deleted', description: message, variant: 'destructive' })
       return
     }
-    toast({ title: 'Your account was deleted' })
+    // Fall back to a recorded request that an admin completes (within 30 days).
+    const { error: requestError } = await supabase.from('privacy_requests').insert({
+      user_id: user.id, request_type: 'delete', status: 'pending', details: { email: user.email, requested_at: new Date().toISOString() },
+    })
+    setDeleting(false)
+    if (requestError) {
+      toast({ title: 'Request not sent', description: 'Please email info@fampreneurs.com to delete your account.', variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Deletion requested', description: 'Your account and data will be deleted within 30 days. You are now signed out.' })
     await signOut()
   }
 
