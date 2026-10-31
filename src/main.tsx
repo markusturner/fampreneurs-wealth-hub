@@ -10,6 +10,10 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
+import CommunityGuidelines from "./pages/CommunityGuidelines";
+import Disclaimer from "./pages/Disclaimer";
+import Dmca from "./pages/Dmca";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
@@ -112,6 +116,10 @@ function AppWithNotifications() {
   useZapierNotifications()
   return (
     <>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow">
+        Skip to main content
+      </a>
+      <LegalConsentGate />
       <Routes>
         {/* Public routes - no sidebar */}
         <Route path="/" element={<Auth />} />
@@ -126,6 +134,9 @@ function AppWithNotifications() {
         <Route path="/security" element={<Security />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/dmca" element={<Dmca />} />
         <Route path="/onboarding-explanation" element={<OnboardingExplanation />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/program-agreement" element={<ProgramAgreement />} />
