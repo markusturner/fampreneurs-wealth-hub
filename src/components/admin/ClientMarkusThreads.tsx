@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Input } from '@/components/ui/input'
 import { MessageSquare, Search } from 'lucide-react'
@@ -17,6 +17,7 @@ export default function ClientMarkusThreads() {
   const [messages, setMessages] = useState<Msg[]>([])
   const [convo, setConvo] = useState<string | 'all'>('all')
   const [loading, setLoading] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     (async () => {
@@ -63,6 +64,7 @@ export default function ClientMarkusThreads() {
     return clients.filter(c => !q || (c.display_name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q))
   }, [clients, search])
   const shown = convo === 'all' ? messages : messages.filter(m => m.conversation_id === convo)
+  useEffect(() => { const el = scrollRef.current; if (el) el.scrollTop = el.scrollHeight }, [shown])
   const client = clients.find(c => c.user_id === selected)
 
   return (
@@ -95,7 +97,7 @@ export default function ClientMarkusThreads() {
       </div>
       <div className="flex min-h-0 flex-col rounded-lg border bg-card">
         <div className="flex items-center gap-2 border-b p-2 text-xs font-semibold"><MessageSquare className="h-3.5 w-3.5" />{client ? (client.display_name || client.email) : 'Conversation'}</div>
-        <div className="max-h-[70vh] space-y-3 overflow-y-auto p-3">
+        <div ref={scrollRef} className="max-h-[70vh] space-y-3 overflow-y-auto p-3">
           {!selected ? <p className="text-xs text-muted-foreground">Pick a client to read their Markus AI chats from the start.</p> :
             shown.length === 0 ? <p className="text-xs text-muted-foreground">No messages.</p> :
             shown.map(m => (
