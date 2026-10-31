@@ -1056,7 +1056,8 @@ export default function WorkspaceCommunity() {
 
   const renderContentWithMentions = (content: string, authorName?: string) => {
     // Match @Name or @First Last (up to 3 words, no newlines)
-    const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
+    // Skip email addresses: "@" must not follow a letter, number, dot, or similar
+    const mentionRegex = /(?<![\w.%+-])@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})(?![\w-]*\.[A-Za-z])/g
     const parts: React.ReactNode[] = []
     let lastIndex = 0
     let match
