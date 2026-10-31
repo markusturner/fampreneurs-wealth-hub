@@ -1,3 +1,4 @@
+import { AI_DISCLOSURE } from '@/lib/legal'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -600,7 +601,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
         className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto disabled:opacity-100"
         style={{ minHeight: '36px', maxHeight: '200px' }}
       />
-      <p className="-mt-2 mb-2 text-[10px] text-muted-foreground">AI can make mistakes. Educational only, not legal, tax, or investment advice.</p>
+      <p className="-mt-2 mb-2 text-[10px] text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p>
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-1 items-center overflow-x-auto scrollbar-hide flex-1 min-w-0">
           <input ref={chatFileRef} type="file" multiple className="hidden" onChange={handleChatFileAttach} />

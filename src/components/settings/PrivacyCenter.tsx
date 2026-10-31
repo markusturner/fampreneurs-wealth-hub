@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Download, Trash2, Loader2 } from 'lucide-react'
 import { LEGAL_DOCUMENT_VERSION, SMS_CONSENT_TEXT } from '@/lib/legal'
 import { useUserBlocks } from '@/hooks/useUserBlocks'
+import { openCookieSettings } from '@/lib/cookie-consent'
 
 type Prefs = { push_enabled: boolean; email_updates: boolean; email_marketing: boolean; sms_enabled: boolean; sms_phone: string | null }
 const DEFAULTS: Prefs = { push_enabled: true, email_updates: true, email_marketing: false, sms_enabled: false, sms_phone: null }
@@ -199,6 +200,7 @@ export function PrivacyCenter() {
             <Link className="underline" to="/disclaimer">Disclaimer</Link>
             <Link className="underline" to="/dmca">DMCA / Copyright</Link>
             <Link className="underline" to="/cookie-policy">Cookie Policy</Link>
+            <button type="button" className="underline" onClick={openCookieSettings}>Cookie choices</button>
           </nav>
         </CardContent>
       </Card>

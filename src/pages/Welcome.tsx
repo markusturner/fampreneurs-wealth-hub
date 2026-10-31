@@ -1,3 +1,4 @@
+import { AI_DISCLOSURE } from '@/lib/legal'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -647,7 +648,7 @@ export default function Welcome() {
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
-          <p className="mt-1.5 text-center text-[10px] text-muted-foreground">Markus AI can make mistakes. Educational only, not legal, tax, or investment advice.</p>
+          <p className="mt-1.5 text-center text-[10px] text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p>
 
           {attachments.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
