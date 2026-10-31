@@ -130,7 +130,7 @@ export function LegalConsentGate() {
               </div>
             )}
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={saving}>{saving ? 'Saving...' : 'Agree and continue'}</Button>
+            <Button type="submit" className="w-full bg-[#ffb500] text-[#290a52] hover:bg-[#2eb2ff] hover:text-white" disabled={saving}>{saving ? 'Saving...' : 'Agree and continue'}</Button>
           </form>
         )}
       </DialogContent>
