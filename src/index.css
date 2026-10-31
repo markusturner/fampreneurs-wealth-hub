@@ -377,7 +377,6 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-message-tag.category-updates { background: hsl(var(--community-updates-soft)); }
 .community-message-tag.category-coach { background: hsl(var(--community-coach)); color: hsl(var(--accent-foreground)); }
 .community-category-dot.category-coach { background: hsl(var(--community-coach)); }
-.community-category.category-coach { color: hsl(var(--community-coach)); }
 .community-category.category-coach.is-active { background: hsl(var(--community-coach)); color: hsl(var(--accent-foreground)); }
 .community-category-dot.category-gems { background: hsl(var(--community-gems)); }
 .recording-preview { margin-top: 12px; display: flex; gap: 14px; align-items: flex-start; max-width: 460px; padding: 12px 14px; border-left: 4px solid hsl(var(--accent)); border-radius: 6px; background: hsl(var(--foreground) / .06); color: hsl(var(--foreground)); }
