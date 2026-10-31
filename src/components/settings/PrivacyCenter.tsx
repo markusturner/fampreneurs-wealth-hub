@@ -128,7 +128,7 @@ export function PrivacyCenter() {
           </Button>
           <AlertDialog onOpenChange={open => { if (!open) setConfirmText('') }}>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" />Delete my account</Button>
+              <Button variant="destructive" className="profile-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete my account</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -144,7 +144,7 @@ export function PrivacyCenter() {
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction disabled={confirmText !== 'DELETE' || deleting} onClick={e => { e.preventDefault(); deleteAccount() }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogAction disabled={confirmText !== 'DELETE' || deleting} onClick={e => { e.preventDefault(); deleteAccount() }} className="profile-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {deleting ? 'Deleting...' : 'Delete forever'}
                 </AlertDialogAction>
               </AlertDialogFooter>
