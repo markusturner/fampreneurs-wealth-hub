@@ -87,7 +87,7 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     --community-bubble: 260 27% 93%;
     --community-own: var(--sidebar-background);
     --community-discussion: 41 100% 79%;
-    --community-all: 202 100% 88%;
+    --community-all: 27 96% 55%;
     --community-wins: 157 50% 86%;
     --community-updates: 263 62% 66%;
     --community-recordings: 0 84% 60%;
@@ -340,7 +340,7 @@ ul[data-type="taskList"] li[data-checked="true"] > div {
 .community-category-dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--secondary)); }
 .community-category.is-active .community-category-dot { background: currentColor; }
 .community-category-dot.category-all { background: hsl(var(--community-all)); }
-.community-category-dot.category-discussion { background: hsl(var(--community-discussion)); }
+.community-category-dot.category-discussion { background: hsl(var(--sidebar-background)); }
 .community-category-dot.category-wins { background: hsl(var(--success)); }
 .community-category-dot.category-updates { background: hsl(var(--community-updates)); }
 .community-category-dot.category-recordings { background: hsl(var(--community-recordings)); }
