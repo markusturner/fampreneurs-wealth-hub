@@ -1,272 +1,138 @@
-import { Helmet } from 'react-helmet-async';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Shield, Eye, Lock, Users, FileText, Mail } from 'lucide-react';
-import { navigateToRoute } from '@/utils/navigation';
+import { Link } from 'react-router-dom'
+import { LegalPageLayout } from '@/components/legal/LegalPageLayout'
+import { COMPANY_LEGAL_NAME, PRIVACY_CONTACT_EMAIL } from '@/lib/legal'
 
-const PrivacyPolicy = () => {
-  return (
-    <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>Privacy Policy — TruHeirs</title>
-        <meta name="description" content="How TruHeirs collects, protects, and uses your family's personal and financial data across our digital family office platform." />
-        <link rel="canonical" href="https://truheirs.app/privacy-policy" />
-        <meta property="og:title" content="Privacy Policy — TruHeirs" />
-        <meta property="og:description" content="How TruHeirs collects, protects, and uses your family's personal and financial data." />
-        <meta property="og:url" content="https://truheirs.app/privacy-policy" />
-      </Helmet>
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-onClick={() => navigateToRoute('/auth')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Sign In
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" style={{backgroundColor: '#290A52'}}>
-                T
-              </div>
-              <span className="text-lg font-bold" style={{color: '#ffb500'}}>TruHeirs</span>
-            </div>
-          </div>
-        </div>
-      </header>
+const PrivacyPolicy = () => (
+  <LegalPageLayout
+    title="Privacy Policy"
+    path="/privacy-policy"
+    description="How TruHeirs collects, uses, shares, and protects your personal and family information, and how to use your privacy rights."
+  >
+    <section>
+      <h2>1. Who we are</h2>
+      <p>
+        TruHeirs is operated by {COMPANY_LEGAL_NAME} ("we," "us"), 1650 Marietta Boulevard NW Unit D58, Atlanta, GA 30318, USA.
+        We are the data controller (and, under Colombia's Law 1581 of 2012, the "responsable del tratamiento") for personal data
+        processed through the TruHeirs website and apps.
+      </p>
+    </section>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 md:px-6 py-8 md:py-12">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6" style={{backgroundColor: 'rgba(41, 10, 82, 0.1)'}}>
-            <Shield className="w-8 h-8" style={{color: '#290A52'}} />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your privacy and data security are fundamental to our mission. Learn how we protect and handle your family's information.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Last updated: January 29, 2025
-          </p>
-        </div>
+    <section>
+      <h2>2. Information we collect</h2>
+      <ul>
+        <li>Account details: name, email, phone, mailing address, date of birth, program, and login credentials.</li>
+        <li>Family and estate information you choose to enter: family members, trusts, assets, succession plans, workbooks, and uploaded documents.</li>
+        <li>Financial information: linked bank or investment account data provided through our connection partners, payment records, and subscription status. We do not store full card numbers.</li>
+        <li>Community content: posts, comments, messages, reactions, photos, videos, and polls.</li>
+        <li>Communications: emails, support requests, AI chat conversations, and call recordings or notes when you take part in coaching calls.</li>
+        <li>Device and usage data: device type, app version, push notification identifiers, pages viewed, and basic logs.</li>
+      </ul>
+      <p>Some of this information, such as financial and family data, may be considered sensitive. We only process it to provide the service you asked for.</p>
+    </section>
 
-        {/* Content Sections */}
-        <div className="max-w-4xl mx-auto space-y-8">
-          
-          {/* Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="w-5 h-5" style={{color: '#FFB500'}} />
-                Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                TruHeirs by VNCI, LLC ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our family office platform and related services.
-              </p>
-              <p>
-                As a platform designed for managing generational wealth and sensitive family information, we understand the critical importance of maintaining the highest standards of data protection and privacy.
-              </p>
-            </CardContent>
-          </Card>
+    <section>
+      <h2>3. How we use it and our legal bases</h2>
+      <ul>
+        <li>To provide your account, programs, tools, and support (performance of a contract).</li>
+        <li>To keep the platform secure, prevent fraud, and moderate community content (legitimate interests).</li>
+        <li>To send account, billing, security, and program notices (contract and legitimate interests).</li>
+        <li>To send marketing emails, text messages, or push notifications, only when you have opted in (consent). You can withdraw consent at any time.</li>
+        <li>To meet legal, tax, and accounting duties (legal obligation).</li>
+      </ul>
+    </section>
 
-          {/* Information We Collect */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" style={{color: '#FFB500'}} />
-                Information We Collect
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h4 className="font-semibold mb-2">Personal Information</h4>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Name, email address, phone number</li>
-                  <li>Profile information and preferences</li>
-                  <li>Authentication credentials</li>
-                  <li>Family member information and relationships</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Financial Information</h4>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Investment account data (via encrypted connections)</li>
-                  <li>Transaction history and patterns</li>
-                  <li>Asset allocation and portfolio information</li>
-                  <li>Banking information (processed through secure third-party providers)</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Usage Information</h4>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Platform usage patterns and preferences</li>
-                  <li>Communication within the platform</li>
-                  <li>Document storage and access logs</li>
-                  <li>Meeting and calendar data</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+    <section>
+      <h2>4. How we share it</h2>
+      <p>We do not sell your personal information and we do not share it for cross-context behavioral advertising.</p>
+      <ul>
+        <li>Service providers who host, secure, or run parts of the service for us, such as cloud hosting and database providers, payment processors, email and text message providers, push notification providers, video and call recording tools, bank connection partners, and AI model providers.</li>
+        <li>People you choose to share with, such as invited family members, successors, or advisors.</li>
+        <li>Authorities when the law requires it, or to protect rights, safety, and property.</li>
+        <li>A buyer or successor if our business is sold or merged, with notice to you.</li>
+      </ul>
+    </section>
 
-          {/* How We Use Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" style={{color: '#FFB500'}} />
-                How We Use Your Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Provide and maintain our family office platform services</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Generate insights and analytics for your family's financial planning</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Facilitate secure communication between family members</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Improve our services through usage analysis</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Send important service updates and notifications</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-2" style={{backgroundColor: '#FFB500'}}></div>
-                  <span>Comply with legal obligations and regulatory requirements</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
+    <section>
+      <h2>5. Security</h2>
+      <p>
+        Data is encrypted in transit with TLS (HTTPS) and encrypted at rest by our hosting providers. Access is limited by role-based
+        permissions, row-level access rules in our database, and optional multi-factor authentication. We keep an internal security
+        incident log and will notify affected people and regulators of a data breach as required by law. No system is perfectly
+        secure, so please protect your password.
+      </p>
+    </section>
 
-          {/* Data Security */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="w-5 h-5" style={{color: '#FFB500'}} />
-                Data Security & Protection
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                We implement industry-leading security measures to protect your sensitive family and financial information:
-              </p>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Technical Safeguards</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>End-to-end encryption for all data transmission</li>
-                    <li>AES-256 encryption for data at rest</li>
-                    <li>Multi-factor authentication</li>
-                    <li>Regular security audits and penetration testing</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Operational Safeguards</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Strict access controls and role-based permissions</li>
-                    <li>Employee background checks and training</li>
-                    <li>Incident response and breach notification procedures</li>
-                    <li>Regular data backup and disaster recovery testing</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <section>
+      <h2>6. How long we keep it</h2>
+      <p>
+        We keep your information while your account is active and as long as needed for the purposes above. When you delete your account,
+        we delete or de-identify your personal data, except records we must keep for legal, tax, billing, fraud-prevention, or dispute reasons.
+      </p>
+    </section>
 
-          {/* Information Sharing */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Information Sharing & Disclosure</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:
-              </p>
-              <ul className="space-y-2">
-                <li><strong>Service Providers:</strong> Trusted third-party services that help us operate our platform (e.g., cloud hosting, payment processing)</li>
-                <li><strong>Legal Requirements:</strong> When required by law, court order, or government request</li>
-                <li><strong>Family Members:</strong> Information shared within your family office as configured by your family's access settings</li>
-                <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets (with prior notice)</li>
-              </ul>
-            </CardContent>
-          </Card>
+    <section>
+      <h2>7. Your privacy rights</h2>
+      <p>Depending on where you live, you may have the right to:</p>
+      <ul>
+        <li>Know and access the personal data we hold about you, and get a copy (portability).</li>
+        <li>Correct inaccurate data.</li>
+        <li>Delete your data.</li>
+        <li>Object to or restrict certain processing, and withdraw consent at any time.</li>
+        <li>Opt out of the sale or sharing of personal information and limit the use of sensitive personal information (we do neither).</li>
+        <li>Not be treated differently for using your rights.</li>
+        <li>Complain to a data protection authority.</li>
+      </ul>
+      <p>
+        You can download your data and delete your account yourself in <Link className="underline" to="/profile-settings?tab=privacy">Profile Settings, Privacy</Link>.
+        You can also email <a className="underline" href={`mailto:${PRIVACY_CONTACT_EMAIL}`}>{PRIVACY_CONTACT_EMAIL}</a>. We may need to verify your
+        identity. We respond within 30 days (GDPR), 45 days (California), or the time limits of Colombian law. An authorized agent may
+        make a request for you with your signed permission.
+      </p>
 
-          {/* Your Rights */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Privacy Rights</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>You have the right to:</p>
-              <div className="grid md:grid-cols-2 gap-4">
-                <ul className="space-y-2 text-sm">
-                  <li>• Access your personal information</li>
-                  <li>• Correct inaccurate information</li>
-                  <li>• Delete your account and data</li>
-                  <li>• Export your data</li>
-                </ul>
-                <ul className="space-y-2 text-sm">
-                  <li>• Opt-out of marketing communications</li>
-                  <li>• Restrict certain data processing</li>
-                  <li>• File a complaint with supervisory authorities</li>
-                  <li>• Receive breach notifications</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+      <h3>European Economic Area, UK, and Switzerland (GDPR)</h3>
+      <p>
+        Our legal bases are listed in section 3. Your data is processed in the United States. When we transfer data out of the EEA or UK,
+        we rely on Standard Contractual Clauses or other approved safeguards.
+      </p>
 
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="w-5 h-5" style={{color: '#FFB500'}} />
-                Contact Us
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                If you have questions about this Privacy Policy or our privacy practices, please contact us:
-              </p>
-              <div className="space-y-2">
-                <p><strong>Email:</strong> privacy@truheirs.com</p>
-                <p><strong>Phone:</strong> 1-800-TRU-HEIR</p>
-                <p><strong>Address:</strong> 1650 Marietta Boulevard NW Unit D58, Atlanta, GA 30318</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                We will respond to your privacy-related inquiries within 30 days.
-              </p>
-            </CardContent>
-          </Card>
+      <h3>California (CCPA / CPRA)</h3>
+      <p>
+        In the last 12 months we collected the categories listed in section 2 for the purposes in section 3 and shared them only with the
+        recipients in section 4. We do not sell or share personal information, and we do not knowingly collect data from anyone under 16.
+        We honor Global Privacy Control signals.
+      </p>
 
-        </div>
+      <h3>Colombia (Law 1581 of 2012, habeas data)</h3>
+      <p>
+        By accepting this policy you authorize us to process your personal data for the purposes in section 3. You have the right to know,
+        update, correct, and delete your data, to ask for proof of your authorization, to be told how your data is used, to revoke your
+        authorization, and to file complaints with the Superintendencia de Industria y Comercio (SIC). Inquiries are answered within 10
+        business days and claims within 15 business days. Send requests to {PRIVACY_CONTACT_EMAIL}. Sensitive data is optional and you are
+        not required to provide it.
+      </p>
+    </section>
 
-        {/* Footer */}
-        <div className="text-center mt-16 py-8 border-t border-border">
-          <Button
-onClick={() => navigateToRoute('/auth')}
-            size="lg"
-            className="text-white hover:opacity-90 transition-opacity"
-            style={{backgroundColor: '#290A52'}}
-          >
-            Return to TruHeirs
-          </Button>
-        </div>
-      </main>
-    </div>
-  );
-};
+    <section>
+      <h2>8. Children</h2>
+      <p>TruHeirs is only for adults 18 and older. We do not knowingly collect personal data from children. If you believe a child has given us data, contact us and we will delete it.</p>
+    </section>
 
-export default PrivacyPolicy;
+    <section>
+      <h2>9. Communication choices</h2>
+      <p>
+        You can turn push notifications, update emails, marketing emails, and text messages on or off in Profile Settings, Privacy.
+        Every marketing email includes an unsubscribe link. Reply STOP to any text message to opt out.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Changes and contact</h2>
+      <p>
+        We will tell you about material changes in the app and ask you to accept them. Questions? Email{' '}
+        <a className="underline" href={`mailto:${PRIVACY_CONTACT_EMAIL}`}>{PRIVACY_CONTACT_EMAIL}</a> or write to {COMPANY_LEGAL_NAME}, 1650 Marietta Boulevard NW Unit D58, Atlanta, GA 30318.
+      </p>
+    </section>
+  </LegalPageLayout>
+)
+
+export default PrivacyPolicy
