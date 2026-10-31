@@ -23,6 +23,7 @@ export function AdminCompliance() {
   const [reports, setReports] = useState<Report[]>([])
   const [notices, setNotices] = useState<Notice[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])
+  const [deletions, setDeletions] = useState<{ id: string; user_id: string; status: string; details: { email?: string } | null; created_at: string }[]>([])
   const [draft, setDraft] = useState({ title: '', severity: 'low', affected_data: '', affected_user_count: '', description: '' })
 
   const load = useCallback(async () => {
@@ -31,6 +32,8 @@ export function AdminCompliance() {
       supabase.from('dmca_notices').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('security_incidents').select('*').order('detected_at', { ascending: false }).limit(200),
     ])
+    const d = await supabase.from('privacy_requests').select('id, user_id, status, details, created_at').eq('request_type', 'delete').eq('status', 'pending').order('created_at')
+    setDeletions((d.data as typeof deletions) ?? [])
     setReports((r.data as Report[]) ?? [])
     setNotices((n.data as Notice[]) ?? [])
     setIncidents((i.data as Incident[]) ?? [])
@@ -72,10 +75,35 @@ export function AdminCompliance() {
     load()
   }
 
+  const completeDeletion = async (req: { id: string; user_id: string; details: { email?: string } | null }) => {
+    if (!window.confirm(`Permanently delete ${req.details?.email || 'this account'}? This cannot be undone.`)) return
+    const { data, error } = await supabase.functions.invoke('delete-user', { body: { userId: req.user_id } })
+    if (error || !data?.success) { toast({ title: 'Could not delete account', description: error?.message, variant: 'destructive' }); return }
+    await supabase.from('privacy_requests').update({ status: 'completed' }).eq('id', req.id)
+    toast({ title: 'Account deleted' })
+    load()
+  }
+
   const openReports = reports.filter(r => r.status === 'open')
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Account deletion requests <Badge variant="secondary" className="ml-2">{deletions.length} pending</Badge></CardTitle>
+          <CardDescription>Members who asked to delete their account. Complete each one within 30 days.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {deletions.length === 0 && <p className="text-sm text-muted-foreground">No pending requests.</p>}
+          {deletions.map(d => (
+            <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm">
+              <span>{d.details?.email || d.user_id} - requested {fmt(d.created_at)}</span>
+              <Button size="sm" variant="destructive" onClick={() => completeDeletion(d)}>Delete account</Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Content reports <Badge variant="secondary" className="ml-2">{openReports.length} open</Badge></CardTitle>
