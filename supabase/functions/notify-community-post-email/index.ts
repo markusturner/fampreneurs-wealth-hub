@@ -66,6 +66,15 @@ const handler = async (req: Request): Promise<Response> => {
       allProfiles.push(...(data || []));
     }
 
+    // Drop members who turned off community emails (CAN-SPAM / preference center).
+    const optedOut = new Set<string>();
+    for (let offset = 0; offset < memberIds.length; offset += 200) {
+      const { data: prefs } = await supabase.from('communication_preferences').select('user_id')
+        .eq('email_updates', false).in('user_id', memberIds.slice(offset, offset + 200));
+      (prefs || []).forEach((p: { user_id: string }) => optedOut.add(p.user_id));
+    }
+    for (let i = allProfiles.length - 1; i >= 0; i--) if (optedOut.has(allProfiles[i].user_id)) allProfiles.splice(i, 1);
+
     if (!allProfiles || allProfiles.length === 0) {
       return new Response(
         JSON.stringify({ success: true, emailsSent: 0 }),
@@ -129,7 +138,9 @@ const handler = async (req: Request): Promise<Response> => {
                   <p>Log in to view the full post and join the conversation.</p>
                   <a href="${appUrl}/workspace-community?program=${encodeURIComponent(program || '')}&amp;post=${encodeURIComponent(post_id)}" class="button">View Post</a>
                   <div class="footer">
-                    <p>This is an automated notification from Fampreneurs Wealth Hub.</p>
+                    <p>You get this email because you are a member of this TruHeirs community.</p>
+                    <p><a href="${appUrl}/profile-settings?tab=privacy" style="color:#6b7280;">Unsubscribe or manage email preferences</a></p>
+                    <p>VNCI, LLC (TruHeirs), 1650 Marietta Boulevard NW Unit D58, Atlanta, GA 30318</p>
                   </div>
                 </div>
               </div>

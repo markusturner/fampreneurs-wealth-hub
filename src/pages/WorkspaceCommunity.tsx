@@ -64,7 +64,9 @@ import { CommentReactions } from '@/components/community/CommentReactions'
 import { PostViewers } from '@/components/community/PostViewers'
 import { AIChat } from '@/components/dashboard/ai-chat'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
-import { BookOpen, ArrowUp, ArrowUpRight, ChevronRight } from 'lucide-react'
+import { BookOpen, ArrowUp, ArrowUpRight, ChevronRight, Flag, UserX } from 'lucide-react'
+import { ReportContentDialog, type ReportTarget } from '@/components/legal/ReportContentDialog'
+import { useUserBlocks } from '@/hooks/useUserBlocks'
 
 
 interface Post {
@@ -167,6 +169,8 @@ export default function WorkspaceCommunity() {
   const { subscriptionStatus, createCheckout } = useSubscription()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { blockedIds, block: blockUser } = useUserBlocks()
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const program = searchParams.get('program') || ''
@@ -1196,7 +1200,8 @@ export default function WorkspaceCommunity() {
   const filteredPosts = chronologicalMessages((activeCategory === 'all'
     ? posts
     : posts.filter(p => p.category === activeCategory)
-  ).filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())))
+  ).filter(p => !blockedIds.has(p.user_id))
+   .filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())))
   const latestMessageId = filteredPosts.at(-1)?.id
   const isPhone = typeof window !== 'undefined' && window.innerWidth < 768
   const renderedPosts = visibleMessageWindow(filteredPosts, isPhone && !showEarlier ? MOBILE_MESSAGE_WINDOW : null)
@@ -1692,6 +1697,18 @@ export default function WorkspaceCommunity() {
                               {(post.user_id === user?.id || isAdmin || isOwner) && <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
                                 Delete Post
                               </DropdownMenuItem>}
+                              {post.user_id !== user?.id && <>
+                                <DropdownMenuItem onSelect={() => setReportTarget({ type: 'post', id: post.id, userId: post.user_id, snapshot: `${post.author_name}: ${(post.title ? post.title + ' - ' : '')}${post.content.replace(/<[^>]+>/g, ' ')}` })}>
+                                  <Flag className="h-3.5 w-3.5 mr-2" />Report
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={async () => {
+                                  if (!window.confirm(`Block ${post.author_name}? You won't see their messages.`)) return
+                                  const ok = await blockUser(post.user_id)
+                                  toast(ok ? { title: `${post.author_name} is blocked`, description: 'Unblock anytime in Profile Settings, Privacy.' } : { title: 'Could not block', variant: 'destructive' })
+                                }}>
+                                  <UserX className="h-3.5 w-3.5 mr-2" />Block {post.author_name}
+                                </DropdownMenuItem>
+                              </>}
                             </DropdownMenuContent>
                           </DropdownMenu>
                       </div>
@@ -2009,6 +2026,9 @@ export default function WorkspaceCommunity() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ReportContentDialog target={reportTarget} onClose={() => setReportTarget(null)} />
+
 
     </div>
   )

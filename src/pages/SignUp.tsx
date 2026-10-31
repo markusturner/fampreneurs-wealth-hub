@@ -4,7 +4,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard, ArrowRight } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Checkbox } from '@/components/ui/checkbox'
+import { isAdult, MINIMUM_AGE, LEGAL_DOCUMENT_VERSION } from '@/lib/legal'
 import { PROGRAMS, LITE_PRICING, type ProgramId } from '@/lib/stripe-programs'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -27,6 +29,9 @@ export default function SignUp() {
   const [selectedPriceIndex, setSelectedPriceIndex] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'other' | ''>(isLitePlan ? 'credit_card' : '')
   const [zipCode, setZipCode] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
+  const [acceptMarketing, setAcceptMarketing] = useState(false)
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -49,6 +54,16 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
+      if (!isAdult(birthDate)) {
+        toast({ title: "Adults only", description: `You must be ${MINIMUM_AGE} or older to create a TruHeirs account.`, variant: "destructive" })
+        return
+      }
+
+      if (!acceptTerms) {
+        toast({ title: "Agreement required", description: "Please agree to the Terms, Privacy Policy, and Community Guidelines.", variant: "destructive" })
+        return
+      }
+
       if (!selectedProgram) {
         toast({ title: "Program required", description: "Please select a program.", variant: "destructive" })
         return
@@ -119,6 +134,7 @@ export default function SignUp() {
           zipCode,
           programName: program.name,
           programId: selectedProgram,
+          consent: { terms_version: LEGAL_DOCUMENT_VERSION, marketing_opt_in: acceptMarketing, accepted_at: new Date().toISOString() },
         },
       })
 
@@ -181,13 +197,13 @@ export default function SignUp() {
 
         <form onSubmit={handleSignUp} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} className={inputCls} />
-            <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} className={inputCls} />
+            <input type="text" aria-label="First name" autoComplete="given-name" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} className={inputCls} />
+            <input type="text" aria-label="Last name" autoComplete="family-name" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} className={inputCls} />
           </div>
 
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className={inputCls} />
+          <input type="email" aria-label="Email" autoComplete="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className={inputCls} />
 
-          <input type="text" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} className={inputCls} />
+          <input type="text" aria-label="Zip code" autoComplete="postal-code" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} className={inputCls} />
 
           <Select value={selectedProgram} onValueChange={(val) => { setSelectedProgram(val as ProgramId); setSelectedPriceIndex(''); }}>
             <SelectTrigger className="h-11 bg-card border-border focus:ring-secondary/30"><SelectValue placeholder="Select a program" /></SelectTrigger>
@@ -216,6 +232,26 @@ export default function SignUp() {
               </SelectContent>
             </Select>
           )}
+
+          <div className="space-y-1">
+            <label htmlFor="signup-dob" className="text-xs text-muted-foreground">Date of birth (you must be {MINIMUM_AGE} or older)</label>
+            <input id="signup-dob" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required disabled={isLoading} max={new Date().toISOString().slice(0, 10)} className={inputCls} />
+          </div>
+
+          <label className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
+            <Checkbox checked={acceptTerms} onCheckedChange={(v) => setAcceptTerms(v === true)} className="mt-0.5" aria-label="Accept terms" />
+            <span>
+              I am {MINIMUM_AGE} or older and agree to the{' '}
+              <Link to="/terms-of-service" target="_blank" className="text-secondary underline">Terms of Service</Link>,{' '}
+              <Link to="/privacy-policy" target="_blank" className="text-secondary underline">Privacy Policy</Link>, and{' '}
+              <Link to="/community-guidelines" target="_blank" className="text-secondary underline">Community Guidelines</Link>.
+            </span>
+          </label>
+
+          <label className="flex items-start gap-2 text-xs text-muted-foreground">
+            <Checkbox checked={acceptMarketing} onCheckedChange={(v) => setAcceptMarketing(v === true)} className="mt-0.5" aria-label="Marketing emails" />
+            <span>Send me marketing emails about programs and events. (Optional)</span>
+          </label>
 
           <div className="flex justify-center pt-2">
             <button

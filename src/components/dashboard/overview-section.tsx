@@ -180,320 +180,36 @@ export function OverviewSection() {
   }
 
   // Generate AI insights based on portfolio performance and business goals
+  // Educational prompts only. No specific securities, allocations, or return figures (not investment advice).
   const generateAIInsights = () => {
     const totalValue = getTotalNetWorth()
-    const dayChange = getTotalDayChange()
     const accountsBalance = getAccountsBalance()
-    const insights = []
+    const insights: { type: string; message: string; priority: string }[] = []
 
-    // If user has set business goals, ONLY show goal-aligned insights
     if (businessGoals?.goals) {
-      const timelineLabel = businessGoals.target_timeline?.replace('_', ' ') || 'your timeline'
-      const revenueGoal = businessGoals.target_revenue ? formatCurrency(businessGoals.target_revenue) : 'your target'
-      
       insights.push({
         type: 'opportunity',
-        message: `🎯 YOUR GOAL: ${businessGoals.goals}${businessGoals.target_revenue ? `\nRevenue Target: ${revenueGoal} in ${timelineLabel.replace('_', ' ')}` : ''}`,
-        priority: 'high'
-      })
-
-      // Goal-aligned insights based on current financial position
-      if (businessGoals.target_revenue) {
-        const currentMonthlyIncome = totalValue * 0.007
-        const targetMonthlyIncome = businessGoals.target_revenue / 12
-        const gap = targetMonthlyIncome - currentMonthlyIncome
-        const clientsNeeded = Math.ceil(gap / 5000)
-
-        // STEP 1: Foundation Setup
-        insights.push({
-          type: 'opportunity',
-          message: `📋 STEP 1 - BUSINESS SETUP for "${businessGoals.goals}":
-
-TODAY - Banking:
-• Open business checking at Chase/Bank of America (free, online, 15 mins)
-• Get business debit card for expenses
-
-THIS WEEK - Legal Structure:
-• Register LLC for "${businessGoals.goals}" at your state portal ($100-300)
-• Or use ZenBusiness/LegalZoom if you want help ($0 + state fees)
-• Get EIN from IRS.gov/EIN (free, takes 5 minutes)
-
-NEXT STEP: Open business credit card (Chase Ink Business Unlimited - 0% APR for 12 months) to fund operations`,
-          priority: 'high'
-        })
-
-        if (gap > 0) {
-          // STEP 2: Revenue Generation (when there's a gap)
-          insights.push({
-            type: 'opportunity',
-            message: `💰 STEP 2 - FIRST REVENUE for "${businessGoals.goals}":
-
-YOUR MATH: Need ${formatCurrency(gap)}/month to hit ${revenueGoal}
-Strategy: Get ${clientsNeeded} clients/customers paying ~$5k each
-
-THIS MONTH - Create Your Offer:
-• Package your "${businessGoals.goals}" into a clear service/product
-• Create 1-page sales document explaining what they get + price
-• Set up Stripe or PayPal to accept payments (takes 1 day)
-
-WEEKS 2-4 - Find Your First Customers:
-• LinkedIn: Connect with 20 ideal customers/day, message your offer
-• Post in 5 relevant Facebook/Reddit groups about your solution
-• Email 50 potential customers/week (find emails with Hunter.io)
-
-WEEKS 5-8 - Close Deals:
-• Book 10 calls/week with interested people (use Calendly)
-• Send simple proposals via email within 24 hours
-• Goal: Close ${clientsNeeded} paying clients = ${formatCurrency(gap)}/month`,
-            priority: 'medium'
-          })
-
-          insights.push({
-            type: 'tip',
-            message: `⚡ STEP 3 - SCALE "${businessGoals.goals}" to ${revenueGoal}:
-
-MONTH 3-4 - Stop Doing Everything:
-• Hire VA from Upwork ($6/hr, 20hrs/week) to handle admin/emails
-• Document your process in Loom videos (15 mins each)
-• You focus ONLY on getting new customers
-
-MONTH 5-6 - Build Team Around Your Goal:
-• Hire contractor to deliver the work ($30-50/hr)
-• You do 20+ sales calls per week (your only job)
-• Raise prices 30% for new clients (you're proven now)
-
-MONTH 7-${timelineLabel.replace('_', ' ')} - Multiple Income Streams:
-• Add related offering to "${businessGoals.goals}" (upsells, consulting, etc)
-• Hire commission-based salesperson (10% of deals they close)
-• Target: ${formatCurrency(targetMonthlyIncome)}/month steady
-RESULT: ${revenueGoal}/year achieved`,
-            priority: 'low'
-          })
-        } else {
-          // When on track or ahead
-          insights.push({
-            type: 'opportunity',
-            message: `🎉 STEP 2 - MAINTAIN & GROW (Current: On Track)
-You have enough income for ${revenueGoal}/year. Now secure it:
-
-THIS MONTH:
-• Document your sales process (what works, scripts, follow-ups)
-• Build 3-month cash reserve in business savings (${formatCurrency(targetMonthlyIncome * 3)})
-• Create recurring revenue stream (monthly retainers, subscriptions)
-
-NEXT 3 MONTHS:
-• Diversify clients (don't rely on 1-2 clients for 80%+ of revenue)
-• Raise prices 20% for new clients
-• Launch passive income product (course, template, or toolkit)
-TARGET: ${formatCurrency(targetMonthlyIncome * 1.5)}/month with less effort`,
-            priority: 'medium'
-          })
-        }
-      }
-
-      // STEP 4: Financial Optimization (always show)
-      insights.push({
-        type: 'tip',
-        message: `💡 STEP 4 - KEEP MORE MONEY (Ongoing):
-
-TAX SAVINGS (Do Monthly):
-• Track ALL expenses in QuickBooks/Wave (deduct 20-30% from taxes)
-• Pay yourself via S-Corp if making $60k+ (saves $5-15k/year in taxes)
-• Quarterly estimated taxes to IRS (avoid penalties)
-
-PROFIT FIRST METHOD (Every 2 Weeks):
-• 50% Operating expenses (team, tools, ads)
-• 30% Owner pay (your salary)
-• 15% Taxes (set aside, don't touch)
-• 5% Profit (emergency fund first, then invest)
-
-WEALTH BUILDING (After $10k+/month steady):
-• Max out SEP IRA ($66k/year tax deductible)
-• Invest excess in VTI ETF (simple, 7-10% returns)
-• Build to 6 months expenses saved = Freedom`,
-        priority: 'medium'
-      })
-
-      // Return ONLY goal-aligned practical insights
-      return insights
-    }
-
-    // Only show generic insights if NO goals are set (this code below won't run if goals exist)
-    // Business and income level recommendations based on portfolio size
-    const monthlyIncomeEstimate = totalValue * 0.007 // Rough 7% annual return / 12 months
-    
-    // Below $10k/month income level - Focus on business creation/acquisition
-    if (monthlyIncomeEstimate < 10000) {
-      if (totalValue >= 10000) {
-        insights.push({
-          type: 'opportunity',
-          message: `Business Acquisition ($${totalValue.toLocaleString()} available): Buy laundromat ($50-150k, 20-35% ROI), car wash ($40-200k, 15-25% ROI), or vending route ($5-50k, 35-50% ROI). Use SBA 7(a) loan (90% financing, 11-13% rates). Search BizBuySell.com, contact broker immediately.`,
-          priority: 'high'
-        })
-        insights.push({
-          type: 'tip',
-          message: 'Service Business Starter: Pressure washing ($2k startup, $150-300/day), lawn care ($5k startup, $40-80/hr), handyman service ($3k tools, $50-100/hr). Get LLC ($100), insurance ($300/year), start local marketing immediately.',
-          priority: 'high'
-        })
-      } else {
-        insights.push({
-          type: 'opportunity',
-          message: 'Digital Business Launch: Dropshipping ($500 startup, use Shopify + Facebook Ads), YouTube automation ($1k startup, faceless channels), or Amazon FBA ($3-5k startup). Goal: $3k/month profit within 6 months.',
-          priority: 'high'
-        })
-        insights.push({
-          type: 'tip',
-          message: 'Skill-Based Business: Web design ($0 startup, $2-10k/project), social media management ($0 startup, $500-2k/client), virtual assistance ($0 startup, $15-50/hr). Build portfolio on Fiverr/Upwork first.',
-          priority: 'high'
-        })
-      }
-    }
-    
-    // $10k-30k/month income - Focus on scaling existing business
-    else if (monthlyIncomeEstimate >= 10000 && monthlyIncomeEstimate < 30000) {
-      insights.push({
-        type: 'opportunity',
-        message: 'Scale Current Business: Hire 2-3 employees ($40-60k/year each), implement systems (CRM: HubSpot $50/mo, accounting: QuickBooks $30/mo), expand to 3 new markets. Target: Double revenue in 12 months through delegation.',
-        priority: 'high'
-      })
-      insights.push({
-        type: 'tip',
-        message: 'Business Expansion: Launch complementary service lines, create recurring revenue model (subscriptions/maintenance), build email list (10k+ subscribers), partner with 5 local businesses for referrals. Reinvest 70% of profits for growth.',
-        priority: 'medium'
-      })
-    }
-    
-    // $30k+/month income - Advanced wealth building and business empire
-    else if (monthlyIncomeEstimate >= 30000) {
-      insights.push({
-        type: 'opportunity',
-        message: 'Business Empire Building: Acquire 2-3 complementary businesses ($500k-2M each using seller financing), hire CEO for main business ($120k/year), create holding company structure. Target: $1M+ monthly revenue across portfolio.',
-        priority: 'high'
-      })
-      insights.push({
-        type: 'tip',
-        message: 'Advanced Wealth Strategy: Real estate syndications (min $50k, 15-20% IRR), private equity funds (min $250k, 20-25% returns), start family office, create trust structures. Diversify across 7+ asset classes.',
-        priority: 'medium'
-      })
-    }
-
-    // Connected accounts insights with specific investment recommendations based on income level
-    if (accountsBalance > 0 && investments.length === 0) {
-      if (monthlyIncomeEstimate < 10000) {
-        // Low income - keep most cash for business opportunities, minimal investing
-        const emergencyFund = 6000 // 6 months emergency fund
-        const businessCash = Math.max(accountsBalance * 0.7, 5000) // Keep 70% or min $5k for business
-        const investmentAmount = Math.max(0, accountsBalance - emergencyFund - businessCash)
-        
-        if (investmentAmount > 1000) {
-          insights.push({
-            type: 'tip',
-            message: `Cash Strategy: Keep ${formatCurrency(emergencyFund)} emergency fund + ${formatCurrency(businessCash)} for business opportunities. Only invest ${formatCurrency(investmentAmount)} in VTI until income increases. Focus on business first, not stock market.`,
-            priority: 'medium'
-          })
-        } else {
-          insights.push({
-            type: 'tip',
-            message: `Cash First: Keep all ${formatCurrency(accountsBalance)} liquid. You need cash for business startup costs, emergencies, and opportunities. Don't invest in stocks until you have $10k+ monthly income from business.`,
-            priority: 'high'
-          })
-        }
-      } else {
-        // Higher income - can invest more aggressively
-        const investmentAmount = Math.min(accountsBalance * 0.8, 50000)
-        insights.push({
-          type: 'opportunity',
-          message: `Invest ${formatCurrency(investmentAmount)} immediately: 60% VTI (Total Stock Market ETF), 30% VXUS (International ETF), 10% BND (Bond ETF). Open Fidelity/Schwab account online, fund with ACH transfer, buy these ETFs. Expected 7-10% annual return.`,
-          priority: 'medium'
-        })
-      }
-    }
-
-    // Performance-based insights with specific actions
-    if (dayChange < -10000) {
-      insights.push({
-        type: 'alert',
-        message: `Portfolio down ${formatCurrency(Math.abs(dayChange))} today. ACTION: Don't panic sell. If you have cash, consider buying more VTI/VXUS while prices are low (dollar-cost averaging). Set stop losses at -20% from peak if needed.`,
-        priority: 'high'
-      })
-    } else if (dayChange > 20000) {
-      insights.push({
-        type: 'opportunity',
-        message: `Strong gains (+${formatCurrency(dayChange)}) today. ACTION: Sell 25% of overperforming individual stocks, rebalance into VTI if concentration >10% in single stock. Consider taking profits on speculative positions.`,
-        priority: 'medium'
-      })
-    }
-
-    // Specific portfolio size strategies
-    if (totalValue > 10000000) {
-      insights.push({
-        type: 'tip',
-        message: 'With $10M+ net worth: Allocate 20% to REITs (VNQ), 15% to alternative investments via Fundrise/YieldStreet, consider private equity minimums. Hire fee-only financial advisor. Set up family trust.',
-        priority: 'high'
-      })
-    } else if (totalValue > 1000000) {
-      insights.push({
-        type: 'tip',
-        message: 'Millionaire strategy: 70% VTI, 20% VXUS, 10% BND. Add 5% crypto (BTC/ETH) via Coinbase. Max out 401k ($23,000), backdoor Roth IRA ($7,000). Open taxable account at Fidelity.',
-        priority: 'medium'
-      })
-    } else if (totalValue > 100000) {
-      insights.push({
-        type: 'tip',
-        message: 'Growing wealth strategy: Invest additional $1,000/month automatically. 80% VTI, 15% VXUS, 5% BND. Use M1 Finance for automatic rebalancing. Target: $1M in 7-10 years at this pace.',
-        priority: 'medium'
-      })
-    } else if (totalValue > 10000) {
-      insights.push({
-        type: 'tip',
-        message: 'Building foundation: Start with VTI only, add $500/month. Use Fidelity ZERO fee funds (FZROX). Emergency fund first: 3-6 months expenses in high-yield savings (Marcus/Ally at 4.5% APY).',
-        priority: 'medium'
-      })
-    } else if (totalValue > 1000) {
-      insights.push({
-        type: 'tip',
-        message: 'Getting started: Open Fidelity account, buy FZROX (zero fees). Start with $100/month automatic investment. Build to $10k, then diversify. Use Fidelity cashback credit card for 2% on all purchases.',
-        priority: 'medium'
-      })
-    }
-
-    // Cash allocation with specific actions
-    const cashBalance = getTotalCashBalance()
-    const cashPercentage = totalValue > 0 ? (cashBalance / totalValue) * 100 : 0
-    if (cashPercentage > 15) {
-      const excessCash = cashBalance * 0.7 // Invest 70% of cash
-      insights.push({
-        type: 'opportunity',
-        message: `You have ${cashPercentage.toFixed(1)}% in cash. INVEST ${formatCurrency(excessCash)} NOW: 70% VTI, 30% VXUS. Keep only 3-6 months expenses in high-yield savings (Ally Bank 4.5% APY). Opportunity cost: losing $${(excessCash * 0.07 / 12).toFixed(0)}/month.`,
+        message: `Your goal: ${businessGoals.goals}. Review your progress with your coach or advisor at your next check-in.`,
         priority: 'high'
       })
     }
-
-    // Specific tax optimization strategies
-    if (totalValue > 50000) {
+    if (accountsBalance > 0 && totalValue > 0 && accountsBalance / totalValue > 0.5) {
       insights.push({
         type: 'tip',
-        message: 'Tax optimization: Max 401k ($23,000), Roth IRA backdoor conversion ($7,000), HSA if eligible ($4,300). Use tax-loss harvesting in taxable accounts. Hold VTI >1 year for long-term capital gains (15% vs 37%).',
+        message: 'Most of your tracked wealth is in cash. Learn about emergency funds and diversification in the Classroom, then talk with a licensed financial advisor about what fits you.',
         priority: 'medium'
       })
     }
-
-    // Default specific insights if none generated
-    if (insights.length === 0) {
-      insights.push(
-        {
-          type: 'tip',
-          message: 'Optimal allocation: 60% VTI (US Total Market), 30% VXUS (International), 10% BND (Bonds). Rebalance quarterly or when allocation drifts >5%. Use Fidelity/Schwab for $0 commissions.',
-          priority: 'low'
-        },
-        {
-          type: 'opportunity',
-          message: 'Tax-loss harvesting: If any positions are down >$1,000, sell and buy similar ETF (VTI→SWTSX) to harvest losses. Offset up to $3,000 in ordinary income annually.',
-          priority: 'low'
-        }
-      )
-    }
-
+    insights.push({
+      type: 'tip',
+      message: 'Make sure each asset is titled the way your trust plan intends. Review titles and beneficiaries with your attorney once a year.',
+      priority: 'low'
+    })
+    insights.push({
+      type: 'tip',
+      message: 'These tips are educational only and are not legal, tax, or investment advice.',
+      priority: 'low'
+    })
     return insights
   }
 

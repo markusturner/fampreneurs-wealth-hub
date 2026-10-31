@@ -8,11 +8,12 @@ import { TruHeirsBillingCard } from '@/components/dashboard/truheirs-billing-car
 import { DesktopPushToggle } from '@/components/dashboard/web-push-prompt'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, User, Link2, Shield } from 'lucide-react'
+import { Settings, ArrowLeft, User, Link2, Shield, Lock } from 'lucide-react'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 import { SecurityActions } from '@/components/auth/SecurityActions'
+import { PrivacyCenter } from '@/components/settings/PrivacyCenter'
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
@@ -21,7 +22,8 @@ export function ProfileSettings() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
-  const [settingsTab, setSettingsTab] = useState('account')
+  const [searchParams] = useSearchParams()
+  const [settingsTab, setSettingsTab] = useState(searchParams.get('tab') === 'privacy' ? 'privacy' : 'account')
 
   return (
     <div className="profile-settings container mx-auto py-3 md:py-6 px-3 sm:px-4 space-y-4 md:space-y-6 pb-16 md:pb-6">
@@ -32,6 +34,7 @@ export function ProfileSettings() {
             size={isMobile ? "sm" : "icon"} 
             onClick={() => navigate('/welcome')}
             className="shrink-0"
+            aria-label="Back to Welcome"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -53,7 +56,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs value={settingsTab} onValueChange={setSettingsTab} className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-5' : 'grid-cols-4'}`}>
           <TabsTrigger value="account" className="flex items-center gap-1 md:gap-2 text-sm">
             <User className="h-4 w-4 shrink-0" />
             {isMobile ? "Account" : "Account Settings"}
@@ -61,6 +64,10 @@ export function ProfileSettings() {
           <TabsTrigger value="security" className="flex items-center gap-1 md:gap-2 text-sm">
             <Shield className="h-4 w-4 shrink-0" />
             Security
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="flex items-center gap-1 md:gap-2 text-sm">
+            <Lock className="h-4 w-4 shrink-0" />
+            Privacy
           </TabsTrigger>
           <TabsTrigger value="affiliate" className="flex items-center gap-1 md:gap-2 text-sm">
             <Settings className="h-4 w-4 shrink-0" />
@@ -89,6 +96,9 @@ export function ProfileSettings() {
           <SecurityActions />
         </TabsContent>
 
+        <TabsContent value="privacy">
+          <PrivacyCenter />
+        </TabsContent>
 
         <TabsContent value="affiliate">
           <AffiliateProgram />

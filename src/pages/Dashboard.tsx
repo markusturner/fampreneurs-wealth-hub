@@ -1,3 +1,4 @@
+import { EducationalDisclaimer } from '@/components/legal/EducationalDisclaimer'
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -93,6 +94,7 @@ const Dashboard = () => {
   const displayName = profile?.display_name || profile?.first_name || 'Family'
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-x-clip">
+      <EducationalDisclaimer />
       <div className="flex items-center justify-between gap-4">
         <BackToWelcome />
       </div>

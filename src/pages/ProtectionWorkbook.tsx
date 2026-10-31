@@ -1,3 +1,4 @@
+import { EducationalDisclaimer } from '@/components/legal/EducationalDisclaimer'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -20,6 +21,7 @@ export default function ProtectionWorkbook() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <EducationalDisclaimer />
       <BackToWelcome />
       <div className="text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">VIP Weekend Mastermind</h1>
