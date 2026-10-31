@@ -64,7 +64,7 @@ export default function ClientMarkusThreads() {
     return clients.filter(c => !q || (c.display_name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q))
   }, [clients, search])
   const shown = convo === 'all' ? messages : messages.filter(m => m.conversation_id === convo)
-  useEffect(() => { const el = scrollRef.current; if (el) el.scrollTop = el.scrollHeight }, [shown])
+  useEffect(() => { const el = scrollRef.current; if (el) el.scrollTop = el.scrollHeight }, [messages, convo])
   const client = clients.find(c => c.user_id === selected)
 
   return (
