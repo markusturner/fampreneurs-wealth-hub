@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { LEGAL_DOCUMENT_VERSION, MINIMUM_AGE, SMS_CONSENT_TEXT, isAdult, isConsentExemptRoute } from '@/lib/legal'
+import { LEGAL_DOCUMENT_VERSION, MINIMUM_AGE, SMS_CONSENT_TEXT, ageOn, isAdult, isConsentExemptRoute } from '@/lib/legal'
 
 const acceptedKey = (userId: string) => `legal_consent_${LEGAL_DOCUMENT_VERSION}_${userId}`
 
@@ -50,6 +50,8 @@ export function LegalConsentGate() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    const age = ageOn(birthDate)
+    if (age === null) { setError('Please check your date of birth and try again.'); return }
     if (!isAdult(birthDate)) {
       setSaving(true)
       await supabase.from('legal_consents').insert({
