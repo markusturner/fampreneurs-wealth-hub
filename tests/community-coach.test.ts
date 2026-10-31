@@ -9,5 +9,5 @@ test('Coach Markus is restored for previously saved category lists', () => {
 
 test('Coach Markus has one stable category even with an old custom category', () => {
   const categories = [{ label: 'Coach Markus', value: 'cat-old', emoji: '' }, { label: 'Coach Markus', value: 'coach', emoji: '' }]
-  expect(withCoachMarkus(categories)).toEqual([{ label: 'Coach Markus', value: 'coach', emoji: '' }])
+  expect(withCoachMarkus(categories)).toEqual([{ label: 'Markus AI', value: 'coach', emoji: '' }])
 })
