@@ -1373,10 +1373,6 @@ export default function WorkspaceCommunity() {
     <div className="community-shell">
       <div className="community-topbar">
         <BackToWelcome />
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" className="h-8 gap-1.5 rounded-full px-3 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground" onClick={() => navigate('/classroom')}><BookOpen className="h-3.5 w-3.5" /> Content <ArrowUpRight className="h-3 w-3 opacity-50" /></Button>
-          <Button variant="ghost" className="h-8 gap-1.5 rounded-full px-3 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground" onClick={() => navigate('/dashboard')}><Users className="h-3.5 w-3.5" /> Digital Family Office <ArrowUpRight className="h-3 w-3 opacity-50" /></Button>
-        </div>
       </div>
       <div className="community-columns">
         <aside className="community-left-rail">
