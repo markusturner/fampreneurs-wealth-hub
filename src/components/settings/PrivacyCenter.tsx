@@ -217,3 +217,25 @@ function PrefRow({ id, label, help, checked, onChange }: { id: string; label: st
     </div>
   )
 }
+
+const BROWSER_EXPORT_TABLES = [
+  'profiles', 'communication_preferences', 'legal_consents', 'privacy_requests', 'trust_submissions', 'trust_asset_uploads',
+  'family_documents', 'succession_progress', 'handoff_settings', 'investment_portfolios', 'account_transactions', 'business_goals',
+  'onboarding_responses', 'program_agreements', 'community_posts', 'community_comments', 'community_reactions', 'chat_projects',
+  'chat_conversations', 'ai_chat_history', 'course_enrollments', 'lesson_completions', 'session_attendance', 'survey_submissions',
+  'weekly_checkin_responses', 'notifications',
+] as const
+const SECRET_FIELD = /(token|secret|password|key_hash|api_key|access_key|ssn|cursor)/i
+
+async function exportInBrowser(userId: string, email: string | null) {
+  const data: Record<string, unknown> = { account: { id: userId, email } }
+  const db = supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { limit: (n: number) => Promise<{ data: Record<string, unknown>[] | null }> } } } }
+  for (const table of BROWSER_EXPORT_TABLES) {
+    try {
+      const { data: rows } = await db.from(table).select('*').eq('user_id', userId).limit(5000)
+      if (rows?.length) data[table] = rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, SECRET_FIELD.test(k) ? '[removed for security]' : v])))
+    } catch { /* skip tables this account cannot read */ }
+  }
+  await supabase.from('privacy_requests').insert({ user_id: userId, request_type: 'export', status: 'completed' })
+  return { exported_at: new Date().toISOString(), data }
+}
