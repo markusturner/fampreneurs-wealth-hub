@@ -647,6 +647,7 @@ export default function Welcome() {
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
+          <p className="mt-1.5 text-center text-[10px] text-muted-foreground">Markus AI can make mistakes. Educational only, not legal, tax, or investment advice.</p>
 
           {attachments.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
