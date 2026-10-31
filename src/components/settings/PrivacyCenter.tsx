@@ -68,7 +68,7 @@ export function PrivacyCenter() {
 
   const exportData = async () => {
     setExporting(true)
-    const { data, error } = await supabase.functions.invoke('account-privacy', { body: { action: 'export' } })
+    const { data, error } = await supabase.functions.invoke('delete-user', { body: { action: 'export' } })
     setExporting(false)
     if (error || !data) { toast({ title: 'Export failed', description: 'Please try again.', variant: 'destructive' }); return }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -81,7 +81,7 @@ export function PrivacyCenter() {
 
   const deleteAccount = async () => {
     setDeleting(true)
-    const { data, error } = await supabase.functions.invoke('account-privacy', { body: { action: 'delete', confirm: confirmText } })
+    const { data, error } = await supabase.functions.invoke('delete-user', { body: { action: 'delete', confirm: confirmText } })
     setDeleting(false)
     if (error || !data?.success) {
       let message = data?.error || 'Please try again or email info@fampreneurs.com.'
