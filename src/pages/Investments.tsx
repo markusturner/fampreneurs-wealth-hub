@@ -287,7 +287,7 @@ export default function Investments() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      <EducationalDisclaimer />
+      <EducationalDisclaimer className="mx-4 mt-4 md:mx-6" />
       
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl">
         <div className="animate-fade-in">
