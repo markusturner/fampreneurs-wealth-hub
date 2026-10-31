@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import ClientMarkusThreads from "@/components/admin/ClientMarkusThreads"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -258,7 +259,7 @@ export default function ClientRetention() {
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
-  const [pageView, setPageView] = useState<"clients" | "surveys" | "attendance">(isAttendanceView ? "attendance" : "clients")
+  const [pageView, setPageView] = useState<"clients" | "surveys" | "attendance" | "markus">(isAttendanceView ? "attendance" : "clients")
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
@@ -1505,7 +1506,7 @@ export default function ClientRetention() {
 
       <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
-          {([["clients","Clients"],["surveys","Surveys"],["attendance","Attendance Log"]] as const).map(([v, label]) => (
+          {([["clients","Clients"],["surveys","Surveys"],["attendance","Attendance Log"],["markus","Markus AI Chats"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setPageView(v)}
@@ -1522,7 +1523,9 @@ export default function ClientRetention() {
         )}
       </div>
 
-      {pageView === "attendance" ? (
+      {pageView === "markus" ? (
+        <ClientMarkusThreads />
+      ) : pageView === "attendance" ? (
         <div className="min-w-0 overflow-x-auto"><CoachingCallAttendanceLog /></div>
       ) : pageView === "surveys" ? (
         <Surveys embedded />

@@ -100,7 +100,7 @@ export default function ClientMarkusThreads() {
             shown.length === 0 ? <p className="text-xs text-muted-foreground">No messages.</p> :
             shown.map(m => (
               <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${m.role === 'user' ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted'}`}>
                   <div className="mb-1 text-[10px] opacity-70">{m.role === 'user' ? 'Client' : 'Markus AI'} · {fmt(m.created_at)}</div>
                   <div className="whitespace-pre-wrap break-words">{m.content}</div>
                 </div>
