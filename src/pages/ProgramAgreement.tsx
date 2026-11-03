@@ -13,7 +13,7 @@ import { Loader2, CheckCircle2, Shield, Upload, Mail, Clock, FileCheck, PenTool,
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL } from '@/lib/agreement-texts'
+import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL, TFBA_AGREEMENT } from '@/lib/agreement-texts'
 
 function AgreementText({ text }: { text: string }) {
   const startMarker = 'The program will include:'
@@ -194,113 +194,6 @@ You acknowledge and agree to all charges associated with this program and you wi
 
 By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
-const TFBA_AGREEMENT = `Program Services Agreement
-
-Thank you for choosing The Fampreneurs to advise and implement how to start a family business by showing you how to leverage family credit, trusts, and legacy. We are excited to work with you to start and grow your family business.
-
-This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Mentee"), residing at ____________________________________________________________________________, and VNCI, LLC ("The Fampreneurs").
-
-The Mentee and "The Fampreneurs's team agree as follows:
-
-Note to Mentees: One of the most difficult aspects of successfully growing a business is making sure you keep your proprietary information and intellectual property protected, while simultaneously balancing your culture, authenticity, and commitment to Mentees. The Fampreneurs' Mastermind Program works to provide the best possible experience for all our Mentees and the following agreement outlines some parameters and terms of the Program so that each party clearly understands any and all boundaries to secure a strong business relationship and provide the best possible experience to one another.
-
-To gain the most benefit from The Fampreneurs' Mentorship program you agree to the following:
-
-Section 1. Program Guidelines and Payment Details
-
-Program: The Private Estate Accelerator Program.
-
-Program Details:
-
-The program will include:
-
-    1. 3-months of Weekly Group Coaching with The Fampreneurs Elite team of coaches and experts (Q&A Accountability Call)
-
-    2. One (1) complimentary 1-on-1 call with the private trust attorney AND one (1) complimentary 1-on-1 call with the private insurance agent
-
-    3. FREE Private Access to 'The Fampreneurs Community'
-
-    4. Access to our In-House Trust Software where we design your personalized Private Family Trust, Unincorporated Business Trust, and 508(c)(1)(a) Faith-Based Organizational Trust for your family business.
-
-    5. 90-Day FREE access to the TruHeirs software. After the 90-day period, access continues at $247 per quarter.
-
-
-Payment Terms:
-
-Total Program Cost: The Private Estate Accelerator - Regularly $12,000, but today for ONLY $9,000.
-
-Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
-
-If you are enrolling under a payment plan, the total investment is Twelve Thousand Dollars ($12,000.00). An initial deposit of Four Thousand Dollars ($4,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Four Thousand Dollars ($4,000.00) each.
-
-All payments are non refundable. The sign-up start time is considered to be at the time of signing this document. All sales are non-refundable and chargebacks are not allowed. All non-payment will result in a filing with UCC as a lien.
-
-Section 2. Terms of Participation
-
-Our goal at The Fampreneurs' Mentorship and within the program is to provide the best possible experience for all program participants and subscribers. Due to this fact, The Fampreneurs' Mentorship program holds the right to limit, suspend, and/or terminate your subscription and participation at any point in any of the programs offered by The Fampreneurs' Mentorship program due to you:
-
-Becoming disruptive or overly difficult to work with, hindering the productivity and/or participation of any The Fampreneurs' Mentorship program employee, subscriber, customer, Mentee, or instructor.
-
-Section 3. Non-Solicitation
-
-We at The Fampreneurs' Mentorship program take the protection of our proprietary information and intellectual property very seriously. For this reason and the benefit of The Fampreneurs' Mentorship program, you agree that during and following the completion of your membership in the program (6-month mark from the signup date) you will not directly or indirectly solicit any person, Mentee, or employee of The Fampreneurs' Mentorship program to compete with The Fampreneurs' Mentorship program or provide similar services like The Fampreneurs' Mentorship program for the term of 12 months (1 year). (18 months from the start date of the program)
-
-Section 4. Content Sharing
-
-The Fampreneurs' Mentorship program will respect your and your fellow members' privacy. In return, The Fampreneurs' Mentorship program expects you to respect fellow Program members' privacy. Confidential information shared is The Fampreneurs' Mentorship program's property and/or the member who discloses the information.
-
-Recorded content is not to be shared at any time with anyone outside of the program. All materials, content, recordings, writings, and directions are always confidential and kept private. Failure to abide by this guideline is subject to immediate removal from the program with no refund of any kind.
-
-Any reproduction or resale of the content within The Fampreneurs' Mentorship program is strictly prohibited.
-
-Section 5. Terms of Service
-
-You irrevocably agree that signing up and paying (the "Company" or "we/us") is accepting you as The Fampreneurs' Mentorship program (the "Program") participant. The Fampreneurs' Mentorship Program Participant Agreement (the "Agreement") automatically becomes a binding contract between you and the Company and applies to your participation in the program.
-
-By signing this agreement, you acknowledge that you have read, agree to, and accept all of the terms and conditions in this Agreement.
-
-By filling in your credit/debit card information and submitting it, you authorize the Company to charge your credit or debit cards indicated above as payment for your membership in the Program. To further clarify, after you sign this agreement, you agree that no refunds will be issued, and all monthly payments (if applicable) must be paid on a timely basis regardless of your participation or results.
-
-We are committed to providing all Program participants with a positive Program experience.
-
-The Fampreneurs FAQs:
-
-General Overview: The following features are included within your The Fampreneurs' Mentorship Membership: (1) Coaching calls and The Fampreneurs' Mentorship community
-
-"When does my year in the mastermind start?"
-It starts on the exact date that you joined The Fampreneurs' Mentorship and lasts for 90 days from that point onwards.
-
-Section 6. Program Content and Direction
-
-Program content is based on investment experiences and is always evolving/changing. The program is meant for a general audience. It is not construed as investment advice or financial direction on any specific business or transaction about investing or otherwise.
-
-The information contained within The Fampreneurs' Mentorship program is strictly for educational purposes. Program content is for individual member use only.
-
-Section 7. Right to Use Name and Likeness
-
-You hereby consent to the use of your name, photograph, likeness, voice, testimonial, and biographical material, in whole or in part, for publication or reproduction in any medium, including but not limited to television, radio, print media, and the internet.
-
-Section 8. Terms of Sale
-
-You hereby agree that all Program sales are final, non-refundable, and non-transferable.
-
-You agree to make all payments on time and in full, as outlined in Section 1.
-
-You agree to waive any/all rights to charge-back, dispute, or make claims against any payment made to The Legatum Group, LLC.
-
-Section 9. The Fampreneurs' Mentorship program includes
-
-Coaching with The Fampreneurs. You will attend a bi-weekly live virtual training and a full question and answer session with The Fampreneurs.
-
-Section 10. Refund and Cancellation Policies
-
-The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Private Estate Accelerator Program.
-
-Section 11. Chargebacks
-
-You acknowledge and agree to all charges associated with this program and you will not initiate a chargeback or violate the agreement, in doing so, we will pursue legal action as it constitutes fraud.
-
-By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
 const TFFM_AGREEMENT = `Program Services Agreement
 
