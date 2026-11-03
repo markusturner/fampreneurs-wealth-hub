@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AGREEMENT_TEXT_MAP } from '@/lib/agreement-texts'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
-import { Loader2 } from 'lucide-react'
+import { IndentedText } from '@/components/legal/IndentedText'
 
 // Read-only view of every program agreement. Does not touch onboarding.
 export default function AgreementTemplates() {
@@ -26,8 +26,8 @@ export default function AgreementTemplates() {
           </button>
         ))}
       </div>
-      <div className="rounded-lg border border-border bg-card p-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-        {AGREEMENT_TEXT_MAP[selected]}
+      <div className="rounded-lg border border-border bg-card p-6 text-sm leading-relaxed text-foreground">
+        <IndentedText text={AGREEMENT_TEXT_MAP[selected]} />
       </div>
     </div>
   )

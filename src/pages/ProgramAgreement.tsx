@@ -13,6 +13,7 @@ import { Loader2, CheckCircle2, Shield, Upload, Mail, Clock, FileCheck, PenTool,
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { IndentedText } from '@/components/legal/IndentedText'
 import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL, TFBA_AGREEMENT } from '@/lib/agreement-texts'
 
 function AgreementText({ text }: { text: string }) {
@@ -20,7 +21,7 @@ function AgreementText({ text }: { text: string }) {
   const startIdx = text.indexOf(startMarker)
   const endIdx = startIdx === -1 ? -1 : text.indexOf('Payment Terms:', startIdx + startMarker.length)
   if (startIdx === -1 || endIdx === -1) {
-    return <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{text}</div>
+    return <IndentedText text={text} className="text-sm leading-relaxed text-foreground" />
   }
   const before = text.slice(0, startIdx + startMarker.length)
   const listBlock = text.slice(startIdx + startMarker.length, endIdx)
@@ -46,7 +47,7 @@ function AgreementText({ text }: { text: string }) {
 
   return (
     <div className="text-sm leading-relaxed text-foreground">
-      <div className="whitespace-pre-wrap">{before}</div>
+      <IndentedText text={before} />
       {finalSegs.map((seg, i) =>
         seg.type === 'list' ? (
           <ol key={i} className="list-decimal pl-8 mt-2 space-y-2">
@@ -55,10 +56,10 @@ function AgreementText({ text }: { text: string }) {
             ))}
           </ol>
         ) : (
-          <div key={i} className="whitespace-pre-wrap mt-2">{seg.content.join('\n')}</div>
+          <IndentedText key={i} text={seg.content.join('\n')} className="mt-2" />
         ),
       )}
-      <div className="whitespace-pre-wrap mt-2">{after}</div>
+      <IndentedText text={after} className="mt-2" />
     </div>
   )
 }
