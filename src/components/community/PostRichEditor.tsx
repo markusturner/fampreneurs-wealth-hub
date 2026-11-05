@@ -236,6 +236,23 @@ export function PostRichEditor({
   let hasHeading = false
   editor.state.doc.descendants(node => { if (node.type.name === 'heading') hasHeading = true })
 
+  const toggleSingleHeading = () => {
+    if (hasHeading) {
+      editor.chain().focus().command(({ tr, state }) => {
+        let done = false
+        state.doc.descendants((node, pos) => {
+          if (!done && node.type.name === 'heading') {
+            tr.setNodeMarkup(pos, state.schema.nodes.paragraph)
+            done = true
+          }
+        })
+        return done
+      }).run()
+    } else {
+      editor.chain().focus().toggleHeading({ level: 2 }).run()
+    }
+  }
+
   const applyMention = (m: MemberOption) => {
     if (!mention) return
     editor.chain().focus()
