@@ -160,7 +160,7 @@ export function PostRichEditor({
     autofocus: autoFocus,
     editorProps: {
       attributes: {
-        class: `focus:outline-none text-sm leading-relaxed break-words [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_p]:my-0.5 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-secondary [&_h2]:leading-snug [&_h2]:my-1`,
+        class: `focus:outline-none text-sm leading-relaxed break-words [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_p]:my-0.5 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:my-1 [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-1`,
         'aria-label': compact ? 'Community message' : 'Edit message',
         role: 'textbox',
         'aria-multiline': 'true',
