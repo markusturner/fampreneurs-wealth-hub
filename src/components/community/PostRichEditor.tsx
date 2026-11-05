@@ -243,6 +243,11 @@ export function PostRichEditor({
         state.doc.descendants((node, pos) => {
           if (!done && node.type.name === 'heading') {
             tr.setNodeMarkup(pos, state.schema.nodes.paragraph)
+            const after = pos + node.nodeSize
+            const next = state.doc.nodeAt(after)
+            if (next && next.type.name === 'paragraph' && next.content.size === 0) {
+              tr.delete(after, after + next.nodeSize)
+            }
             done = true
           }
         })
