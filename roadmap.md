@@ -1,5 +1,10 @@
 # Roadmap
 
+## Minimal message headings
+- [x] Add a compact heading icon to the shared message editor and render headings in posts and replies
+- [ ] Verify editor formatting and desktop/phone presentation
+- [ ] Verify real-account saving: external unmanaged authentication prevents signed-in checks
+
 ## Inline Discord replies
 - [x] Display existing and new replies chronologically in the main chat with original-message references
 - [x] Use the main composer for replies without opening a thread window
