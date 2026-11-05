@@ -1422,7 +1422,7 @@ export default function WorkspaceCommunity() {
             )}
 
             {/* Feed */}
-            <div className={`community-message-list ${activeCategory === 'recordings' ? 'community-recordings-list' : ''}`}>
+            <div className="community-message-list">
               {loading ? (
                 [1, 2, 3].map(i => (
                   <Card key={i} className="animate-pulse border-border/50">
