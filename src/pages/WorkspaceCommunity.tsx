@@ -14,7 +14,6 @@ import { postingCategory } from '@/lib/community-posting'
 import { withCoachMarkus, type CommunityCategory } from '@/lib/community-coach'
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
 import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -267,7 +266,8 @@ export default function WorkspaceCommunity() {
   const [editingPostTitle, setEditingPostTitle] = useState('')
 
   // Comments state
-  const [threadPostId, setThreadPostId] = useState<string | null>(null)
+  const [replyPostId, setReplyPostId] = useState<string | null>(null)
+  const [isReplying, setIsReplying] = useState(false)
   const [messageMenuId, setMessageMenuId] = useState<string | null>(null)
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const holdStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -277,14 +277,6 @@ export default function WorkspaceCommunity() {
   }
   const messageScrollRef = useRef<HTMLDivElement>(null)
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
-  const [commentText, setCommentText] = useState<Record<string, string>>({})
-  const [commentImageFiles, setCommentImageFiles] = useState<Record<string, File | null>>({})
-  const [commentAudioFiles, setCommentAudioFiles] = useState<Record<string, File | null>>({})
-  const [commentVideoFiles, setCommentVideoFiles] = useState<Record<string, File | null>>({})
-  const commentImageRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
@@ -314,7 +306,7 @@ export default function WorkspaceCommunity() {
       const userIds = [...new Set((postsData || []).map(p => p.user_id))]
       const [{ data: likes }, { data: comments }, { data: profiles }] = await Promise.all([
         supabase.from('community_reactions').select('post_id, user_id').in('post_id', postIds.length ? postIds : ['']),
-        supabase.from('community_comments').select('post_id').in('post_id', postIds.length ? postIds : ['']),
+        supabase.from('community_comments').select('*').in('post_id', postIds.length ? postIds : ['']),
         supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds.length ? userIds : ['']),
       ])
 
@@ -359,6 +351,17 @@ export default function WorkspaceCommunity() {
         }
       })
       if (requestedProgram.current !== program) return
+      const commentUserIds = [...new Set((comments || []).map(c => c.user_id))]
+      const { data: commentProfiles } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', commentUserIds.length ? commentUserIds : [''])
+      if (requestedProgram.current !== program) return
+      const commentProfileMap = new Map((commentProfiles || []).map(p => [p.user_id, p]))
+      const grouped: Record<string, Comment[]> = {}
+      for (const comment of comments || []) {
+        const author = commentProfileMap.get(comment.user_id)
+        const item = { ...comment, author_name: author?.display_name || 'Member', author_avatar: author?.avatar_url || null }
+        ;(grouped[comment.post_id] ||= []).push(item)
+      }
+      setPostComments(grouped)
       setPosts(mapped)
       writeFeedCache(user?.id, program, mapped, localStorage)
     } catch (error) {
@@ -913,8 +916,10 @@ export default function WorkspaceCommunity() {
 
   // Comments functions
   const toggleComments = async (postId: string) => {
-    setThreadPostId(postId)
-    await fetchCommentsForPost(postId)
+    setReplyPostId(postId)
+    setPostToAll(false)
+    setPollEnabled(false)
+    window.setTimeout(() => document.querySelector<HTMLTextAreaElement>('[aria-label="Community message"]')?.focus(), 50)
   }
 
   const fetchCommentsForPost = async (postId: string) => {
@@ -955,14 +960,16 @@ export default function WorkspaceCommunity() {
   }
 
   const handleSubmitComment = async (postId: string) => {
-    const text = commentText[postId]?.trim()
-    const imgFile = commentImageFiles[postId]
-    const audFile = commentAudioFiles[postId]
-    const vidFile = commentVideoFiles[postId]
+    if (isReplying) return
+    const text = [newPost.trim(), postGifUrl].filter(Boolean).join('\n')
+    const imgFile = postImageFile
+    const audFile = postAudioFile
+    const vidFile = postVideoFile
 
     if (!text && !imgFile && !audFile && !vidFile) return
     if (!user?.id) return
 
+    setIsReplying(true)
     try {
       let imageUrl: string | null = null
       let audioUrl: string | null = null
@@ -986,21 +993,23 @@ export default function WorkspaceCommunity() {
       if (error) throw error
 
       // Mention alerts are generated atomically by the saved-reply trigger.
+      setNewPost('')
+      setPostImageFile(null)
+      setPostImagePreview(null)
+      setPostAudioFile(null)
+      setPostVideoFile(null)
+      setPostVideoPreview(null)
+      postVideoUploadRef.current = null
+      setPostGifUrl(null)
+      setReplyPostId(null)
 
-      setCommentText(prev => ({ ...prev, [postId]: '' }))
-      setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
-      setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
-      setCommentVideoFiles(prev => ({ ...prev, [postId]: null }))
-      const commentBox = commentTextareaRefs.current[postId]
-      if (commentBox) {
-        commentBox.style.height = ''
-        commentBox.scrollTop = 0
-      }
       await fetchCommentsForPost(postId)
       fetchPosts() // refresh comment count
     } catch (error) {
       console.error('Error posting comment:', error)
-      toast({ title: 'Error', description: 'Failed to post comment.', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Failed to post reply.', variant: 'destructive' })
+    } finally {
+      setIsReplying(false)
     }
   }
 
@@ -1204,10 +1213,17 @@ export default function WorkspaceCommunity() {
     : posts.filter(p => p.category === activeCategory)
   ).filter(p => !blockedIds.has(p.user_id))
    .filter(p => `${p.author_name} ${p.title || ''} ${p.content}`.toLowerCase().includes(messageSearch.toLowerCase())))
-  const latestMessageId = filteredPosts.at(-1)?.id
+  const replyPost = posts.find(post => post.id === replyPostId)
+  const timeline = chronologicalMessages(filteredPosts.flatMap(post => [
+    { ...post, replyParent: null as Post | null },
+    ...(postComments[post.id] || []).filter(comment => !blockedIds.has(comment.user_id)).map(comment => ({
+      ...post, ...comment, title: null, gif_url: null, pinned: false, replyParent: post,
+    })),
+  ]))
+  const latestMessageId = timeline.at(-1)?.id
   const isPhone = typeof window !== 'undefined' && window.innerWidth < 768
-  const renderedPosts = visibleMessageWindow(filteredPosts, isPhone && !showEarlier ? MOBILE_MESSAGE_WINDOW : null)
-  const hiddenEarlierCount = filteredPosts.length - renderedPosts.length
+  const renderedPosts = visibleMessageWindow(timeline, isPhone && !showEarlier ? MOBILE_MESSAGE_WINDOW : null)
+  const hiddenEarlierCount = timeline.length - renderedPosts.length
   const canDeleteSelected = canDeleteSelection(posts, selectedPostIds, user?.id, isAdmin || isOwner)
   const allSelected = filteredPosts.length > 0 && filteredPosts.every(p => selectedPostIds.includes(p.id))
   const toggleSelected = (postId: string) => setSelectedPostIds(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId])
@@ -1234,7 +1250,7 @@ export default function WorkspaceCommunity() {
     if (list && ro) ro.observe(list)
     return () => { scroll.removeEventListener('scroll', onScroll); ro?.disconnect() }
   }, [communityView, loading, program])
-  useEffect(() => { setThreadPostId(null); setShowEarlier(false); setSelectMode(false); setSelectedPostIds([]) }, [program, activeCategory])
+  useEffect(() => { setReplyPostId(null); setShowEarlier(false); setSelectMode(false); setSelectedPostIds([]) }, [program, activeCategory])
 
   const handleTogglePin = async (post: Post) => {
     const newPinned = !post.pinned
@@ -1454,7 +1470,25 @@ export default function WorkspaceCommunity() {
                     <ChevronUp className="h-3.5 w-3.5 mr-1" />Show {hiddenEarlierCount} earlier messages
                   </Button>
                 )}
-                {renderedPosts.map((post, index) => (
+                {renderedPosts.map((post, index) => post.replyParent ? (
+                  <div key={post.id} id={`community-reply-${post.id}`} className="community-message group/comment">
+                    {(index === 0 || new Date(renderedPosts[index - 1].created_at).toDateString() !== new Date(post.created_at).toDateString()) && <p className="community-day-label">{formatPostDate(post.created_at)}</p>}
+                    <ReplyReference author={post.replyParent.author_name} avatar={post.replyParent.author_avatar} content={post.replyParent.title || post.replyParent.content} onClick={() => { setShowEarlier(true); window.setTimeout(() => document.getElementById(`community-post-${post.replyParent?.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) }} />
+                    <div className="community-message-row">
+                      <Avatar className="community-message-avatar shrink-0">{post.author_avatar && <AvatarImage src={post.author_avatar} />}<AvatarFallback className="bg-muted text-muted-foreground">{getInitials(post.author_name)}</AvatarFallback></Avatar>
+                      <div className="community-bubble min-w-0 flex-1">
+                        <div className="community-author flex flex-wrap items-center gap-2"><span className="font-semibold text-sm">{post.author_name}</span><span className="community-message-time">{new Date(post.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                          {(post.user_id === user?.id || isAdmin || isOwner) && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" aria-label={`Delete reply from ${post.author_name}`} onClick={async () => { const { error } = await supabase.from('community_comments').delete().eq('id', post.id); if (error) { toast({ title: 'Could not delete reply', variant: 'destructive' }); return } await fetchPosts() }}><X className="h-3 w-3" /></Button>}
+                        </div>
+                        {post.content && <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{renderContentWithMentions(post.content, post.author_name)}</p>}
+                        {post.image_url && <img src={post.image_url} alt="Reply attachment" className="mt-2 max-h-60 rounded object-contain" />}
+                        {post.video_url && <video src={post.video_url} controls className="mt-2 max-h-60 w-full rounded" />}
+                        {post.audio_url && <audio src={post.audio_url} controls className="mt-2 w-full" />}
+                        <CommentReactions commentId={post.id} userId={user?.id} />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                   <div key={post.id}>
                     {(index === 0 || new Date(renderedPosts[index - 1].created_at).toDateString() !== new Date(post.created_at).toDateString()) && <p className="community-day-label">{new Date(post.created_at).toDateString() === new Date().toDateString() ? 'Today' : formatPostDate(post.created_at)}</p>}
                   <Card id={`community-post-${post.id}`} className={`community-message ${post.user_id === user?.id ? 'community-message-own' : ''} ${selectMode && selectedPostIds.includes(post.id) ? 'community-message-selected' : ''}`}
@@ -1648,9 +1682,9 @@ export default function WorkspaceCommunity() {
                               <ThumbsUp className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
                               {post.likes_count > 0 && post.likes_count}
                             </button>
-                            <Button variant="ghost" size="sm" onClick={() => toggleComments(post.id)} className="h-7 px-1 gap-1.5 text-xs" aria-label={`Open thread for ${post.title || post.author_name}`}>
+                            <Button variant="ghost" size="sm" onClick={() => toggleComments(post.id)} className="h-7 px-1 gap-1.5 text-xs" aria-label={`Reply to ${post.title || post.author_name}`}>
                               <MessageCircle className="h-4 w-4" />
-                              {post.comments_count > 0 ? `${post.comments_count} replies` : 'Thread'}
+                              Reply
                             </Button>
                             <PostViewers postId={post.id} userId={user?.id} canSeeViewers={isAdmin || isOwner} />
                           </div>
@@ -1667,7 +1701,7 @@ export default function WorkspaceCommunity() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onSelect={() => {
                                 toggleComments(post.id)
-                                window.setTimeout(() => commentTextareaRefs.current[post.id]?.focus(), 350)
+                                
                               }}><MessageCircle className="h-3.5 w-3.5 mr-2" />Reply</DropdownMenuItem>
                               <DropdownMenuItem onSelect={() => startSelecting(post.id)}><ListChecks className="h-3.5 w-3.5 mr-2" />Select</DropdownMenuItem>
                               {(isAdmin || isOwner) && (
@@ -1729,7 +1763,8 @@ export default function WorkspaceCommunity() {
               {pollEnabled && <PollDraftEditor question={pollQuestion} options={pollOptions} onChange={(q,o) => { setPollQuestion(q); setPollOptions(o) }} onRemove={() => setPollEnabled(false)} />}
               <div className="flex gap-2 flex-wrap">{postImagePreview && <div className="relative"><img src={postImagePreview} alt="Photo preview" className="h-20 rounded object-cover" /><Button variant="ghost" size="icon" aria-label="Remove photo" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => { setPostImageFile(null); setPostImagePreview(null) }}><X /></Button></div>}{postVideoPreview && <div className="relative"><video src={postVideoPreview} className="h-20 rounded" /><Button variant="ghost" size="icon" aria-label="Remove video" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }}><X /></Button></div>}{postGifUrl && <div className="relative"><img src={postGifUrl} alt="GIF preview" className="h-20 rounded" /><Button variant="ghost" size="icon" aria-label="Remove GIF" className="absolute top-0 right-0 h-6 w-6 bg-card" onClick={() => setPostGifUrl(null)}><X /></Button></div>}{postAudioFile && <Button variant="ghost" size="sm" onClick={() => setPostAudioFile(null)}><Mic />{postAudioFile.name}<X /></Button>}</div>
             </div>}
-            <form className="community-composer" onSubmit={e => { e.preventDefault(); handleCreatePost() }}>
+            {replyPost && <div className="flex items-center gap-2 border-t border-border px-4 py-2"><div className="min-w-0 flex-1"><ReplyReference author={replyPost.author_name} avatar={replyPost.author_avatar} content={replyPost.title || replyPost.content} /></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Cancel reply" onClick={() => setReplyPostId(null)}><X className="h-4 w-4" /></Button></div>}
+            <form className="community-composer" onSubmit={e => { e.preventDefault(); if (replyPost) handleSubmitComment(replyPost.id); else handleCreatePost() }}>
               <Popover open={postOptionsOpen} onOpenChange={setPostOptionsOpen}>
                 <PopoverTrigger asChild><Button type="button" variant="ghost" size="icon" className="rounded-full bg-muted shrink-0" title="Posting options" aria-label="Posting options"><Plus /></Button></PopoverTrigger>
                 <PopoverContent side="top" align="start" className="w-72 max-w-[calc(100vw-2rem)] p-3" aria-label="Posting options">
@@ -1739,14 +1774,14 @@ export default function WorkspaceCommunity() {
                     <Button type="button" variant="ghost" size="icon" title="Record audio" aria-label="Record audio" onClick={isRecording ? stopRecording : startRecording}>{isRecording ? <MicOff /> : <Mic />}</Button>
                     <EmojiButton onPick={e => setNewPost(prev => prev + e)} />
                     <GifButton onPick={url => setPostGifUrl(url)} />
-                    <Button type="button" variant="ghost" size="icon" title="Add poll" aria-label="Add poll" onClick={() => { setPollEnabled(v => !v); setPostOptionsOpen(false) }}><ListChecks /></Button>
+                    <Button type="button" variant="ghost" size="icon" title="Add poll" aria-label="Add poll" disabled={!!replyPost} onClick={() => { setPollEnabled(v => !v); setPostOptionsOpen(false) }}><ListChecks /></Button>
                   </div>
-                  {(isAdmin || isOwner) && <div className="space-y-2"><Label className="text-xs">Post to all communities</Label><Select value={postToAll ? 'all' : 'none'} onValueChange={v => setPostToAll(v === 'all')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">This community only</SelectItem><SelectItem value="all">All communities</SelectItem></SelectContent></Select></div>}
-                  {isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
+                  {!replyPost && (isAdmin || isOwner) && <div className="space-y-2"><Label className="text-xs">Post to all communities</Label><Select value={postToAll ? 'all' : 'none'} onValueChange={v => setPostToAll(v === 'all')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">This community only</SelectItem><SelectItem value="all">All communities</SelectItem></SelectContent></Select></div>}
+                  {!replyPost && isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
                 </PopoverContent>
               </Popover>
-            <div className="community-composer-field"><Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge><MentionTextarea program={program} rows={1} aria-label="Community message" placeholder={`Message ${activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}`} value={newPost} onChange={setNewPost} className="h-10 min-h-10 max-h-32 resize-none min-w-0 flex-1 border-0 bg-transparent px-1 py-2.5 text-sm leading-5 focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
-              <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label="Send message" disabled={isPosting || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
+            <div className="community-composer-field"><Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge><MentionTextarea program={program} rows={1} aria-label="Community message" placeholder={replyPost ? `Reply to ${replyPost.author_name}` : `Message ${activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}`} value={newPost} onChange={setNewPost} className="h-10 min-h-10 max-h-32 resize-none min-w-0 flex-1 border-0 bg-transparent px-1 py-2.5 text-sm leading-5 focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+              <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label={replyPost ? 'Send reply' : 'Send message'} disabled={isPosting || isReplying || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
             </form>
           </div>}
           </div>
@@ -1758,151 +1793,6 @@ export default function WorkspaceCommunity() {
             <section><CommunityMembersList program={program} compact /></section>
           </aside>
         </div>
-
-      <Sheet open={!!threadPostId} onOpenChange={open => { if (!open) setThreadPostId(null) }}>
-        <SheetContent side="right" className="community-thread-panel sm:max-w-[440px]" onOpenAutoFocus={e => e.preventDefault()}>
-          <SheetHeader className="border-b border-border p-5 text-left">
-            <SheetTitle className="text-base">Thread</SheetTitle>
-            <SheetDescription className="sr-only">Replies to the selected community message</SheetDescription>
-          </SheetHeader>
-          {posts.filter(post => post.id === threadPostId).map(post => <div key={post.id} className="community-thread-content">
-            <div id={`thread-original-${post.id}`} className="community-thread-original"><div className="flex items-center gap-2"><Avatar className="h-8 w-8 shrink-0">{post.author_avatar && <AvatarImage src={post.author_avatar} />}<AvatarFallback className="bg-muted text-muted-foreground text-xs">{getInitials(post.author_name)}</AvatarFallback></Avatar><p className="text-sm font-semibold">{post.author_name}</p></div>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}{post.video_url && renderVideoEmbed(post.video_url)}{post.audio_url && <audio controls src={post.audio_url} className="mt-2 w-full" />}</div>
-<div className="mt-3 pt-3 border-t border-border/30 space-y-3">
-                              {/* Existing comments */}
-                              {(postComments[post.id] || []).map(comment => (
-                                <div key={comment.id} className="community-thread-reply group/comment">
-                                  <ReplyReference author={post.author_name} avatar={post.author_avatar} content={post.title || post.content} onClick={() => document.getElementById(`thread-original-${post.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-                                  <div className="flex items-start gap-3">
-                                  <Avatar className="h-7 w-7 flex-shrink-0">
-                                    {comment.author_avatar && <AvatarImage src={comment.author_avatar} />}
-                                    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-                                      {getInitials(comment.author_name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="community-thread-reply-body">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-xs font-semibold">{comment.author_name}</span>
-                                        <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
-                                        {(comment.user_id === user?.id || isAdmin || isOwner) && (
-                                          <button
-                                            onClick={async () => {
-                                              try {
-                                                await supabase.from('community_comments').delete().eq('id', comment.id)
-                                                fetchCommentsForPost(post.id)
-                                                toast({ title: 'Comment deleted' })
-                                              } catch {
-                                                toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' })
-                                              }
-                                            }}
-                                            className="opacity-0 group-hover/comment:opacity-100 text-destructive hover:text-destructive/80 transition-opacity"
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </button>
-                                        )}
-                                      </div>
-                                      {comment.content && (
-                                        <p className="text-sm mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
-                                          {renderContentWithMentions(comment.content, comment.author_name)}
-                                        </p>
-                                      )}
-                                      {comment.image_url && (
-                                        <img src={comment.image_url} alt="" className="rounded mt-2 max-h-40 object-cover" />
-                                      )}
-                                      {comment.video_url && (
-                                        <video src={comment.video_url} controls className="rounded mt-2 max-h-40 w-full" />
-                                      )}
-                                      {comment.audio_url && (
-                                        <audio src={comment.audio_url} controls className="mt-2 w-full h-8" />
-                                      )}
-                                    </div>
-                                    <CommentReactions commentId={comment.id} userId={user?.id} />
-                                  </div>
-                                  </div>
-                                </div>
-                              ))}
-
-                              {/* Comment input */}
-                              <div className="flex items-start gap-2">
-                                <Avatar className="h-7 w-7 flex-shrink-0">
-                                  {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                    {getInitials(profile?.display_name || 'U')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 space-y-1.5">
-                                  <div className="flex gap-1.5">
-                                    <MentionTextarea
-                                      ref={(el) => { commentTextareaRefs.current[post.id] = el }}
-                                      placeholder="Reply in thread..."
-                                      value={commentText[post.id] || ''}
-                                      onChange={(v) => {
-                                        setCommentText(prev => ({ ...prev, [post.id]: v }))
-                                      }}
-                                      program={program}
-                                      rows={1}
-                                      className="min-h-[36px] max-h-[300px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-y-auto"
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                          e.preventDefault()
-                                          handleSubmitComment(post.id)
-                                        }
-                                      }}
-                                    />
-                                    <Button aria-label="Send reply" size="sm" className="h-9 px-2 self-end" onClick={() => handleSubmitComment(post.id)}>
-                                      <Send className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <input 
-                                      ref={(el) => { commentImageRefs.current[post.id] = el }} 
-                                      type="file" accept="image/*" className="hidden" 
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0]
-                                        if (file) setCommentImageFiles(prev => ({ ...prev, [post.id]: file }))
-                                      }} 
-                                    />
-                                    <input 
-                                      ref={(el) => { commentVideoRefs.current[post.id] = el }} 
-                                      type="file" accept="video/*" className="hidden" 
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0]
-                                        if (file) setCommentVideoFiles(prev => ({ ...prev, [post.id]: file }))
-                                      }} 
-                                    />
-                                    <input 
-                                      ref={(el) => { commentAudioRefs.current[post.id] = el }} 
-                                      type="file" accept="audio/*" className="hidden" 
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0]
-                                        if (file) setCommentAudioFiles(prev => ({ ...prev, [post.id]: file }))
-                                      }} 
-                                    />
-                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentImageRefs.current[post.id]?.click()}>
-                                      <Image className="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentVideoRefs.current[post.id]?.click()}>
-                                      <Video className="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentAudioRefs.current[post.id]?.click()}>
-                                      <Mic className="h-3 w-3" />
-                                    </Button>
-                                    {commentImageFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">Photo attached</span>
-                                    )}
-                                    {commentVideoFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">Video attached</span>
-                                    )}
-                                    {commentAudioFiles[post.id] && (
-                                      <span className="text-[10px] text-muted-foreground">Audio attached</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-          </div>)}
-        </SheetContent>
-      </Sheet>
 
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
