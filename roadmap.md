@@ -2,7 +2,7 @@
 
 ## Minimal message headings
 - [x] Add a compact heading icon to the shared message editor and render headings in posts and replies
-- [ ] Verify editor formatting and desktop/phone presentation
+- [x] Verify sample desktop/phone heading formatting, saved text round-trip, heading removal, and 9 community tests; preview build OK
 - [ ] Verify real-account saving: external unmanaged authentication prevents signed-in checks
 
 ## Inline Discord replies
