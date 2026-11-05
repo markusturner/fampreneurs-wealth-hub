@@ -220,7 +220,7 @@ export function PostRichEditor({
     if (!editor) return
     const current = htmlToMarkdown(editor.getHTML())
     if (current !== value || (!value && !editor.isEmpty)) {
-      editor.commands.setContent(markdownToHtml(value), false)
+      editor.commands.setContent(markdownToHtml(value), { emitUpdate: false })
       if (!value) {
         editor.commands.unsetAllMarks()
         setBubble(null)
