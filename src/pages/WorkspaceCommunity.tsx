@@ -1106,7 +1106,7 @@ export default function WorkspaceCommunity() {
       if (isLegacyMember || isSelfTag) {
         const rest = isLegacyMember ? name.slice('member'.length) : ''
         parts.push(
-          <strong key={match.index} className="font-bold text-secondary">
+          <strong key={match.index} className="font-bold text-accent">
             @{viewerName}
           </strong>
         )
@@ -1117,7 +1117,7 @@ export default function WorkspaceCommunity() {
 
 
       parts.push(
-        <strong key={match.index} className="font-bold text-secondary">
+        <strong key={match.index} className="font-bold text-accent">
           @{name}
         </strong>
       )
