@@ -27,6 +27,7 @@
 - Mobile Welcome redirects through the shared mobile-entry helper after account setup checks; keep VIP and software-only destinations separate to preserve access restrictions.
 
 ## Community presentation
+- Community message composition and editing share PostRichEditor with Markdown heading round-tripping; this keeps formatting visible while preserving existing post and comment storage.
 - Community composers share a membership-scoped mention picker; post and reply triggers resolve tagged recipients atomically so client failures cannot drop or duplicate alerts.
 - Published update alerts enter through a Standard Webhooks-verified Lovable event receiver with a service-only event ledger; never send release alerts from development edits or browser startup.
 - Community posting uses the open category as the destination, with fixed category labels and no composer category picker; All remains the combined feed with the existing default posting behavior, and server-side membership selection scopes alerts to the community.

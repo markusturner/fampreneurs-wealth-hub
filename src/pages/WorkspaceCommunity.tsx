@@ -7,7 +7,6 @@ import { PollDisplay } from '@/components/community/PollDisplay'
 import { CommunityViewToggle, useCommunityView } from '@/components/community/CommunityViewToggle'
 import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
 import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
-import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { PostRichEditor } from '@/components/community/PostRichEditor'
 import { chronologicalMessages } from '@/lib/community-message-order'
 import { postingCategory } from '@/lib/community-posting'
@@ -1132,6 +1131,16 @@ export default function WorkspaceCommunity() {
     return parts.length > 0 ? parts : linkifyText(content, 'all')
   }
 
+  const renderMessageContent = (content: string, authorName?: string): React.ReactNode => {
+    if (!/^##\s+/m.test(content)) return renderContentWithMentions(content, authorName)
+    return content.split('\n').map((line, index) => {
+      const heading = line.match(/^##\s+(.*)$/)
+      return heading
+        ? <h2 key={index} className="text-base font-semibold leading-snug mt-2 mb-1 first:mt-0">{renderContentWithMentions(heading[1], authorName)}</h2>
+        : <div key={index} className="min-h-5">{renderContentWithMentions(line, authorName)}</div>
+    })
+  }
+
   const isEmbeddableVideoUrl = (url: string): boolean => {
     if (!url) return false
     return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm|fathom\.video\/share|fathom\.video\/calls|fathom\.video\/embed|fathom\.fm\/share|fathom\.fm\/calls|fathom\.fm\/embed/.test(url)
@@ -1480,7 +1489,7 @@ export default function WorkspaceCommunity() {
                         <div className="community-author flex flex-wrap items-center gap-2"><span className="font-semibold text-sm">{post.author_name}</span><span className="community-message-time">{new Date(post.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
                           {(post.user_id === user?.id || isAdmin || isOwner) && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" aria-label={`Delete reply from ${post.author_name}`} onClick={async () => { const { error } = await supabase.from('community_comments').delete().eq('id', post.id); if (error) { toast({ title: 'Could not delete reply', variant: 'destructive' }); return } await fetchPosts() }}><X className="h-3 w-3" /></Button>}
                         </div>
-                        {post.content && <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{renderContentWithMentions(post.content, post.author_name)}</p>}
+                        {post.content && <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">{renderMessageContent(post.content, post.author_name)}</div>}
                         {post.image_url && <img src={post.image_url} alt="Reply attachment" className="mt-2 max-h-60 rounded object-contain" />}
                         {post.video_url && <video src={post.video_url} controls className="mt-2 max-h-60 w-full rounded" />}
                         {post.audio_url && <audio src={post.audio_url} controls className="mt-2 w-full" />}
@@ -1627,9 +1636,9 @@ export default function WorkspaceCommunity() {
                                     <h3 className="text-base font-semibold leading-snug mb-1">{post.title}</h3>
                                   )}
                                   {post.content && (
-                                    <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
-                                      {renderContentWithMentions(post.content, post.author_name)}
-                                    </p>
+                                    <div className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
+                                      {renderMessageContent(post.content, post.author_name)}
+                                    </div>
                                   )}
                                   {post.content && !isWin && (lineCount > 3 || post.content.length > 280) && (
                                     <button
@@ -1780,7 +1789,7 @@ export default function WorkspaceCommunity() {
                   {!replyPost && isOwner && <div className="mt-3 space-y-2"><Label className="text-xs">Post date</Label><Select value={useCustomDateTime ? 'custom' : 'now'} onValueChange={v => setUseCustomDateTime(v === 'custom')}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="now">Now</SelectItem><SelectItem value="custom">Custom date & time</SelectItem></SelectContent></Select>{useCustomDateTime && <div className="flex gap-2"><Input aria-label="Post date" type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 min-w-0 text-xs" /><Input aria-label="Post time" type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 w-24 text-xs" /></div>}</div>}
                 </PopoverContent>
               </Popover>
-            <div className="community-composer-field"><Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge><MentionTextarea program={program} rows={1} aria-label="Community message" placeholder={replyPost ? `Reply to ${replyPost.author_name}` : `Message ${activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}`} value={newPost} onChange={setNewPost} className="h-10 min-h-10 max-h-32 resize-none min-w-0 flex-1 border-0 bg-transparent px-1 py-2.5 text-sm leading-5 focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
+            <div className="community-composer-field"><Badge className={`community-message-tag category-${activeCategory}${toneOf(activeCategory)} shrink-0 border-0 text-[11px]`}>{activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}</Badge><PostRichEditor compact program={program} minHeight="24px" placeholder={replyPost ? `Reply to ${replyPost.author_name}` : `Message ${activeCategory === 'all' ? 'All' : categories.find(c => c.value === activeCategory)?.label || activeCategory}`} value={newPost} onChange={setNewPost} className="min-w-0 flex-1" /></div>
               <Button type="submit" size="icon" className="shrink-0 rounded-full bg-sidebar text-sidebar-foreground hover:bg-accent" aria-label={replyPost ? 'Send reply' : 'Send message'} disabled={isPosting || isReplying || (!newPost.trim() && !postImageFile && !postVideoFile && !postAudioFile && !postGifUrl && !(pollEnabled && pollQuestion.trim()))}><ArrowUp /></Button>
             </form>
           </div>}

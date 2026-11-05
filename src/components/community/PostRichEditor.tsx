@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
-import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered } from 'lucide-react'
+import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Heading2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { loadMentionMembers, mentionOptions, type MemberOption } from '@/lib/community-mentions'
@@ -29,7 +29,11 @@ export function markdownToHtml(md: string): string {
   for (const line of lines) {
     const bullet = line.match(/^\s*•\s+(.*)$/)
     const num = line.match(/^\s*\d+\.\s+(.*)$/)
-    if (bullet) {
+    const heading = line.match(/^##\s+(.*)$/)
+    if (heading) {
+      close()
+      out.push(`<h2>${inline(heading[1])}</h2>`)
+    } else if (bullet) {
       if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul' }
       out.push(`<li><p>${inline(bullet[1])}</p></li>`)
     } else if (num) {
@@ -62,6 +66,8 @@ function nodeToMarkdown(node: ChildNode): string {
       return '\n'
     case 'P':
       return kids
+    case 'H2':
+      return `## ${kids}`
     default:
       return kids
   }
@@ -95,10 +101,11 @@ interface Props {
   className?: string
   minHeight?: string
   autoFocus?: boolean
+  compact?: boolean
 }
 
 export function PostRichEditor({
-  value, onChange, placeholder = 'Write something...', program = '', className = '', minHeight = '120px', autoFocus,
+  value, onChange, placeholder = 'Write something...', program = '', className = '', minHeight = '120px', autoFocus, compact = false,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const skipSync = useRef(false)
@@ -119,7 +126,7 @@ export function PostRichEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: false, codeBlock: false, blockquote: false, horizontalRule: false }),
+      StarterKit.configure({ heading: { levels: [2] }, codeBlock: false, blockquote: false, horizontalRule: false }),
       Underline,
       Placeholder.configure({ placeholder }),
     ],
@@ -127,7 +134,10 @@ export function PostRichEditor({
     autofocus: autoFocus,
     editorProps: {
       attributes: {
-        class: `focus:outline-none text-sm leading-relaxed [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_p]:my-0.5`,
+        class: `focus:outline-none text-sm leading-relaxed break-words [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_p]:my-0.5 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:my-1`,
+        'aria-label': compact ? 'Community message' : 'Edit message',
+        role: 'textbox',
+        'aria-multiline': 'true',
         style: `min-height:${minHeight}`,
       },
     },
@@ -207,7 +217,10 @@ export function PostRichEditor({
 
   return (
     <div ref={wrapRef} className={`relative ${className}`}>
-      <EditorContent editor={editor} />
+      <div className={compact ? 'flex items-start gap-1' : ''}>
+        <EditorContent editor={editor} className={compact ? 'min-w-0 flex-1 max-h-32 overflow-y-auto px-1 py-2' : ''} />
+        <Button type="button" variant="ghost" size="icon" title="Heading" aria-label="Heading" aria-pressed={editor.isActive('heading', { level: 2 })} className={`${btn(editor.isActive('heading', { level: 2 }))} shrink-0 ${compact ? 'mt-1.5' : 'mt-1'}`} onPointerDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5" /></Button>
+      </div>
 
       {bubble && (
         <div
