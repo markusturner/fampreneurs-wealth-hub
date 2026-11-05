@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.sync_partner_extension() FROM PUBLIC, anon, authenticated;
