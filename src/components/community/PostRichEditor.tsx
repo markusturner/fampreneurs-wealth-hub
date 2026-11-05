@@ -270,7 +270,7 @@ export function PostRichEditor({
     <div ref={wrapRef} className={`relative ${className}`}>
       <div className={compact ? 'flex items-start gap-1' : ''}>
         <EditorContent editor={editor} className={compact ? 'min-w-0 flex-1 max-h-32 overflow-y-auto px-1 py-2' : ''} />
-        <Button type="button" variant="ghost" size="icon" title={hasHeading && !headingActive ? 'One heading per message' : 'Heading'} aria-label="Heading" aria-pressed={headingActive} disabled={hasHeading && !headingActive} className={`h-7 w-7 rounded-md shrink-0 transition-colors ${headingActive ? 'bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'} ${compact ? 'mt-1.5' : 'mt-1'}`} onPointerDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5" /></Button>
+        <Button type="button" variant="ghost" size="icon" title={hasHeading && !headingActive ? 'One heading per message' : 'Heading'} aria-label="Heading" aria-pressed={headingActive} disabled={hasHeading && !headingActive} className={`h-7 w-7 rounded-md shrink-0 transition-colors ${headingActive ? 'bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'} ${compact ? 'mt-1.5' : 'mt-1'}`} onPointerDown={e => e.preventDefault()} onClick={toggleSingleHeading}><Heading2 className="h-3.5 w-3.5" /></Button>
       </div>
 
       {bubble && (
