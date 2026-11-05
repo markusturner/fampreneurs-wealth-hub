@@ -1,5 +1,10 @@
 # Roadmap
 
+## Inline Discord replies
+- [ ] Display existing and new replies chronologically in the main chat with original-message references
+- [ ] Use the main composer for replies without opening a thread window
+- [ ] Verify desktop and phone reply presentation and submission
+
 ## Discord replies and Recordings layout
 - [x] Show original-message connector, avatar, author and excerpt above thread replies while keeping existing comment handling
 - [x] Give only the Recordings category a white, left-aligned, bubble-free feed with inline names and times

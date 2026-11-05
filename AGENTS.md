@@ -32,8 +32,8 @@
 - Community posting uses the open category as the destination, with fixed category labels and no composer category picker; All remains the combined feed with the existing default posting behavior, and server-side membership selection scopes alerts to the community.
 - Community feeds render from a per-user cached copy first and refresh in the background; phones render the newest window first. Why: opening a community must feel instant without changing post data.
 - Workspace communities share a full-height message shell with category navigation and a docked composer; reuse existing post handlers and event/leaderboard compact views so presentation does not fork community data.
-- Community reply threads reuse the existing comment state and handlers in a separate sheet, and message order uses the shared chronological helper to keep all category feeds consistent.
-- Discord reply references use a shared presentation component pointing to the existing parent post; the Recordings-only list modifier changes layout without forking posting or comment storage.
+- Community replies remain in community_comments and render chronologically alongside posts using the main composer; this preserves existing replies and notification triggers without separate thread windows.
+- Discord reply references use the shared presentation component pointing to the existing parent post across category feeds; presentation never duplicates stored posts or comments.
 
 ## Markus knowledge ingestion
 - Store incremental source content separately from persona uploads and retrieve bounded, approved excerpts through a service-role-only search function; this preserves existing knowledge without growing every chat prompt indefinitely.
