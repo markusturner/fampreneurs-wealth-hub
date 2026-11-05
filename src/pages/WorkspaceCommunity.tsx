@@ -277,14 +277,6 @@ export default function WorkspaceCommunity() {
   }
   const messageScrollRef = useRef<HTMLDivElement>(null)
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
-  const [commentText, setCommentText] = useState<Record<string, string>>({})
-  const [commentImageFiles, setCommentImageFiles] = useState<Record<string, File | null>>({})
-  const [commentAudioFiles, setCommentAudioFiles] = useState<Record<string, File | null>>({})
-  const [commentVideoFiles, setCommentVideoFiles] = useState<Record<string, File | null>>({})
-  const commentImageRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
@@ -1011,15 +1003,6 @@ export default function WorkspaceCommunity() {
       setPostGifUrl(null)
       setReplyPostId(null)
 
-      setCommentText(prev => ({ ...prev, [postId]: '' }))
-      setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
-      setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
-      setCommentVideoFiles(prev => ({ ...prev, [postId]: null }))
-      const commentBox = commentTextareaRefs.current[postId]
-      if (commentBox) {
-        commentBox.style.height = ''
-        commentBox.scrollTop = 0
-      }
       await fetchCommentsForPost(postId)
       fetchPosts() // refresh comment count
     } catch (error) {
@@ -1267,7 +1250,7 @@ export default function WorkspaceCommunity() {
     if (list && ro) ro.observe(list)
     return () => { scroll.removeEventListener('scroll', onScroll); ro?.disconnect() }
   }, [communityView, loading, program])
-  useEffect(() => { setThreadPostId(null); setShowEarlier(false); setSelectMode(false); setSelectedPostIds([]) }, [program, activeCategory])
+  useEffect(() => { setReplyPostId(null); setShowEarlier(false); setSelectMode(false); setSelectedPostIds([]) }, [program, activeCategory])
 
   const handleTogglePin = async (post: Post) => {
     const newPinned = !post.pinned
