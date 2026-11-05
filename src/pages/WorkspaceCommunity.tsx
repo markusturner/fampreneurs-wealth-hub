@@ -61,6 +61,7 @@ import {
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
 import { CommentReactions } from '@/components/community/CommentReactions'
+import { ReplyReference } from '@/components/community/ReplyReference'
 import { PostViewers } from '@/components/community/PostViewers'
 import { AIChat } from '@/components/dashboard/ai-chat'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
@@ -1421,7 +1422,7 @@ export default function WorkspaceCommunity() {
             )}
 
             {/* Feed */}
-            <div className="community-message-list">
+            <div className={`community-message-list ${activeCategory === 'recordings' ? 'community-recordings-list' : ''}`}>
               {loading ? (
                 [1, 2, 3].map(i => (
                   <Card key={i} className="animate-pulse border-border/50">
@@ -1584,7 +1585,7 @@ export default function WorkspaceCommunity() {
                             (() => {
                               const isExpanded = expandedPosts.has(post.id)
                               const lineCount = (post.content.match(/\n/g) || []).length + 1
-                              const isWin = post.category === 'wins'
+                              const isWin = post.category === 'wins' || activeCategory === 'recordings'
                               const shouldClamp = !isWin && !isExpanded && (lineCount > 3 || post.content.length > 280)
                               return (
                                 <div className="mt-2">
@@ -1765,11 +1766,13 @@ export default function WorkspaceCommunity() {
             <SheetDescription className="sr-only">Replies to the selected community message</SheetDescription>
           </SheetHeader>
           {posts.filter(post => post.id === threadPostId).map(post => <div key={post.id} className="community-thread-content">
-            <div className="mb-5 border-l-2 border-accent bg-muted/50 rounded-r-md p-3"><p className="text-[11px] text-muted-foreground mb-1">Replying to</p><p className="text-xs font-semibold">{post.author_name}</p>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}{post.video_url && renderVideoEmbed(post.video_url)}{post.audio_url && <audio controls src={post.audio_url} className="mt-2 w-full" />}</div>
+            <div id={`thread-original-${post.id}`} className="community-thread-original"><div className="flex items-center gap-2"><Avatar className="h-8 w-8 shrink-0">{post.author_avatar && <AvatarImage src={post.author_avatar} />}<AvatarFallback className="bg-muted text-muted-foreground text-xs">{getInitials(post.author_name)}</AvatarFallback></Avatar><p className="text-sm font-semibold">{post.author_name}</p></div>{post.title && <p className="mt-2 text-sm font-semibold">{post.title}</p>}<div className="prose prose-sm mt-2 max-w-none text-foreground break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />{post.image_url && <img src={post.image_url} alt="Original post attachment" className="mt-3 max-h-48 rounded object-contain" />}{post.video_url && renderVideoEmbed(post.video_url)}{post.audio_url && <audio controls src={post.audio_url} className="mt-2 w-full" />}</div>
 <div className="mt-3 pt-3 border-t border-border/30 space-y-3">
                               {/* Existing comments */}
                               {(postComments[post.id] || []).map(comment => (
-                                <div key={comment.id} className="flex items-start gap-2 group/comment">
+                                <div key={comment.id} className="community-thread-reply group/comment">
+                                  <ReplyReference author={post.author_name} avatar={post.author_avatar} content={post.title || post.content} onClick={() => document.getElementById(`thread-original-${post.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+                                  <div className="flex items-start gap-3">
                                   <Avatar className="h-7 w-7 flex-shrink-0">
                                     {comment.author_avatar && <AvatarImage src={comment.author_avatar} />}
                                     <AvatarFallback className="bg-muted text-muted-foreground text-xs">
@@ -1777,7 +1780,7 @@ export default function WorkspaceCommunity() {
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1 min-w-0">
-                                    <div className="bg-muted/50 rounded-lg px-3 py-2">
+                                    <div className="community-thread-reply-body">
                                       <div className="flex items-center gap-2">
                                         <span className="text-xs font-semibold">{comment.author_name}</span>
                                         <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
@@ -1815,7 +1818,7 @@ export default function WorkspaceCommunity() {
                                     </div>
                                     <CommentReactions commentId={comment.id} userId={user?.id} />
                                   </div>
-
+                                  </div>
                                 </div>
                               ))}
 

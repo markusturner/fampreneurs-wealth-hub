@@ -1,5 +1,10 @@
 # Roadmap
 
+## Discord replies and Recordings layout
+- [x] Show original-message connector, avatar, author and excerpt above thread replies while keeping existing comment handling
+- [x] Give only the Recordings category a white, left-aligned, bubble-free feed with inline names and times
+- [ ] Verify desktop and phone presentation; real-account checks unavailable on the external unmanaged backend
+
 ## Legal compliance
 - [x] Privacy Policy, Terms, Guidelines, Disclaimer, DMCA pages; signup + one-time consent window with 18+ check
 - [x] Privacy settings: message switches, data download, account deletion (with admin-completed fallback)
