@@ -1,6 +1,8 @@
 # Roadmap
 
 ## Minimal message headings
+- [x] Enforce one heading per message across all categories, including shortcuts/paste, and highlight heading mode in gold
+- [x] Fix shared editor clearing after successful posts/replies; sample desktop/phone resets and 10 community tests pass; preview build OK
 - [x] Add a compact heading icon to the shared message editor and render headings in posts and replies
 - [x] Verify sample desktop/phone heading formatting, saved text round-trip, heading removal, and 9 community tests; preview build OK
 - [ ] Verify real-account saving: external unmanaged authentication prevents signed-in checks

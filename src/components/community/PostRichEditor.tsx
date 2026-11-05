@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
+import { Extension } from '@tiptap/core'
+import { Plugin } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -7,6 +9,25 @@ import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Heading2 }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { loadMentionMembers, mentionOptions, type MemberOption } from '@/lib/community-mentions'
+import { extraHeadingPositions } from '@/lib/community-heading-limit'
+
+const SingleHeading = Extension.create({
+  name: 'singleHeading',
+  addProseMirrorPlugins() {
+    return [new Plugin({
+      appendTransaction: (transactions, _oldState, state) => {
+        if (!transactions.some(transaction => transaction.docChanged)) return null
+        const positions: number[] = []
+        state.doc.descendants((node, pos) => { if (node.type.name === 'heading') positions.push(pos) })
+        const extras = extraHeadingPositions(positions)
+        if (!extras.length) return null
+        const transaction = state.tr
+        extras.forEach(pos => transaction.setNodeMarkup(pos, state.schema.nodes.paragraph))
+        return transaction
+      },
+    })]
+  },
+})
 
 /* ---------- markdown <-> html ---------- */
 
@@ -19,6 +40,7 @@ export function markdownToHtml(md: string): string {
   const lines = md.split('\n')
   const out: string[] = []
   let list: 'ul' | 'ol' | null = null
+  let hasHeading = false
   const inline = (t: string) =>
     escapeHtml(t)
       .replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
@@ -30,9 +52,13 @@ export function markdownToHtml(md: string): string {
     const bullet = line.match(/^\s*•\s+(.*)$/)
     const num = line.match(/^\s*\d+\.\s+(.*)$/)
     const heading = line.match(/^##\s+(.*)$/)
-    if (heading) {
+    if (heading && !hasHeading) {
+      hasHeading = true
       close()
       out.push(`<h2>${inline(heading[1])}</h2>`)
+    } else if (heading) {
+      close()
+      out.push(`<p>${inline(heading[1])}</p>`)
     } else if (bullet) {
       if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul' }
       out.push(`<li><p>${inline(bullet[1])}</p></li>`)
@@ -108,7 +134,6 @@ export function PostRichEditor({
   value, onChange, placeholder = 'Write something...', program = '', className = '', minHeight = '120px', autoFocus, compact = false,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null)
-  const skipSync = useRef(false)
   const [bubble, setBubble] = useState<{ top: number; left: number } | null>(null)
   const [, force] = useState(0)
 
@@ -127,6 +152,7 @@ export function PostRichEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2] }, codeBlock: false, blockquote: false, horizontalRule: false }),
+      SingleHeading,
       Underline,
       Placeholder.configure({ placeholder }),
     ],
@@ -142,7 +168,6 @@ export function PostRichEditor({
       },
     },
     onUpdate: ({ editor }) => {
-      skipSync.current = true
       onChange(htmlToMarkdown(editor.getHTML()))
     },
   })
@@ -193,14 +218,23 @@ export function PostRichEditor({
   // sync external value changes (e.g. clearing after post)
   useEffect(() => {
     if (!editor) return
-    if (skipSync.current) { skipSync.current = false; return }
     const current = htmlToMarkdown(editor.getHTML())
-    if (current !== value) editor.commands.setContent(markdownToHtml(value))
+    if (current !== value || (!value && !editor.isEmpty)) {
+      editor.commands.setContent(markdownToHtml(value), { emitUpdate: false })
+      if (!value) {
+        editor.commands.unsetAllMarks()
+        setBubble(null)
+        setMention(null)
+      }
+    }
   }, [editor, value])
 
   if (!editor) return null
 
   const filtered = mention ? mentionOptions(members, mention.query) : []
+  const headingActive = editor.isActive('heading', { level: 2 })
+  let hasHeading = false
+  editor.state.doc.descendants(node => { if (node.type.name === 'heading') hasHeading = true })
 
   const applyMention = (m: MemberOption) => {
     if (!mention) return
@@ -219,7 +253,7 @@ export function PostRichEditor({
     <div ref={wrapRef} className={`relative ${className}`}>
       <div className={compact ? 'flex items-start gap-1' : ''}>
         <EditorContent editor={editor} className={compact ? 'min-w-0 flex-1 max-h-32 overflow-y-auto px-1 py-2' : ''} />
-        <Button type="button" variant="ghost" size="icon" title="Heading" aria-label="Heading" aria-pressed={editor.isActive('heading', { level: 2 })} className={`${btn(editor.isActive('heading', { level: 2 }))} shrink-0 ${compact ? 'mt-1.5' : 'mt-1'}`} onPointerDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5" /></Button>
+        <Button type="button" variant="ghost" size="icon" title={hasHeading && !headingActive ? 'One heading per message' : 'Heading'} aria-label="Heading" aria-pressed={headingActive} disabled={hasHeading && !headingActive} className={`h-7 w-7 rounded-md shrink-0 transition-colors ${headingActive ? 'bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'} ${compact ? 'mt-1.5' : 'mt-1'}`} onPointerDown={e => e.preventDefault()} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5" /></Button>
       </div>
 
       {bubble && (
