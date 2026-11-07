@@ -12,6 +12,7 @@ import { chronologicalMessages } from '@/lib/community-message-order'
 import { postingCategory } from '@/lib/community-posting'
 import { withCoachMarkus, type CommunityCategory } from '@/lib/community-coach'
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -208,6 +209,9 @@ export default function WorkspaceCommunity() {
   const [showEarlier, setShowEarlier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
+  const isMobile = useIsMobile()
+  // On phones Markus AI lives in the bottom bar, not the community tabs.
+  useEffect(() => { if (isMobile && activeCategory === 'coach') setActiveCategory('all') }, [isMobile, activeCategory])
   const [messageSearch, setMessageSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
