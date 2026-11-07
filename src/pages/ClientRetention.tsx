@@ -62,6 +62,7 @@ interface ClientScore {
   is_partner_household?: boolean
   continuity?: boolean
   ai_locked?: boolean
+  invited_at?: string | null
 }
 
 interface PartnerProfile {
@@ -869,13 +870,27 @@ export default function ClientRetention() {
   // but have not signed up and finished onboarding yet. Everyone else keeps
   // their computed stage.
   const TRUHEIRS_PAID_RE = /(continu\w*|renew\w*|paid|pay|pays|paying|join\w*|purchas\w*|bought|signed up for|subscrib\w*)[^.]{0,60}(truheirs|software|subscription|dfo)|(truheirs|software) subscription[^.]{0,40}(paid|renew|continu|active)/i
-  const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
+  const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null; invited_at: string | null }[]>([])
   const [activeUnscored, setActiveUnscored] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
+  // Bumped after inviting (dialog closes) or returning to the tab so new invites show right away
+  const [inviteReloadTick, setInviteReloadTick] = useState(0)
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === "visible") setInviteReloadTick((t) => t + 1) }
+    document.addEventListener("visibilitychange", refresh)
+    window.addEventListener("focus", refresh)
+    return () => {
+      document.removeEventListener("visibilitychange", refresh)
+      window.removeEventListener("focus", refresh)
+    }
+  }, [])
+  useEffect(() => {
+    if (!invitesOpen) setInviteReloadTick((t) => t + 1)
+  }, [invitesOpen])
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
     supabase
       .from("profiles")
-      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name, needs_profile_completion")
+      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name, needs_profile_completion, created_at")
       .eq("needs_profile_completion", true)
       .limit(5000)
       .then(async ({ data }) => {
@@ -907,9 +922,10 @@ export default function ClientRetention() {
             email: p.email || "",
             phone: p.phone ?? null,
             program_name: p.program_name ?? null,
+            invited_at: p.created_at ?? null,
           })))
       })
-  }, [isAdmin, isOwner])
+  }, [isAdmin, isOwner, inviteReloadTick])
 
   const baseDisplayClients = useMemo(() => {
     if (!partnerProfiles.length) return clients
@@ -1009,6 +1025,7 @@ export default function ClientRetention() {
         signals: [{ label: "Login access sent — waiting on signup and onboarding", severity: "info" }],
         arr_value: 0,
         last_active_at: null,
+        invited_at: p.invited_at,
       }))
     placeholders.forEach((p) => knownIds.add(p.user_id))
     // Active clients who finished onboarding but have no health score yet
