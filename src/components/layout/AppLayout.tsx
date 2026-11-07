@@ -185,7 +185,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
-        <header className={`${location.pathname === '/workspace-community' ? 'hidden' : 'md:hidden'} sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50`}>
+        <header className={`${location.pathname === '/workspace-community' || location.pathname === '/markus-ai' ? 'hidden' : 'md:hidden'} sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50`}>
           <div className="flex items-center gap-2">
             <img
               src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
