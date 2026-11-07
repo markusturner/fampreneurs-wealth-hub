@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
-import { Search, Clock, Calendar, Tag, RefreshCw, MessageCircle, Settings, ArrowUpDown, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Clock, Calendar, Tag, RefreshCw, Settings, ArrowUpDown, CheckCircle, XCircle } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
@@ -50,12 +50,6 @@ export default function WorkspaceMembers() {
 
   // Profile dialog
   const [profileMember, setProfileMember] = useState<Member | null>(null)
-
-  // Chat popup state
-  const [chatMember, setChatMember] = useState<Member | null>(null)
-  const [chatMessage, setChatMessage] = useState('')
-  const [chatThread, setChatThread] = useState<Array<{ id: string; sender_id: string; content: string; created_at: string }>>([])
-  const [chatLoading, setChatLoading] = useState(false)
 
   // Membership dialog
   const [membershipMember, setMembershipMember] = useState<Member | null>(null)
@@ -160,70 +154,6 @@ export default function WorkspaceMembers() {
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-
-  const loadChatThread = async (otherUserId: string) => {
-    if (!user) return
-    setChatLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('direct_messages')
-        .select('id, sender_id, content, created_at')
-        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
-        .order('created_at', { ascending: true })
-        .limit(200)
-      if (error) throw error
-      setChatThread(data || [])
-    } catch (err) {
-      console.error('Error loading thread:', err)
-    } finally {
-      setChatLoading(false)
-    }
-  }
-
-  const openChat = (member: Member) => {
-    setChatMember(member)
-    setChatThread([])
-    loadChatThread(member.user_id)
-  }
-
-  const handleSendChat = async () => {
-    if (!chatMessage.trim() || !chatMember || !user) return
-    const content = chatMessage.trim()
-    setChatMessage('')
-    try {
-      const { data, error } = await supabase
-        .from('direct_messages')
-        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content })
-        .select('id, sender_id, content, created_at')
-        .single()
-      if (error) throw error
-      if (data) setChatThread(prev => [...prev, data])
-    } catch (error) {
-      console.error('Error sending message:', error)
-      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' })
-      setChatMessage(content)
-    }
-  }
-
-  // Realtime: append incoming messages from the open chat partner
-  useEffect(() => {
-    if (!chatMember || !user) return
-    const channel = supabase
-      .channel(`chat-popup-${chatMember.user_id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'direct_messages',
-        filter: `receiver_id=eq.${user.id}`,
-      }, (payload) => {
-        const m = payload.new as any
-        if (m.sender_id === chatMember.user_id) {
-          setChatThread(prev => [...prev, { id: m.id, sender_id: m.sender_id, content: m.content, created_at: m.created_at }])
-        }
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [chatMember, user])
 
   const statusCounts = {
     active: members.filter(m => m.status === 'active').length,
@@ -353,10 +283,6 @@ export default function WorkspaceMembers() {
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-sm sm:text-base">{member.display_name || 'Member'}</h3>
                       <div className="flex gap-1 sm:gap-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => openChat(member)}>
-                          <MessageCircle className="h-3 w-3" />
-                          <span className="hidden sm:inline">Chat</span>
-                        </Button>
                         <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => openMembership(member)}>
                           <Settings className="h-3 w-3" />
                           <span className="hidden sm:inline">Membership</span>
@@ -402,76 +328,10 @@ export default function WorkspaceMembers() {
                   <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Joined {formatDate(profileMember.created_at)}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex-1" variant="outline" onClick={() => { const m = profileMember; setProfileMember(null); if (m) openChat(m) }}>
-                    <MessageCircle className="h-4 w-4 mr-2" /> Chat
-                  </Button>
                   <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); openMembership(profileMember) }}>
                     <Settings className="h-4 w-4 mr-2" /> Membership
                   </Button>
                 </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Chat Popup Dialog */}
-      <Dialog open={!!chatMember} onOpenChange={() => setChatMember(null)}>
-        <DialogContent className="max-w-md p-0 gap-0">
-          {chatMember && (
-            <>
-              <div className="flex items-center gap-3 p-4 border-b">
-                <Avatar className="h-10 w-10">
-                  {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
-                  <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm">{chatMember.display_name || 'Member'}</h3>
-                  <p className="text-xs text-muted-foreground">Active {timeAgo(chatMember.created_at)}</p>
-                </div>
-              </div>
-              <div className="h-80 overflow-y-auto px-4 py-3 space-y-2 bg-muted/30">
-                {chatLoading ? (
-                  <p className="text-center text-xs text-muted-foreground py-6">Loading…</p>
-                ) : chatThread.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Avatar className="h-10 w-10 border-2 border-background">
-                        {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                        <AvatarFallback>{getInitials(profile?.display_name || 'U')}</AvatarFallback>
-                      </Avatar>
-                      <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                      <Avatar className="h-10 w-10 border-2 border-background">
-                        {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
-                        <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Say hi to {chatMember.display_name?.split(' ')[0] || 'them'} 👋</p>
-                  </div>
-                ) : (
-                  chatThread.map(msg => {
-                    const mine = msg.sender_id === user?.id
-                    return (
-                      <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${mine ? 'bg-[#ffb500] text-[#290a52]' : 'bg-background border'}`}>
-                          {msg.content}
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-              <div className="flex items-center gap-2 p-3 border-t">
-                <Input
-                  placeholder={`Message ${chatMember.display_name?.split(' ')[0] || 'member'}...`}
-                  value={chatMessage}
-                  onChange={e => setChatMessage(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSendChat()}
-                  className="border-0 bg-transparent focus-visible:ring-0"
-                />
-                <Button size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleSendChat} disabled={!chatMessage.trim()}>
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
               </div>
             </>
           )}

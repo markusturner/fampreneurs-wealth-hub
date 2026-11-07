@@ -69,7 +69,7 @@ export function NotificationBell() {
 
     // Use data-driven link when available
     if (notification.link) {
-      navigate(notification.link)
+      navigate(notification.link.startsWith('/messenger') ? '/workspace-community' : notification.link)
       return
     }
 
@@ -78,8 +78,8 @@ export function NotificationBell() {
       'video_call_started': '/community',
       'family_message': '/community',
       'group_message': '/community',
-      'message': '/messenger',
-      'direct_message': '/messenger',
+      'message': '/workspace-community',
+      'direct_message': '/workspace-community',
       'meeting_scheduled': '/workspace-calendar',
       'meeting_created': '/workspace-calendar',
       'community_post': '/workspace-community',
@@ -93,11 +93,6 @@ export function NotificationBell() {
       'new_member': '/workspace-members',
       'trust_created': '/workspace-community?program=tfv',
       'announcement': '/welcome',
-    }
-
-    if (type === 'message' || type === 'direct_message') {
-      navigate(notification.sender_id ? `/messenger?user=${notification.sender_id}` : '/messenger')
-      return
     }
 
     const route = fallbackRoutes[type]

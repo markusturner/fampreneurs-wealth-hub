@@ -12,6 +12,7 @@ import { chronologicalMessages } from '@/lib/community-message-order'
 import { postingCategory } from '@/lib/community-posting'
 import { withCoachMarkus, type CommunityCategory } from '@/lib/community-coach'
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { readFeedCache, writeFeedCache, visibleMessageWindow, canDeleteSelection, MOBILE_MESSAGE_WINDOW } from '@/lib/community-feed-cache'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -208,6 +209,9 @@ export default function WorkspaceCommunity() {
   const [showEarlier, setShowEarlier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
+  const isMobile = useIsMobile()
+  // On phones Markus AI lives in the bottom bar, not the community tabs.
+  useEffect(() => { if (isMobile && activeCategory === 'coach') setActiveCategory('all') }, [isMobile, activeCategory])
   const [messageSearch, setMessageSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
@@ -1390,7 +1394,7 @@ export default function WorkspaceCommunity() {
   }
   const categoryNav = (mobile = false) => (
     <div className={mobile ? 'community-mobile-categories' : 'community-category-list'}>
-      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
+      {(mobile ? allCategories.filter(cat => cat.value !== 'coach') : allCategories).map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}${toneOf(cat.value)}`} />}{cat.label}
       </Button>)}
     </div>

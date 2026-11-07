@@ -1,7 +1,7 @@
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -35,7 +35,7 @@ import SOPs from "./pages/SOPs";
 import SOPDetail from "./pages/SOPDetail";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
-import Messenger from "./pages/Messenger";
+import MarkusAI from "./pages/MarkusAI";
 import OnboardingSubmissions from "./pages/OnboardingSubmissions";
 
 
@@ -158,7 +158,8 @@ function AppWithNotifications() {
         <Route path="/sops/:sopId" element={<WithLayout><SOPDetail /></WithLayout>} />
         <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
         <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
-        <Route path="/messenger" element={<WithLayout><Messenger /></WithLayout>} />
+        <Route path="/markus-ai" element={<WithLayout><MarkusAI /></WithLayout>} />
+        <Route path="/messenger" element={<Navigate to="/workspace-community" replace />} />
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
         <Route path="/documents" element={<WithLayout><Documents /></WithLayout>} />

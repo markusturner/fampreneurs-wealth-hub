@@ -49,3 +49,6 @@
 - Consent, communication preferences, reports, blocks, DMCA notices, security incidents and privacy requests each have their own table; consent is append-only and versioned by LEGAL_DOCUMENT_VERSION in src/lib/legal.ts. Why: provable, auditable consent history.
 - LegalConsentGate (mounted in main.tsx) is the single place that enforces 18+ and Terms acceptance for all account-creation paths. Why: invites and admin-created accounts skip the signup page.
 - Self-service export/deletion runs through the deployed delete-user function (shared handler in _shared/account-privacy.ts) with a browser export and pending-request fallback. Why: new edge functions on this external project return 404.
+
+## Markus AI mobile page
+- The phone Markus AI page reuses CoachMarkusChat on its own route and the community hides the coach tab only on phones; this keeps one shared private chat history across desktop and mobile.
