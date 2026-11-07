@@ -128,7 +128,6 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Members', path: '/members', requiresSubscription: true },
   { label: 'Community', path: '/workspace-community', requiresSubscription: false },
   { label: 'Classroom', path: '/classroom', requiresSubscription: false },
-  { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
   { label: 'Client Retention', path: '/client-retention', requiresAdmin: true },
