@@ -1321,6 +1321,16 @@ export default function ClientRetention() {
     const q = clientSearch.trim().toLowerCase()
     const pool = q ? displayClients.filter((c) => `${c.full_name} ${c.email ?? ""}`.toLowerCase().includes(q)) : displayClients
     return [...pool].sort((a, b) => {
+      // Fresh invites not yet placed on the board show first, newest on top
+      if (sortField === "custom") {
+        const aNew = !orderIndex.has(a.user_id) && a.invited_at ? new Date(a.invited_at).getTime() : null
+        const bNew = !orderIndex.has(b.user_id) && b.invited_at ? new Date(b.invited_at).getTime() : null
+        if (aNew !== null || bNew !== null) {
+          if (aNew === null) return 1
+          if (bNew === null) return -1
+          if (aNew !== bNew) return bNew - aNew
+        }
+      }
       const av = value(a)
       const bv = value(b)
       const comparison = typeof av === "number" && typeof bv === "number"
