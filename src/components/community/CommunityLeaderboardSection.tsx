@@ -42,7 +42,13 @@ export function CommunityLeaderboardSection({ program, compact }: Props) {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const { rows7: d7, rows30: d30, rowsAll: dAll } = await fetchAllScores(program)
+      let scores: Awaited<ReturnType<typeof fetchAllScores>>
+      try { scores = await fetchAllScores(program) } catch (error) {
+        console.error('[leaderboard] load failed', error)
+        if (!cancelled) setLoading(false)
+        return
+      }
+      const { rows7: d7, rows30: d30, rowsAll: dAll } = scores
       if (cancelled) return
       setRows7(d7); setRows30(d30); setRowsAll(dAll)
       setLoading(false)
@@ -62,7 +68,7 @@ export function CommunityLeaderboardSection({ program, compact }: Props) {
         <p className="text-xs text-muted-foreground">Points come from likes received on posts and comments in this community.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <LeaderboardColumn title="Last 7 days" rows={rows7} />
         <LeaderboardColumn title="Last 30 days" rows={rows30} />
         <LeaderboardColumn title="All time" rows={rowsAll} />
@@ -73,43 +79,46 @@ export function CommunityLeaderboardSection({ program, compact }: Props) {
   )
 }
 
+// Split long id lists so requests stay small and never hit the row cap as communities grow.
+async function selectByIds(table: 'community_comments' | 'community_reactions' | 'community_comment_reactions', columns: string, column: string, ids: string[]): Promise<any[]> {
+  const rows: any[] = []
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100)
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await (supabase.from(table) as any).select(columns).in(column, chunk).range(from, from + 999)
+      if (error) throw error
+      rows.push(...(data || []))
+      if (!data || data.length < 1000) break
+    }
+  }
+  return rows
+}
+
 async function fetchAllScores(program: string): Promise<{ rows7: Row[]; rows30: Row[]; rowsAll: Row[] }> {
   const since7 = subDays(new Date(), 7).getTime()
   const since30 = subDays(new Date(), 30).getTime()
 
-  // Fetch posts, comments in this program in parallel
-  const { data: posts } = await supabase
-    .from('community_posts')
-    .select('id, user_id')
-    .eq('program', program)
-  const postIds = (posts || []).map(p => p.id)
+  const posts: { id: string; user_id: string | null }[] = []
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('community_posts').select('id, user_id').eq('program', program).range(from, from + 999)
+    if (error) throw error
+    posts.push(...(data || []))
+    if (!data || data.length < 1000) break
+  }
+  const postIds = posts.map(p => p.id)
   const postAuthor: Record<string, string> = {}
-  ;(posts || []).forEach(p => { if (p.user_id) postAuthor[p.id] = p.user_id })
+  posts.forEach(p => { if (p.user_id) postAuthor[p.id] = p.user_id })
 
-  let commentAuthor: Record<string, string> = {}
-  let commentIds: string[] = []
-  if (postIds.length) {
-    const { data: comments } = await supabase
-      .from('community_comments')
-      .select('id, user_id, post_id')
-      .in('post_id', postIds)
-    ;(comments || []).forEach(c => {
-      commentIds.push(c.id)
-      if (c.user_id) commentAuthor[c.id] = c.user_id
-    })
-  }
+  const commentAuthor: Record<string, string> = {}
+  const comments = postIds.length ? await selectByIds('community_comments', 'id, user_id', 'post_id', postIds) : []
+  comments.forEach(c => { if (c.user_id) commentAuthor[c.id] = c.user_id })
+  const commentIds = comments.map(c => c.id as string)
 
-  // Fetch ALL reactions once (no date filter), then compute the three windows in JS
-  const promises: Promise<any>[] = []
-  if (postIds.length) {
-    promises.push(Promise.resolve(supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null)))
-  }
-  if (commentIds.length) {
-    promises.push(Promise.resolve(supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null)))
-    promises.push(Promise.resolve(supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds)))
-  }
-
-  const results = await Promise.all(promises)
+  const [postLikes, commentLikes, commentReactionLikes] = await Promise.all([
+    postIds.length ? selectByIds('community_reactions', 'post_id, created_at', 'post_id', postIds) : Promise.resolve([]),
+    commentIds.length ? selectByIds('community_reactions', 'comment_id, created_at', 'comment_id', commentIds) : Promise.resolve([]),
+    commentIds.length ? selectByIds('community_comment_reactions', 'comment_id, created_at', 'comment_id', commentIds) : Promise.resolve([]),
+  ])
 
   const s7 = new Map<string, number>()
   const s30 = new Map<string, number>()
@@ -124,14 +133,9 @@ async function fetchAllScores(program: string): Promise<{ rows7: Row[]; rows30: 
     if (t >= since7) bump(s7, uid)
   }
 
-  let idx = 0
-  if (postIds.length) {
-    ;(results[idx++]?.data || []).forEach((r: any) => addRow(postAuthor[r.post_id], r.created_at))
-  }
-  if (commentIds.length) {
-    ;(results[idx++]?.data || []).forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
-    ;(results[idx++]?.data || []).forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
-  }
+  postLikes.forEach((r: any) => addRow(postAuthor[r.post_id], r.created_at))
+  commentLikes.forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
+  commentReactionLikes.forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
 
   const allIds = Array.from(new Set([...sAll.keys()]))
   if (allIds.length === 0) return { rows7: [], rows30: [], rowsAll: [] }
