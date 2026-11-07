@@ -1397,9 +1397,6 @@ export default function WorkspaceCommunity() {
       {(mobile ? allCategories.filter(cat => cat.value !== 'coach') : allCategories).map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}${toneOf(cat.value)}`} />}{cat.label}
       </Button>)}
-      <Button variant="ghost" onClick={() => setCommunityView('leaderboard')} className={`community-category ${communityView === 'leaderboard' ? 'is-active' : ''}`}>
-        <Trophy className="h-3.5 w-3.5" />Leaderboard
-      </Button>
     </div>
   )
   return (
