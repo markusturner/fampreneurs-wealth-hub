@@ -32,7 +32,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -62,6 +62,7 @@ interface ClientScore {
   is_partner_household?: boolean
   continuity?: boolean
   ai_locked?: boolean
+  invited_at?: string | null
 }
 
 interface PartnerProfile {
@@ -869,13 +870,27 @@ export default function ClientRetention() {
   // but have not signed up and finished onboarding yet. Everyone else keeps
   // their computed stage.
   const TRUHEIRS_PAID_RE = /(continu\w*|renew\w*|paid|pay|pays|paying|join\w*|purchas\w*|bought|signed up for|subscrib\w*)[^.]{0,60}(truheirs|software|subscription|dfo)|(truheirs|software) subscription[^.]{0,40}(paid|renew|continu|active)/i
-  const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
+  const [pendingInvites, setPendingInvites] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null; invited_at: string | null }[]>([])
   const [activeUnscored, setActiveUnscored] = useState<{ id: string; user_id: string; full_name: string; email: string; phone: string | null; program_name: string | null }[]>([])
+  // Bumped after inviting (dialog closes) or returning to the tab so new invites show right away
+  const [inviteReloadTick, setInviteReloadTick] = useState(0)
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === "visible") setInviteReloadTick((t) => t + 1) }
+    document.addEventListener("visibilitychange", refresh)
+    window.addEventListener("focus", refresh)
+    return () => {
+      document.removeEventListener("visibilitychange", refresh)
+      window.removeEventListener("focus", refresh)
+    }
+  }, [])
+  useEffect(() => {
+    if (!invitesOpen) setInviteReloadTick((t) => t + 1)
+  }, [invitesOpen])
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
     supabase
       .from("profiles")
-      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name, needs_profile_completion")
+      .select("id, user_id, email, phone, program_name, skip_onboarding, contract_start_date, first_name, last_name, display_name, needs_profile_completion, created_at")
       .eq("needs_profile_completion", true)
       .limit(5000)
       .then(async ({ data }) => {
@@ -887,7 +902,8 @@ export default function ClientRetention() {
         ]) : [{ data: [] }, { data: [] }] as any
         const done = new Set([...(onb.data ?? []), ...(agr.data ?? [])].map((r: any) => r.user_id))
         // Placeholder "Invited User" profiles never signed up, so only finished onboarding counts
-        const isActive = (p: any) => done.has(p.user_id) || (p.display_name !== "Invited User" && (p.skip_onboarding || p.contract_start_date))
+        // Invites are created with onboarding skipped, so that flag alone never means they signed up
+        const isActive = (p: any) => isActivatedInvite({ finishedOnboarding: done.has(p.user_id), displayName: p.display_name, contractStartDate: p.contract_start_date })
         setActiveUnscored(rows
           .filter(isActive)
           .map((p) => ({
@@ -907,9 +923,10 @@ export default function ClientRetention() {
             email: p.email || "",
             phone: p.phone ?? null,
             program_name: p.program_name ?? null,
+            invited_at: p.created_at ?? null,
           })))
       })
-  }, [isAdmin, isOwner])
+  }, [isAdmin, isOwner, inviteReloadTick])
 
   const baseDisplayClients = useMemo(() => {
     if (!partnerProfiles.length) return clients
@@ -1009,6 +1026,7 @@ export default function ClientRetention() {
         signals: [{ label: "Login access sent — waiting on signup and onboarding", severity: "info" }],
         arr_value: 0,
         last_active_at: null,
+        invited_at: p.invited_at,
       }))
     placeholders.forEach((p) => knownIds.add(p.user_id))
     // Active clients who finished onboarding but have no health score yet
@@ -1304,6 +1322,16 @@ export default function ClientRetention() {
     const q = clientSearch.trim().toLowerCase()
     const pool = q ? displayClients.filter((c) => `${c.full_name} ${c.email ?? ""}`.toLowerCase().includes(q)) : displayClients
     return [...pool].sort((a, b) => {
+      // Fresh invites not yet placed on the board show first, newest on top
+      if (sortField === "custom") {
+        const aNew = !orderIndex.has(a.user_id) && a.invited_at ? new Date(a.invited_at).getTime() : null
+        const bNew = !orderIndex.has(b.user_id) && b.invited_at ? new Date(b.invited_at).getTime() : null
+        if (aNew !== null || bNew !== null) {
+          if (aNew === null) return 1
+          if (bNew === null) return -1
+          if (aNew !== bNew) return bNew - aNew
+        }
+      }
       const av = value(a)
       const bv = value(b)
       const comparison = typeof av === "number" && typeof bv === "number"

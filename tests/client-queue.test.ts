@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test'
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isPendingClientInvite } from '../src/lib/client-queue'
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite } from '../src/lib/client-queue'
 
 // Continuity, Follow-up and Deal Lost are no longer queue columns, but stored
 // overrides with those values must still bucket safely instead of crashing.
@@ -33,4 +33,13 @@ test('a pending invite still appears in Non-Active before activation', () => {
 
 test('an active client is not treated as a pending invite', () => {
   expect(isPendingClientInvite(true, true)).toBe(false)
+})
+
+test('a named invite with onboarding skipped still shows in Non-Active until they sign up', () => {
+  const active = isActivatedInvite({ finishedOnboarding: false, displayName: 'Channell Osorio', contractStartDate: null })
+  expect(isPendingClientInvite(true, active)).toBe(true)
+})
+
+test('an invite that finished onboarding leaves Non-Active', () => {
+  expect(isActivatedInvite({ finishedOnboarding: true, displayName: 'Invited User', contractStartDate: null })).toBe(true)
 })
