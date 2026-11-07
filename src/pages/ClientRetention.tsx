@@ -32,7 +32,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -902,7 +902,8 @@ export default function ClientRetention() {
         ]) : [{ data: [] }, { data: [] }] as any
         const done = new Set([...(onb.data ?? []), ...(agr.data ?? [])].map((r: any) => r.user_id))
         // Placeholder "Invited User" profiles never signed up, so only finished onboarding counts
-        const isActive = (p: any) => done.has(p.user_id) || (p.display_name !== "Invited User" && (p.skip_onboarding || p.contract_start_date))
+        // Invites are created with onboarding skipped, so that flag alone never means they signed up
+        const isActive = (p: any) => isActivatedInvite({ finishedOnboarding: done.has(p.user_id), displayName: p.display_name, contractStartDate: p.contract_start_date })
         setActiveUnscored(rows
           .filter(isActive)
           .map((p) => ({
