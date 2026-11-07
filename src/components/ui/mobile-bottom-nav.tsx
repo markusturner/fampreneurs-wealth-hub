@@ -1,11 +1,10 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse, BarChart3 } from 'lucide-react'
+import { Bot, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
-import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
 import { useEffect, useState } from 'react'
 import { profileProgramCodes } from '@/lib/programs'
 import { isVipWeekendProgram } from '@/lib/workbook'
@@ -35,7 +34,6 @@ export function MobileBottomNav() {
   const { isAdmin, isFamilyMember } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
-  const { total: unreadDMTotal } = useUnreadDMCounts()
   const [moreOpen, setMoreOpen] = useState(false)
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
 
@@ -133,7 +131,7 @@ export function MobileBottomNav() {
     { name: 'VIP Weekend Mastermind', href: '/protection-workbook', icon: FileText },
     { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },
   ] : [
-    { name: 'Messages', href: '/messenger', icon: Mail },
+    { name: 'Markus AI', href: '/markus-ai', icon: Bot },
     { name: 'Calendar', href: calendarHref, icon: Calendar, isCalendar: true },
     { name: 'Community', href: communityHref, icon: MessageSquare, isCommunity: true },
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
@@ -217,11 +215,6 @@ export function MobileBottomNav() {
                 )}>
                   <div className="relative">
                     <Icon className="h-5 w-5 flex-shrink-0" />
-                    {item.name === 'Messages' && unreadDMTotal > 0 && (
-                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-secondary text-foreground text-[9px] font-bold flex items-center justify-center leading-none">
-                        {unreadDMTotal > 99 ? '99+' : unreadDMTotal}
-                      </span>
-                    )}
                   </div>
                   {active && (
                     <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">

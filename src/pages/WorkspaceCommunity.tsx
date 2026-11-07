@@ -1390,7 +1390,7 @@ export default function WorkspaceCommunity() {
   }
   const categoryNav = (mobile = false) => (
     <div className={mobile ? 'community-mobile-categories' : 'community-category-list'}>
-      {allCategories.map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
+      {(mobile ? allCategories.filter(cat => cat.value !== 'coach') : allCategories).map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}${toneOf(cat.value)}`} />}{cat.label}
       </Button>)}
     </div>
