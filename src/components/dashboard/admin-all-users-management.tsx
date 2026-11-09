@@ -1,3 +1,4 @@
+import { WorkbookAnswers } from "@/components/trust/WorkbookAnswers"
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1437,9 +1438,9 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
   const focusedUser = detailMode
-    ? users.find((u) =>
-        (focusUserId && (u.user_id === focusUserId || (u as any).id === focusUserId)) ||
-        (focusEmails.length > 0 && focusEmails.includes((u.email || '').toLowerCase())))
+    // Exact id match wins: two logins can share one email (duplicate signups)
+    ? (focusUserId ? users.find((u) => u.user_id === focusUserId || (u as any).id === focusUserId) : undefined)
+      ?? users.find((u) => focusEmails.length > 0 && focusEmails.includes((u.email || '').toLowerCase()))
       ?? null
     : null
   const detailUser = detailMode ? focusedUser : mobileSelectedUser
@@ -3210,24 +3211,13 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                 </AccordionTrigger>
                 <AccordionContent>
                   {accountForms.workbooks.length ? accountForms.workbooks.map(form => (
-                    <div key={form.id} className="space-y-3 border-b py-3 text-sm last:border-b-0">
-                      <div className="flex justify-between gap-4">
+                    <div key={form.id} className="space-y-3 py-2 text-sm">
+                      <div className="flex justify-between gap-4 rounded-lg bg-muted/50 px-4 py-2">
                         <span className="text-muted-foreground">Submitted</span>
-                        <span>{new Date(form.submitted_at || form.created_at).toLocaleString()}</span>
+                        <span className="font-medium">{new Date(form.submitted_at || form.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
-                      {form.submitter_name && <p>{form.submitter_name}</p>}
                       {form.form_data && typeof form.form_data === 'object' ? (
-                        <details>
-                          <summary className="cursor-pointer text-muted-foreground">View Workbook Answers</summary>
-                          <div className="divide-y mt-2">
-                            {Object.entries(form.form_data).map(([key, value]) => (
-                              <div key={key} className="grid gap-1 py-2">
-                                <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                                <span className="whitespace-pre-wrap break-words">{value == null || value === '' ? 'Not provided' : typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </details>
+                        <WorkbookAnswers answers={form.form_data as Record<string, unknown>} />
                       ) : null}
                     </div>
                   )) : <p className="text-sm text-muted-foreground py-2">No completed workbook has been submitted.</p>}
