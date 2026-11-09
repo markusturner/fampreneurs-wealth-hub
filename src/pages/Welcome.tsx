@@ -556,7 +556,8 @@ export default function Welcome() {
           >
             <div className="overflow-hidden">
               <div className="flex flex-col gap-1 rounded-xl border border-border/60 bg-background/70 backdrop-blur px-2 py-2">
-                {availableCommunities.map(prog => (
+                {(() => {
+                  const renderProg = (prog: Exclude<ProgramCode,'fbu'>) => (
                   <button
                     key={prog}
                     onClick={() => { setCommunityOpen(false); go('community', `/workspace-community?program=${prog}`, prog) }}
@@ -567,7 +568,9 @@ export default function Welcome() {
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
                     )}
                   </button>
-                ))}
+                  )
+                  return <>
+                    {availableCommunities.filter(p => p !== 'tffm').map(renderProg)}
                 <Button
                   variant="ghost"
                   onClick={() => { setCommunityOpen(false); go('workbook', '/protection-workbook') }}
@@ -578,6 +581,9 @@ export default function Welcome() {
                     <span className="whitespace-nowrap rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.1em] uppercase px-2 py-0.5 font-semibold">Last used</span>
                   )}
                 </Button>
+                    {availableCommunities.filter(p => p === 'tffm').map(renderProg)}
+                  </>
+                })()}
               </div>
             </div>
           </div>
