@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { IndentedText } from '@/components/legal/IndentedText'
-import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL, TFBA_AGREEMENT } from '@/lib/agreement-texts'
+import { VIP_WEEKEND_AGREEMENT as VIP_WEEKEND_AGREEMENT_FULL, TFBA_AGREEMENT, applyUserAgreementOverrides } from '@/lib/agreement-texts'
 
 function AgreementText({ text }: { text: string }) {
   const startMarker = 'The program will include:'
@@ -489,7 +489,9 @@ export default function ProgramAgreement() {
   const programName = profile?.program_name
   const agreementKey = getAgreementKey(programName)
   const displayAgreementKey = agreementKey ?? (allowManualAgreementAccess ? 'The Trust Vault' : null)
-  const agreementText = displayAgreementKey ? AGREEMENT_MAP[displayAgreementKey] : null
+  const agreementText = displayAgreementKey
+    ? applyUserAgreementOverrides(AGREEMENT_MAP[displayAgreementKey], displayAgreementKey, user?.id)
+    : null
 
   // Outside Lovable preview, keep the normal funnel auto-forward behavior
   useEffect(() => {
