@@ -669,7 +669,50 @@ Payment Terms:`,
     )
 }
 
+// One-off client pricing overrides for the PEA agreement, keyed by user id.
+const ROBERT_PARKER_USER_ID = 'd0b6bc3f-1d1f-4723-90ac-ccac86b0fe8e'
+
+function toRobertParkerPeaPricing(text: string): string {
+  return text
+    .replace(
+      'Regularly $12,000, but today for ONLY $9,000.',
+      'Regularly $9,000, but today for ONLY $7,500, plus $497 per quarter for the Digital Family Office Software.',
+    )
+    .replace(
+      /the total investment is [^.]*\(\$12,000\.00\)\. An initial deposit of [^.]*\(\$4,000\.00\) is required to secure your enrollment, followed by two \(2\) consecutive monthly payments of [^.]*\(\$4,000\.00\) each\./,
+      'the total investment is Nine Thousand Dollars ($9,000.00). An initial deposit of Three Thousand Dollars ($3,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Three Thousand Dollars ($3,000.00) each.',
+    )
+    .replace(
+      '90-Day FREE access to the TruHeirs software. After the 90-day period, access continues at $247 per quarter.',
+      'Access to the Digital Family Office Software at $497 per quarter.',
+    )
+}
+
+const PEA_USER_OVERRIDES: Record<string, (text: string) => string> = {
+  [ROBERT_PARKER_USER_ID]: toRobertParkerPeaPricing,
+}
+
+export function applyUserAgreementOverrides(
+  text: string | null,
+  programName: string | null | undefined,
+  userId?: string | null,
+): string | null {
+  if (!text || !userId || !programName) return text
+  const n = programName.trim().toLowerCase()
+  const isPea = n === 'tfba' || n.includes('accelerator')
+  const override = isPea ? PEA_USER_OVERRIDES[userId] : undefined
+  return override ? override(text) : text
+}
+
 export function getAgreementTextByProgram(
+  programName: string | null | undefined,
+  signedAt?: string | Date | null,
+  userId?: string | null,
+): string | null {
+  return applyUserAgreementOverrides(getBaseAgreementTextByProgram(programName, signedAt), programName, userId)
+}
+
+function getBaseAgreementTextByProgram(
   programName: string | null | undefined,
   signedAt?: string | Date | null,
 ): string | null {
