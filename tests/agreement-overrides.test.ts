@@ -8,7 +8,8 @@ describe('Robert Parker PEA agreement pricing', () => {
     const text = getAgreementTextByProgram('The Private Estate Accelerator', null, ROBERT)!
     expect(text).toContain('Regularly $9,000, but today for ONLY $7,500')
     expect(text).toContain('$497 per quarter for the Digital Family Office Software')
-    expect(text).not.toContain('$12,000')
+    expect(text).not.toContain('Regularly $12,000')
+    expect(text).toContain('the total investment is Nine Thousand Dollars ($9,000.00)')
   })
 
   it('keeps standard pricing for other clients', () => {
