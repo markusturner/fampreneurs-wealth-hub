@@ -32,7 +32,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, duplicateClientIds, isActivatedInvite, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -73,6 +73,8 @@ interface PartnerProfile {
   phone?: string | null
   program_contract_value: number
   created_at: string
+  email?: string | null
+  contract_start_date?: string | null
 }
 
 // Upsell ladder: TTV → PEA ($9,000) → Legacy InnerCircle ($22,000) → TFFM ($40,000)
@@ -759,7 +761,7 @@ export default function ClientRetention() {
   const loadClientProfiles = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at, phone, subscription_paused")
+      .select("id, user_id, email, display_name, first_name, last_name, partner_group_id, program_contract_value, contract_start_date, contract_due_date, contract_extension_date, program_name, created_at, phone, subscription_paused")
     if (error) { console.error("client profiles", error); return }
     const map: Record<string, string> = {}
     const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
@@ -785,6 +787,8 @@ export default function ClientRetention() {
         program_contract_value: Number(r.program_contract_value) || 0,
         created_at: r.created_at,
         phone: r.phone,
+        email: r.email,
+        contract_start_date: r.contract_start_date,
       })
     })
     setStartDates(map)
@@ -1051,8 +1055,10 @@ export default function ClientRetention() {
       if (!entry?.status_override && (entry?.entries ?? []).some((e) => TRUHEIRS_PAID_RE.test(e.note || ""))) return { ...c, status: "continuity" as Status }
       return c
     })
-    return [...mapped, ...placeholders, ...scoredPlaceholders]
-  }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap])
+    // The same person signed up twice: show only their main card
+    const duplicates = duplicateClientIds(partnerProfiles)
+    return [...mapped, ...placeholders, ...scoredPlaceholders].filter((c) => !duplicates.has(c.user_id))
+  }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap, partnerProfiles])
 
 
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
