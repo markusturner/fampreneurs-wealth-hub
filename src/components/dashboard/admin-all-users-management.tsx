@@ -1437,9 +1437,9 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
   const focusedUser = detailMode
-    ? users.find((u) =>
-        (focusUserId && (u.user_id === focusUserId || (u as any).id === focusUserId)) ||
-        (focusEmails.length > 0 && focusEmails.includes((u.email || '').toLowerCase())))
+    // Exact id match wins: two logins can share one email (duplicate signups)
+    ? (focusUserId ? users.find((u) => u.user_id === focusUserId || (u as any).id === focusUserId) : undefined)
+      ?? users.find((u) => focusEmails.length > 0 && focusEmails.includes((u.email || '').toLowerCase()))
       ?? null
     : null
   const detailUser = detailMode ? focusedUser : mobileSelectedUser
