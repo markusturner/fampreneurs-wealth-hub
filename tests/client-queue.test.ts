@@ -43,3 +43,23 @@ test('a named invite with onboarding skipped still shows in Non-Active until the
 test('an invite that finished onboarding leaves Non-Active', () => {
   expect(isActivatedInvite({ finishedOnboarding: true, displayName: 'Invited User', contractStartDate: null })).toBe(true)
 })
+
+import { duplicateClientIds } from '../src/lib/client-queue'
+
+test('duplicate profiles for the same person keep only the newest program start', () => {
+  const hidden = duplicateClientIds([
+    { id: 'p-real', user_id: 'u-real', full_name: "D'Juan  Collins", email: 'djuan@x.com', contract_start_date: '2026-11-08', created_at: '2026-10-17T15:47:00Z' },
+    { id: 'p-dup', user_id: 'u-dup', full_name: "D'Juan Collins", email: 'DJuan@x.com', contract_start_date: '2026-10-17', created_at: '2026-10-17T17:26:00Z' },
+  ])
+  expect(hidden.has('p-dup')).toBe(true)
+  expect(hidden.has('u-dup')).toBe(true)
+  expect(hidden.has('u-real')).toBe(false)
+})
+
+test('different people sharing an email are not hidden', () => {
+  const hidden = duplicateClientIds([
+    { id: 'a', user_id: 'ua', full_name: 'Monica Cardona', email: 'home@x.com', created_at: '2026-01-01' },
+    { id: 'b', user_id: 'ub', full_name: 'Hernando Cardona', email: 'home@x.com', created_at: '2026-01-02' },
+  ])
+  expect(hidden.size).toBe(0)
+})
