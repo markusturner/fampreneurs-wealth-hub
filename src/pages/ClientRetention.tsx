@@ -1325,8 +1325,10 @@ export default function ClientRetention() {
       if (sortField === "focus") return outreachTopic(client).toLowerCase()
       return orderIndex.get(client.user_id) ?? Number.MAX_SAFE_INTEGER
     }
-    const q = clientSearch.trim().toLowerCase()
-    const pool = q ? displayClients.filter((c) => `${c.full_name} ${c.email ?? ""}`.toLowerCase().includes(q)) : displayClients
+    // Ignore extra spaces and apostrophes so "djuan collins" finds "D'Juan  Collins"
+    const normSearch = (s: string) => s.toLowerCase().replace(/['’`]/g, "").replace(/\s+/g, " ").trim()
+    const q = normSearch(clientSearch)
+    const pool = q ? displayClients.filter((c) => normSearch(`${c.full_name} ${c.email ?? ""}`).includes(q)) : displayClients
     return [...pool].sort((a, b) => {
       // Fresh invites not yet placed on the board show first, newest on top
       if (sortField === "custom") {
