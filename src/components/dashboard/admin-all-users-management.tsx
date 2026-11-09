@@ -117,6 +117,7 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   const [loadingCommunities, setLoadingCommunities] = useState(false)
   const [selectedProgramNames, setSelectedProgramNames] = useState<Set<string>>(new Set())
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
   const [linkingUser, setLinkingUser] = useState<UserProfile | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
@@ -717,8 +718,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
   }
 
   const handleDeleteUser = async () => {
-    if (!deletingUserId) return
-
+    if (!deletingUserId || deleteBusy) return
+    setDeleteBusy(true)
     try {
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId: deletingUserId }
@@ -741,6 +742,8 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
         description: error.message || "Failed to delete user",
         variant: "destructive"
       })
+    } finally {
+      setDeleteBusy(false)
     }
   }
 
@@ -2924,9 +2927,13 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete User
+            <AlertDialogCancel disabled={deleteBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteBusy}
+              onClick={(e) => { e.preventDefault(); handleDeleteUser() }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteBusy ? "Deleting..." : "Delete User"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
