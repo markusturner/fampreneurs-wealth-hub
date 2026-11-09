@@ -3212,9 +3212,30 @@ export function AdminAllUsersManagement({ focusUserId = null, focusEmail = null,
                 <AccordionContent>
                   {accountForms.workbooks.length ? accountForms.workbooks.map(form => (
                     <div key={form.id} className="space-y-3 py-2 text-sm">
-                      <div className="flex justify-between gap-4 rounded-lg bg-muted/50 px-4 py-2">
-                        <span className="text-muted-foreground">Submitted</span>
-                        <span className="font-medium">{new Date(form.submitted_at || form.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <div className="flex items-center justify-between gap-4 rounded-lg bg-muted/50 px-4 py-2">
+                        <div className="flex items-center gap-4">
+                          <span className="text-muted-foreground">Submitted</span>
+                          <span className="font-medium">{new Date(form.submitted_at || form.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        {form.form_data && typeof form.form_data === 'object' ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={async () => {
+                              try {
+                                const { downloadWorkbookPdf } = await import('@/lib/workbook-pdf')
+                                const name = users.find(u => u.user_id === formsUserId)?.display_name || String((form.form_data as Record<string, unknown>).full_name || 'Client')
+                                await downloadWorkbookPdf(form.form_data as Record<string, unknown>, name, form.submitted_at || form.created_at)
+                              } catch (e) {
+                                console.error('Workbook PDF failed', e)
+                                toast({ title: 'Download failed', description: 'Please try again.', variant: 'destructive' })
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4" /> Download PDF
+                          </Button>
+                        ) : null}
                       </div>
                       {form.form_data && typeof form.form_data === 'object' ? (
                         <WorkbookAnswers answers={form.form_data as Record<string, unknown>} />
