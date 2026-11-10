@@ -141,6 +141,8 @@ export function PostRichEditor({
   const [members, setMembers] = useState<MemberOption[]>([])
   const [mention, setMention] = useState<{ query: string; from: number; top: number; left: number } | null>(null)
   const [highlight, setHighlight] = useState(0)
+  // latest Enter handler, refreshed every render so the editor sees current state
+  const enterRef = useRef<(event: KeyboardEvent) => boolean>(() => false)
 
   useEffect(() => {
     let active = true
@@ -166,6 +168,7 @@ export function PostRichEditor({
         'aria-multiline': 'true',
         style: `min-height:${minHeight}`,
       },
+      handleKeyDown: (_view, event) => enterRef.current(event),
     },
     onUpdate: ({ editor }) => {
       onChange(htmlToMarkdown(editor.getHTML()))
@@ -270,6 +273,24 @@ export function PostRichEditor({
       .insertContentAt({ from: mention.from, to: editor.state.selection.from }, `@${m.display_name} `)
       .run()
     setMention(null)
+  }
+
+  enterRef.current = (event: KeyboardEvent) => {
+    if (event.key !== 'Enter' || event.isComposing) return false
+    if (mention && filtered.length > 0) {
+      event.preventDefault()
+      applyMention(filtered[Math.min(highlight, filtered.length - 1)])
+      return true
+    }
+    // Chat composer only: Enter sends, Shift+Enter adds a line. Headers and lists keep normal Enter.
+    if (!compact || event.shiftKey) return false
+    if (typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches) return false
+    if (editor.isActive('heading') || editor.isActive('listItem')) return false
+    const form = editor.view.dom.closest('form')
+    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]')
+    event.preventDefault()
+    if (form && submit && !submit.disabled) form.requestSubmit(submit)
+    return true
   }
 
   const btn = (active: boolean) =>
