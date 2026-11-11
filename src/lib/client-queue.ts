@@ -1,3 +1,5 @@
+import { profileProgramCodes } from "./programs"
+
 export const CLIENT_QUEUE_STAGES = [
   "invited", "at_risk", "slipping", "stable", "expansion_ready", "continuity", "follow_up", "deal_lost",
 ] as const
@@ -50,4 +52,26 @@ export function duplicateClientIds(profiles: QueueProfile[]): Set<string> {
     })
   })
   return hidden
+}
+
+// A program has run out when no extension date is set and its length has passed since the start date.
+// The Trust Vault: older yearly offers end after 365 days; new 16-week members are left alone.
+// The Private Estate Accelerator: ends after 90 days.
+export type QueueContract = { programName?: string | null; startDate?: string | null; dueDate?: string | null; extensionDate?: string | null }
+const DAY_MS = 86400000
+export function programRanOut(c: QueueContract, today: Date = new Date()): boolean {
+  if (c.extensionDate || !c.startDate) return false
+  const start = new Date(`${c.startDate.slice(0, 10)}T00:00:00`)
+  if (isNaN(start.getTime())) return false
+  const codes = profileProgramCodes(c.programName)
+  let limit: number | null = null
+  if (codes.includes("tfba")) limit = 90
+  else if (codes.includes("tfv")) {
+    const due = c.dueDate ? new Date(`${c.dueDate.slice(0, 10)}T00:00:00`) : null
+    const lengthDays = due && !isNaN(due.getTime()) ? Math.round((due.getTime() - start.getTime()) / DAY_MS) : null
+    if (lengthDays != null && lengthDays <= 120) return false // new 16-week Trust Vault offer
+    limit = 365
+  }
+  if (limit == null) return false
+  return (today.getTime() - start.getTime()) / DAY_MS > limit
 }

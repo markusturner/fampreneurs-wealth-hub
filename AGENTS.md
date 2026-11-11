@@ -3,6 +3,7 @@
 - Define manual queue stages and bucket creation in the shared client-queue helper, and store placements in existing retention status overrides; this keeps drag-and-drop and selectors consistent without changing automatic health scoring.
 - Pending queue cards require an explicit needs_profile_completion flag and incomplete activation; display names must not revive cleared invites.
 - Profiles sharing the same email and name collapse to one queue card (newest program start wins) via duplicateClientIds; duplicate logins stay intact. Why: duplicate signups must not show one person twice.
+- Program run-out placement lives in programRanOut (client-queue helper) and is applied after manual status overrides, before health stages. Why: an admin's manual move must still win over automatic placement.
 
 ## Teller bank connections
 - New bank connections use Teller (mTLS), not Plaid. Why: user switched providers; Plaid stays only for existing linked accounts (update-mode) until removed.

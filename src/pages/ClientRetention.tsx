@@ -32,7 +32,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, duplicateClientIds, isActivatedInvite, isPendingClientInvite, type ClientQueueStage } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, duplicateClientIds, isActivatedInvite, isPendingClientInvite, programRanOut, type ClientQueueStage, type QueueContract } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -259,6 +259,8 @@ export default function ClientRetention() {
   const [startDates, setStartDates] = useState<Record<string, string>>(cached?.startDates ?? {})
   // Contract window per client (due date / extension) so drafts never claim an expired window is still open.
   const [contractDates, setContractDates] = useState<Record<string, { due?: string | null; ext?: string | null }>>({})
+  // Program name and dates per client, used to send clients whose program ran out back to Non-Active.
+  const [queueContracts, setQueueContracts] = useState<Record<string, QueueContract>>({})
   const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>([])
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
@@ -766,9 +768,13 @@ export default function ClientRetention() {
     const map: Record<string, string> = {}
     const windows: Record<string, { due?: string | null; ext?: string | null }> = {}
     const profiles: PartnerProfile[] = []
+    const contracts: Record<string, QueueContract> = {}
     PAUSED_IDS.clear()
     ;(data ?? []).forEach((r: any) => {
       if (r.subscription_paused) { if (r.id) PAUSED_IDS.add(r.id); if (r.user_id) PAUSED_IDS.add(r.user_id) }
+      const contract: QueueContract = { programName: r.program_name, startDate: r.contract_start_date, dueDate: r.contract_due_date, extensionDate: r.contract_extension_date }
+      if (r.id) contracts[r.id] = contract
+      if (r.user_id) contracts[r.user_id] = contract
       if (r.contract_start_date) {
         // Health results can identify clients by profile ID or auth user ID.
         if (r.id) map[r.id] = r.contract_start_date
@@ -793,6 +799,7 @@ export default function ClientRetention() {
     })
     setStartDates(map)
     setContractDates(windows)
+    setQueueContracts(contracts)
     setPartnerProfiles(profiles)
     return { startDates: map, profiles }
   }
@@ -1003,6 +1010,8 @@ export default function ClientRetention() {
     const mapped = baseDisplayClients.map((c) => {
       const override = notesMap[c.user_id]?.status_override
       if (override) return { ...c, status: clientQueueStage(c.status, override) }
+      // Program ran out with no extension date: back to Non-Active
+      if (programRanOut(queueContracts[c.user_id] ?? {})) return { ...c, status: "invited" as Status }
       const ids = [c.user_id, ...(c.linked_users ?? []).map((l) => l.user_id)]
       const pending = ids.some((id) => invitedIds.has(id))
       if (pending && !notesMap[c.user_id]?.status_override) return { ...c, full_name: c.email?.split(" · ")[0] || c.full_name, status: "invited" as Status }
@@ -1052,13 +1061,14 @@ export default function ClientRetention() {
     // Let notes (AI rating, stage, DFO subscription) apply to unscored clients too
     const scoredPlaceholders = mergeNotes(activePlaceholders, notesMap).map((c) => {
       const entry = notesMap[c.user_id]
+      if (!entry?.status_override && programRanOut(queueContracts[c.user_id] ?? {})) return { ...c, status: "invited" as Status }
       if (!entry?.status_override && (entry?.entries ?? []).some((e) => TRUHEIRS_PAID_RE.test(e.note || ""))) return { ...c, status: "continuity" as Status }
       return c
     })
     // The same person signed up twice: show only their main card
     const duplicates = duplicateClientIds(partnerProfiles)
     return [...mapped, ...placeholders, ...scoredPlaceholders].filter((c) => !duplicates.has(c.user_id))
-  }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap, partnerProfiles])
+  }, [baseDisplayClients, pendingInvites, activeUnscored, notesMap, partnerProfiles, queueContracts])
 
 
   // Cache the FINAL placed cards (notes, history and partner merges already applied)
