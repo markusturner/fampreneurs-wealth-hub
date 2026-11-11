@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test'
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite, programRanOut } from '../src/lib/client-queue'
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, isActivatedInvite, isPendingClientInvite, programRanOut, daysUntilExpiry, expiryBadgeHue } from '../src/lib/client-queue'
 
 // Continuity, Follow-up and Deal Lost are no longer queue columns, but stored
 // overrides with those values must still bucket safely instead of crashing.
@@ -88,4 +88,23 @@ test('a Private Estate Accelerator client under 90 days stays in their stage', (
 
 test('an extension date keeps an expired client out of Non-Active', () => {
   expect(programRanOut({ programName: 'The Trust Vault', startDate: '2024-12-12', dueDate: '2025-12-12', extensionDate: '2026-06-12' }, NOV_11_2026)).toBe(false)
+})
+
+test('a client 30 or more days from their end date gets a green day badge', () => {
+  expect(expiryBadgeHue(daysUntilExpiry('2026-12-11', null, NOV_11_2026))).toBe(142)
+  expect(expiryBadgeHue(daysUntilExpiry('2027-06-01', null, NOV_11_2026))).toBe(142)
+})
+
+test('the day badge reaches bright red on the end date and stays red after it', () => {
+  expect(expiryBadgeHue(daysUntilExpiry('2026-11-11', null, NOV_11_2026))).toBe(0)
+  expect(expiryBadgeHue(daysUntilExpiry('2026-11-01', null, NOV_11_2026))).toBe(0)
+})
+
+test('the day badge moves from green toward red as the end date gets closer', () => {
+  expect(expiryBadgeHue(daysUntilExpiry('2026-11-26', null, NOV_11_2026))).toBe(71)
+})
+
+test('an extension date replaces the end date for the day badge color', () => {
+  expect(daysUntilExpiry('2026-11-11', '2026-12-31', NOV_11_2026)).toBe(50)
+  expect(expiryBadgeHue(daysUntilExpiry('2026-11-11', '2026-12-31', NOV_11_2026))).toBe(142)
 })

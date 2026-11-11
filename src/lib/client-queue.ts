@@ -75,3 +75,32 @@ export function programRanOut(c: QueueContract, today: Date = new Date()): boole
   if (limit == null) return false
   return (today.getTime() - start.getTime()) / DAY_MS > limit
 }
+
+// Days until a client's program ends. An extension date replaces the due date.
+export function daysUntilExpiry(dueDate?: string | null, extensionDate?: string | null, today: Date = new Date()): number | null {
+  const end = extensionDate || dueDate
+  if (!end) return null
+  const endDay = new Date(`${end.slice(0, 10)}T00:00:00`)
+  if (isNaN(endDay.getTime())) return null
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  return Math.round((endDay.getTime() - startOfToday.getTime()) / DAY_MS)
+}
+
+// Day badge color: green when 30 or more days are left, sliding to bright red on or after the end date.
+export function expiryBadgeHue(daysLeft: number | null): number | null {
+  if (daysLeft == null) return null
+  const closeness = Math.min(1, Math.max(0, (30 - daysLeft) / 30))
+  return Math.round(142 * (1 - closeness))
+}
+
+export function expiryBadgeStyle(daysLeft: number | null): { backgroundColor: string; color: string } | null {
+  const hue = expiryBadgeHue(daysLeft)
+  if (hue == null) return null
+  const closeness = 1 - hue / 142
+  const saturation = Math.round(70 + 25 * closeness)
+  const lightness = Math.round(88 - 36 * closeness)
+  return {
+    backgroundColor: `hsl(${hue} ${saturation}% ${lightness}%)`,
+    color: closeness > 0.6 ? "hsl(0 0% 100%)" : `hsl(${hue} 80% 22%)`,
+  }
+}

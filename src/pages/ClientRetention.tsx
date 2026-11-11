@@ -32,7 +32,7 @@ import Surveys from "@/pages/Surveys"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 import { BackToWelcome } from "@/components/layout/BackToWelcome"
-import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, duplicateClientIds, isActivatedInvite, isPendingClientInvite, programRanOut, type ClientQueueStage, type QueueContract } from "@/lib/client-queue"
+import { CLIENT_QUEUE_STAGES, clientQueueBuckets, clientQueueStage, duplicateClientIds, isActivatedInvite, isPendingClientInvite, programRanOut, daysUntilExpiry, expiryBadgeStyle, type ClientQueueStage, type QueueContract } from "@/lib/client-queue"
 
 type Status = ClientQueueStage
 type SortField = "custom" | "name" | "status" | "program" | "score" | "focus"
@@ -161,6 +161,13 @@ function outreachTopic(c: ClientScore): string {
 const MILESTONES = [30, 45, 60, 75]
 
 const PAUSED_IDS = new Set<string>()
+
+function expiryTitle(daysLeft: number | null): string | undefined {
+  if (daysLeft == null) return undefined
+  if (daysLeft < 0) return `Program ended ${Math.abs(daysLeft)} days ago`
+  if (daysLeft === 0) return "Program ends today"
+  return `${daysLeft} days until the program ends`
+}
 
 function milestoneBadge(startDate?: string | null): { label: string; due: boolean } | null {
   if (!startDate) return null
@@ -1712,11 +1719,11 @@ export default function ClientRetention() {
           {effectiveView === "board" ? (
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleBoardDragStart} onDragOver={handleBoardDragOver} onDragEnd={handleBoardDragEnd} onDragCancel={() => { setDragActiveId(null); setDragOverId(null) }}>
               <div className="flex w-full min-w-0 gap-3 overflow-x-auto pb-3">
-                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
-                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="invited" title="Non-Active" icon={<Mail className="h-3.5 w-3.5" />} clients={sortedBuckets.invited} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} contractDates={contractDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="at_risk" title="Urgent" icon={<AlertTriangle className="h-3.5 w-3.5" />} clients={sortedBuckets.at_risk} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} contractDates={contractDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="slipping" title="Slipping" icon={<TrendingDown className="h-3.5 w-3.5" />} clients={sortedBuckets.slipping} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} contractDates={contractDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="stable" title="Healthy" icon={<Heart className="h-3.5 w-3.5" />} clients={sortedBuckets.stable} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} contractDates={contractDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
+                <QueueGroup status="expansion_ready" title="Ascension" icon={<TrendingUp className="h-3.5 w-3.5" />} clients={sortedBuckets.expansion_ready} selectedId={selectedId} onSelect={setSelectedId} loading={loading} startDates={startDates} contractDates={contractDates} dragActiveId={dragActiveId} dragOverId={dragOverId} />
               </div>
             </DndContext>
           ) : (
@@ -1763,8 +1770,9 @@ export default function ClientRetention() {
                             {(() => {
                 const m = milestoneBadge(c.contract_start_date ?? startDates[c.user_id])
                               if (!m) return null
+                              const left = daysUntilExpiry(contractDates[c.user_id]?.due, contractDates[c.user_id]?.ext)
                               return (
-                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                                <span title={expiryTitle(left)} style={expiryBadgeStyle(left) ?? undefined} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${left != null ? "" : m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
                                   {m.due ? "⏰ " : ""}{m.label}
                                 </span>
                               )
@@ -1826,8 +1834,9 @@ export default function ClientRetention() {
                       {(() => {
                         const m = milestoneBadge(selected.contract_start_date ?? startDates[selected.user_id])
                         if (!m) return null
+                        const left = daysUntilExpiry(contractDates[selected.user_id]?.due, contractDates[selected.user_id]?.ext)
                         return (
-                          <Badge className={`border-none ${m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
+                          <Badge title={expiryTitle(left)} style={expiryBadgeStyle(left) ?? undefined} className={`border-none ${left != null ? "" : m.due ? "bg-[#2eb2ff]/20 text-[#0b5f8a]" : "bg-muted text-muted-foreground"}`}>
                             {m.due ? "⏰ " : ""}{m.label}
                           </Badge>
                         )
@@ -2173,9 +2182,9 @@ export default function ClientRetention() {
 }
 
 function QueueGroup({
-  status, title, icon, clients, selectedId, onSelect, loading, startDates, dragActiveId, dragOverId,
+  status, title, icon, clients, selectedId, onSelect, loading, startDates, contractDates, dragActiveId, dragOverId,
 }: {
-  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>; dragActiveId?: string | null; dragOverId?: string | null;
+  status: Status; title: string; icon: React.ReactNode; clients: ClientScore[]; selectedId: string | null; onSelect: (id: string) => void; loading: boolean; startDates?: Record<string, string>; contractDates?: Record<string, { due?: string | null; ext?: string | null }>; dragActiveId?: string | null; dragOverId?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column:${status}` })
   const overColumn = dragOverId === `column:${status}`
@@ -2201,7 +2210,7 @@ function QueueGroup({
               {overClientId === client.user_id && (
                 <div className="mb-2 h-1 rounded-full bg-[#2eb2ff] shadow-[0_0_6px_rgba(46,178,255,0.7)]" aria-hidden="true" />
               )}
-              <SortableClientCard client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} />
+              <SortableClientCard client={client} selected={selectedId === client.user_id} onSelect={onSelect} startDate={client.contract_start_date ?? startDates?.[client.user_id]} daysLeft={daysUntilExpiry(contractDates?.[client.user_id]?.due, contractDates?.[client.user_id]?.ext)} />
             </div>
           ))}
         </SortableContext>
@@ -2213,7 +2222,7 @@ function QueueGroup({
   )
 }
 
-function SortableClientCard({ client, selected, onSelect, startDate }: { client: ClientScore; selected: boolean; onSelect: (id: string) => void; startDate?: string | null }) {
+function SortableClientCard({ client, selected, onSelect, startDate, daysLeft = null }: { client: ClientScore; selected: boolean; onSelect: (id: string) => void; startDate?: string | null; daysLeft?: number | null }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: client.user_id })
   const milestone = milestoneBadge(startDate)
   return (
@@ -2246,7 +2255,7 @@ function SortableClientCard({ client, selected, onSelect, startDate }: { client:
           {client.referral_ask && <span className="rounded bg-secondary/20 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">Ask for referral</span>}
           {client.referral_in_progress && <span className="rounded bg-[#2eb2ff]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#0b5f8a]">Referral in progress{client.referrals_given ? ` (${client.referrals_given})` : ""}</span>}
           {client.referral_converted && <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">Successful referral</span>}
-          {milestone && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
+          {milestone && <span title={expiryTitle(daysLeft)} style={expiryBadgeStyle(daysLeft) ?? undefined} className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${daysLeft != null ? "" : milestone.due ? "bg-accent/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{milestone.due ? "⏰ " : ""}{milestone.label}</span>}
         </div>
         {client.status === "expansion_ready" && upsellInfo(client) && <p className="mt-1.5 text-[10px] font-medium text-foreground">Opportunity cost: ${upsellInfo(client)?.cost.toLocaleString()} ({programShortLabel(client.program)} → {upsellInfo(client)?.target})</p>}
       </button>
