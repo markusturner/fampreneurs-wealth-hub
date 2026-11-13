@@ -1463,6 +1463,21 @@ export type Database = {
         }
         Relationships: []
       }
+      community_member_activity: {
+        Row: {
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_poll_votes: {
         Row: {
           created_at: string
@@ -6914,6 +6929,13 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_member_last_seen: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          last_seen_at: string
+          user_id: string
+        }[]
+      }
       get_overdue_payments: {
         Args: never
         Returns: {
@@ -7037,6 +7059,7 @@ export type Database = {
         Args: { p_answers: Json; p_survey_id: string }
         Returns: string
       }
+      touch_member_activity: { Args: never; Returns: undefined }
       user_has_premium_subscription: {
         Args: { user_id: string }
         Returns: boolean

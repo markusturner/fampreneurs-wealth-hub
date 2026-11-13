@@ -216,7 +216,7 @@ export default function WorkspaceCommunity() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
   const [memberCount, setMemberCount] = useState(0)
-  const [onlineCount, setOnlineCount] = useState(0)
+  const [onlineIds, setOnlineIds] = useState<Set<string>>(() => new Set())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [categories, setCategories] = useState<CommunityCategory[]>(() => loadCategories(program))
   const allCategories = [{ label: 'All', value: 'all', emoji: '' }, ...categories]
@@ -449,42 +449,33 @@ export default function WorkspaceCommunity() {
     fetchMemberCount()
   }, [getEligibleCommunityUserIds])
 
-  // Real-time presence tracking for online count
+  // Shared presence room: everyone on a community page is "active now"
   useEffect(() => {
-    if (!user?.id || !program) return
-
-    let qualifiedUserIds: string[] = []
-    let channelRef: ReturnType<typeof supabase.channel> | null = null
-
-    const setup = async () => {
-      qualifiedUserIds = await getEligibleCommunityUserIds()
-
-      const channelName = `community-presence-${program}-${user.id}-${Math.random().toString(36).slice(2, 8)}`
-      const channel = supabase.channel(channelName, {
-        config: { presence: { key: user.id } },
+    if (!user?.id) return
+    const channel = supabase.channel('community-presence', {
+      config: { presence: { key: user.id } },
+    })
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        setOnlineIds(new Set(Object.keys(channel.presenceState())))
       })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ user_id: user.id, online_at: new Date().toISOString() })
+        }
+      })
+    return () => { supabase.removeChannel(channel) }
+  }, [user?.id])
 
-      channel
-        .on('presence', { event: 'sync' }, () => {
-          const state = channel.presenceState()
-          const onlineQualified = Object.keys(state).filter(id => qualifiedUserIds.includes(id))
-          setOnlineCount(onlineQualified.length)
-        })
-        .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-            await channel.track({ user_id: user.id, online_at: new Date().toISOString() })
-          }
-        })
-
-      channelRef = channel
-    }
-
-    setup()
-
-    return () => {
-      if (channelRef) supabase.removeChannel(channelRef)
-    }
-  }, [getEligibleCommunityUserIds, user?.id, program])
+  // Save "last active" time while the member is on the page
+  useEffect(() => {
+    if (!user?.id) return
+    const touch = () => { if (document.visibilityState === 'visible') (supabase.rpc as any)('touch_member_activity').then(() => {}) }
+    touch()
+    const timer = setInterval(touch, 120000)
+    document.addEventListener('visibilitychange', touch)
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', touch); (supabase.rpc as any)('touch_member_activity').then(() => {}) }
+  }, [user?.id])
 
   // Reset popup closed state whenever program changes (so it doesn't stay open from a previous community)
   useEffect(() => {
@@ -1803,7 +1794,7 @@ export default function WorkspaceCommunity() {
             {pinnedPost && <section><div className="community-rail-title"><h3 className="community-rail-heading"><Pin />Pinned</h3></div><Button variant="ghost" className="h-auto w-full justify-start rounded-lg bg-secondary/15 p-3 text-left whitespace-normal" onClick={() => openPost(pinnedPost.id)}><span className="min-w-0"><span className="block text-xs font-semibold">{pinnedPost.title || 'Pinned message'}</span><span className="mt-1.5 block text-[11px] leading-relaxed font-normal text-muted-foreground line-clamp-3">{pinnedPost.content.replace(/<[^>]+>/g, '').slice(0, 160)}</span></span></Button></section>}
             <section><div className="community-rail-title"><h3 className="community-rail-heading"><CalendarDays />Upcoming events</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('events')}>View all</Button></div><CommunityEventsSection program={program} compact onViewAll={() => setCommunityView('events')} /></section>
             <section><div className="community-rail-title"><h3 className="community-rail-heading"><Trophy />Leaderboard</h3><Button variant="ghost" size="sm" className="community-rail-link" onClick={() => setCommunityView('leaderboard')}>View all</Button></div><CommunityLeaderboardSection program={program} compact /></section>
-            <section><CommunityMembersList program={program} compact /></section>
+            <section><CommunityMembersList program={program} compact onlineIds={onlineIds} /></section>
           </aside>
         </div>
 

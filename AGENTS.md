@@ -57,3 +57,4 @@
 
 ## Community data access
 - Community content reads are scoped in RLS by public.current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row so access follows the post. Why: open sign-up must not expose every community.
+- Community "active now" comes from one shared Realtime presence room; "last active" is stored in community_member_activity via touch_member_activity() and read through get_member_last_seen(). Why: presence alone forgets people once they leave, and profiles must not be rewritten on every heartbeat.
