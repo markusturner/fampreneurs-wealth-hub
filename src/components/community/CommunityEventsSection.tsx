@@ -818,6 +818,11 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
     eventsByDay.set(key, arr)
   }
 
+  const nextUpcoming = instances
+    .filter(ev => !isPast(new Date(ev.instance_at)))
+    .sort((a, b) => a.instance_at.localeCompare(b.instance_at))[0]
+  const nextKey = nextUpcoming ? `${nextUpcoming.id}-${nextUpcoming.instance_at}` : null
+
   const selectedKey = selected ? format(selected, 'yyyy-MM-dd') : ''
   const selectedEvents = (eventsByDay.get(selectedKey) || []).sort(
     (a, b) => a.instance_at.localeCompare(b.instance_at)
@@ -881,6 +886,10 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                         tabIndex={0}
                         onClick={(e) => { e.stopPropagation(); onOpenEvent(ev) }}
                         className={`truncate rounded px-0.5 sm:px-1 py-0.5 text-[8px] sm:text-[10px] leading-tight cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_12px_rgba(255,181,0,0.85)] hover:ring-1 hover:ring-[#ffb500] ${
+                          `${ev.id}-${ev.instance_at}` === nextKey
+                            ? 'animate-pulse shadow-[0_0_10px_rgba(255,181,0,0.95)] ring-1 ring-[#ffb500]'
+                            : ''
+                        } ${
                           isPast(new Date(ev.instance_at))
                             ? isSel
                               ? 'bg-white/10 text-white/50 line-through'
@@ -920,7 +929,7 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                     type="button"
                     key={`${ev.id}-${ev.instance_at}`}
                     onClick={() => onOpenEvent(ev)}
-                    className={`w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)] ${isPast(new Date(ev.instance_at)) ? 'opacity-50' : ''}`}
+                    className={`w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)] ${isPast(new Date(ev.instance_at)) ? 'opacity-50' : ''} ${`${ev.id}-${ev.instance_at}` === nextKey ? 'border-[#ffb500] bg-[#ffb500]/10 shadow-[0_0_14px_rgba(255,181,0,0.55)]' : ''}`}
                   >
                     <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isPast(new Date(ev.instance_at)) ? 'bg-muted-foreground/50' : 'bg-[#ffb500]'}`} />
                     <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
