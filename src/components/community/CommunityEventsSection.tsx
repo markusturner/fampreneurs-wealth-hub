@@ -421,10 +421,13 @@ export function CommunityEventsSection({ program, compact }: Props) {
   const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
   const [detail, setDetail] = useState<EventInstance | null>(null)
 
-  if (compact) return (
+  if (compact) {
+    const upcoming = instances.filter(e => !isPast(new Date(e.instance_at)))
+    const nextKey = upcoming[0] ? `${upcoming[0].id}-${upcoming[0].instance_at}` : null
+    return (
     <div className="space-y-2">
-      {instances.filter(e => !isPast(new Date(e.instance_at))).slice(0, 2).map(e => (
-        <Button key={`${e.id}-${e.instance_at}`} variant="outline" onClick={() => setDetail(e)} className="community-event-card h-auto w-full justify-start gap-3 rounded-lg bg-card p-3 text-left whitespace-normal">
+      {upcoming.slice(0, 2).map(e => (
+        <Button key={`${e.id}-${e.instance_at}`} variant="outline" onClick={() => setDetail(e)} className={`community-event-card h-auto w-full justify-start gap-3 rounded-lg bg-card p-3 text-left whitespace-normal ${`${e.id}-${e.instance_at}` === nextKey ? 'border-[#ffb500] shadow-[0_0_14px_rgba(255,181,0,0.65)] ring-1 ring-[#ffb500]' : ''}`}>
           <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-[3px] bg-muted text-xs font-semibold"><span>{format(new Date(e.instance_at), 'MMM')}</span><span className="text-lg">{format(new Date(e.instance_at), 'd')}</span></span>
           <span className="min-w-0"><span className="block text-xs font-semibold">{e.title}</span><span className="block text-[10px] text-muted-foreground">{format(new Date(e.instance_at), 'h:mm a')}</span></span>
         </Button>
@@ -432,7 +435,8 @@ export function CommunityEventsSection({ program, compact }: Props) {
       {!loading && !instances.some(e => !isPast(new Date(e.instance_at))) && <p className="text-xs text-muted-foreground">No upcoming events.</p>}
       <EventDetailDialog event={detail} onClose={() => setDetail(null)} />
     </div>
-  )
+    )
+  }
 
   return (
     <div className="space-y-6">
