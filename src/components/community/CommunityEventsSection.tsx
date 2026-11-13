@@ -887,7 +887,7 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                         onClick={(e) => { e.stopPropagation(); onOpenEvent(ev) }}
                         className={`truncate rounded px-0.5 sm:px-1 py-0.5 text-[8px] sm:text-[10px] leading-tight cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_12px_rgba(255,181,0,0.85)] hover:ring-1 hover:ring-[#ffb500] ${
                           `${ev.id}-${ev.instance_at}` === nextKey
-                            ? 'animate-pulse shadow-[0_0_10px_rgba(255,181,0,0.95)] ring-1 ring-[#ffb500]'
+                            ? 'shadow-[0_0_10px_rgba(255,181,0,0.95)] ring-1 ring-[#ffb500]'
                             : ''
                         } ${
                           isPast(new Date(ev.instance_at))
