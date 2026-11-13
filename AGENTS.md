@@ -53,8 +53,8 @@
 - Self-service export/deletion runs through the deployed delete-user function (shared handler in _shared/account-privacy.ts) with a browser export and pending-request fallback. Why: new edge functions on this external project return 404.
 
 ## Markus AI mobile page
-- The phone Markus AI page reuses CoachMarkusChat on its own route and the community hides the coach tab only on phones; this keeps one shared private chat history across desktop and mobile.
+- Phone Markus AI page reuses CoachMarkusChat on its own route; community hides the coach tab only on phones. Why: one shared private chat history.
 
 ## Community data access
 - Community content reads are scoped in RLS by public.current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row so access follows the post. Why: open sign-up must not expose every community.
-- Community "active now" comes from one shared Realtime presence room; "last active" is stored in community_member_activity via touch_member_activity() and read through get_member_last_seen(). Why: presence alone forgets people once they leave, and profiles must not be rewritten on every heartbeat.
+- Member "active now" uses one shared presence room; "last active" lives in community_member_activity (touch/get RPCs). Why: presence forgets past visits; profiles stay untouched.
