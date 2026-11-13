@@ -881,9 +881,13 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                         tabIndex={0}
                         onClick={(e) => { e.stopPropagation(); onOpenEvent(ev) }}
                         className={`truncate rounded px-0.5 sm:px-1 py-0.5 text-[8px] sm:text-[10px] leading-tight cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_12px_rgba(255,181,0,0.85)] hover:ring-1 hover:ring-[#ffb500] ${
-                          isSel
-                            ? 'bg-white/20 text-white'
-                            : 'bg-[#ffb500]/20 text-[#290a52]'
+                          isPast(new Date(ev.instance_at))
+                            ? isSel
+                              ? 'bg-white/10 text-white/50 line-through'
+                              : 'bg-muted text-muted-foreground/70 line-through'
+                            : isSel
+                              ? 'bg-white/20 text-white'
+                              : 'bg-[#ffb500]/20 text-[#290a52]'
                         }`}
                       >
                         {format(new Date(ev.instance_at), 'ha')} EST - {ev.title}
@@ -916,11 +920,11 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
                     type="button"
                     key={`${ev.id}-${ev.instance_at}`}
                     onClick={() => onOpenEvent(ev)}
-                    className="w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)]"
+                    className={`w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)] ${isPast(new Date(ev.instance_at)) ? 'opacity-50' : ''}`}
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500] flex-shrink-0" />
+                    <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isPast(new Date(ev.instance_at)) ? 'bg-muted-foreground/50' : 'bg-[#ffb500]'}`} />
                     <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
-                    <span className="min-w-0 break-words">{ev.title}</span>
+                    <span className={`min-w-0 break-words ${isPast(new Date(ev.instance_at)) ? 'line-through' : ''}`}>{ev.title}</span>
                   </button>
                 ))}
               </div>
