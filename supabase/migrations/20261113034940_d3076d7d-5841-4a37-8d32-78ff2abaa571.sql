@@ -1,0 +1,10 @@
+REVOKE EXECUTE ON FUNCTION public.current_user_community_programs() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.is_program_member() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.is_current_user_staff() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.current_user_community_programs() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_program_member() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.is_current_user_staff() TO authenticated, service_role;
+REVOKE EXECUTE ON FUNCTION public.is_valid_affiliate_signup_user(uuid, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.affiliate_code_exists(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_valid_affiliate_signup_user(uuid, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.affiliate_code_exists(text) TO anon, authenticated, service_role;

@@ -6789,6 +6789,7 @@ export type Database = {
     }
     Functions: {
       acquire_markus_knowledge_lease: { Args: never; Returns: boolean }
+      affiliate_code_exists: { Args: { p_code: string }; Returns: boolean }
       assign_accountability_role: {
         Args: {
           assigner_user_id: string
@@ -6855,6 +6856,8 @@ export type Database = {
           user_id: string
         }[]
       }
+      community_program_tier: { Args: { p_key: string }; Returns: number }
+      current_user_community_programs: { Args: never; Returns: string[] }
       decrypt_ssn: { Args: { p_value: string }; Returns: string }
       encrypt_ssn: { Args: { p_value: string }; Returns: string }
       expire_ended_programs: { Args: never; Returns: undefined }
@@ -6956,6 +6959,7 @@ export type Database = {
       is_current_user_accountability_partner: { Args: never; Returns: boolean }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_current_user_owner: { Args: never; Returns: boolean }
+      is_current_user_staff: { Args: never; Returns: boolean }
       is_family_office_only_user: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -6964,8 +6968,13 @@ export type Database = {
         Args: { group_id: string; user_id: string }
         Returns: boolean
       }
+      is_program_member: { Args: never; Returns: boolean }
       is_user_admin: { Args: { user_id?: string }; Returns: boolean }
       is_user_admin_for_groups: { Args: never; Returns: boolean }
+      is_valid_affiliate_signup_user: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: boolean
+      }
       is_verified_family_member: {
         Args: { _owner_id: string }
         Returns: boolean
