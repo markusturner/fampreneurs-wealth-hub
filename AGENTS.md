@@ -56,5 +56,5 @@
 - Phone Markus AI page reuses CoachMarkusChat on its own route; community hides the coach tab only on phones. Why: one shared private chat history.
 
 ## Community data access
-- Community content reads are scoped in RLS by public.current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row so access follows the post. Why: open sign-up must not expose every community.
+- Community reads are RLS-scoped by current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row. Why: open sign-up must not expose every community.
 - Member "active now" uses one shared presence room; "last active" lives in community_member_activity (touch/get RPCs). Why: presence forgets past visits; profiles stay untouched.
