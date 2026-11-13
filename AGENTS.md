@@ -54,3 +54,6 @@
 
 ## Markus AI mobile page
 - The phone Markus AI page reuses CoachMarkusChat on its own route and the community hides the coach tab only on phones; this keeps one shared private chat history across desktop and mobile.
+
+## Community data access
+- Community content reads are scoped in RLS by public.current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row so access follows the post. Why: open sign-up must not expose every community.
