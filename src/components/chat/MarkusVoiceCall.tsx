@@ -103,6 +103,7 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
       const { data: convo, error: convoError } = await supabase.from('chat_conversations').insert({ user_id: userId, title, persona: 'rachel', project_id: projectId }).select().single()
       if (convoError || !convo) throw new Error('Could not start a new chat for this call.')
       convoRef.current = convo
+      finishedRef.current = false
       linesRef.current = []; setLines([])
       onLive?.(convo, [])
       await conversation.startSession({
@@ -118,12 +119,15 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
     } finally { setConnecting(false) }
   }
 
-  const end = async () => { await conversation.endSession() }
+  const end = async () => {
+    try { await conversation.endSession() } catch { /* already disconnected */ }
+    void finish()
+  }
   const live = conversation.status === 'connected'
 
   return <>
     <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Call Markus" title="Call Markus" onClick={() => setOpen(true)}><Phone /></Button>
-    <Dialog open={open} onOpenChange={value => { if (!value && live) void end(); setOpen(value) }}>
+    <Dialog open={open} onOpenChange={value => { if (value) { setOpen(true); return } if (live || connecting) void end(); else void finish() }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Call Markus</DialogTitle>
