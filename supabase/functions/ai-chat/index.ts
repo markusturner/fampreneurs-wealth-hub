@@ -406,6 +406,7 @@ async function buildClassroomContext(supabase: any): Promise<string> {
 
 async function buildSystemPrompt(supabase: any, persona: string, message: string): Promise<string> {
   let systemPrompt = BASE_PERSONA_PROMPTS[persona] || BASE_PERSONA_PROMPTS.rachel;
+  if (persona === 'rachel') systemPrompt += MARKUS_IDENTITY_RULE;
 
   // Fetch custom instructions from DB
   const { data: settings } = await supabase
@@ -477,6 +478,8 @@ async function buildUserKnowledge(supabase: any, userId: string, projectId: stri
 }
 
 const VOICE_AGENT_ID = 'agent_1701m7dfj9abeef8cgye5v14sn79';
+const MARKUS_IDENTITY_ANSWER = "My name is Markus Turner, a Family Wealth Architect, helping asset-rich families protect what they've built and pass it down for generations.";
+const MARKUS_IDENTITY_RULE = `\n\n## If asked who you are\nWhen someone asks who Markus AI is, who Markus is, or who you are, answer with exactly this sentence: "${MARKUS_IDENTITY_ANSWER}" You can then ask how you can help.`;
 
 async function handleVoiceSession(supabase: any, userId: string, body: any): Promise<Response> {
   const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -501,7 +504,8 @@ async function handleVoiceSession(supabase: any, userId: string, body: any): Pro
   }
   prompt += await buildUserKnowledge(supabase, userId, projectId);
   if (recentText) prompt += `\n\n## Recent chat history with this member\nYou already know this. Continue naturally, do not restart or re-introduce yourself.\n${asMarkus(recentText)}`;
-  prompt += `\n\n## Voice call rules\nThis is a live voice call and you are Markus. Talk like a real person on the phone with a friend you are excited to help: warm, upbeat, high energy, with natural ups and downs in your voice. Use casual words like "yeah", "man", "look", "honestly", "here's the thing", and react to what they say ("Oh, that's huge!", "Okay, I love that."). Use exclamation points and question marks so your tone rises and falls. Mix short punchy lines with a few longer ones. You may add short emotion cues in square brackets like [laughs], [excited] or [warmly] to shape your delivery. No markdown, no lists, no links read aloud, no emojis. Ask one question at a time. Never say you are Rachel.`;
+  prompt += MARKUS_IDENTITY_RULE;
+  prompt += `\n\n## Voice call rules\nThis is a live voice call and you are Markus. Sound like a warm, caring person talking with a friend, never like a robot reading a script. Speak at a relaxed pace with a calm, friendly, reassuring tone. Use everyday words and contractions ("I'm", "you're", "let's"). Start replies with natural reactions like "Yeah, I hear you.", "Oh, I love that.", "Okay, so here's the thing...", and use small fillers like "you know" or "honestly" now and then. Use commas and "..." for natural pauses, and let your voice rise with questions. Keep most replies to two or three short sentences, then pause for them. You may add short delivery cues in square brackets like [warmly], [chuckles], [softly] or [smiling]. No markdown, no lists, no links read aloud, no emojis. Ask one question at a time. Never say you are Rachel.`;
   prompt = prompt.slice(0, 60000);
 
   const tokenRes = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${VOICE_AGENT_ID}`, { headers: { 'xi-api-key': elevenKey } });
