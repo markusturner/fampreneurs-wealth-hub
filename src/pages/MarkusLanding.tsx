@@ -89,7 +89,7 @@ export default function MarkusLanding() {
           <h1 className="mt-5 max-w-3xl font-montserrat text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
             How to map and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protect</span> every asset your family owns.
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus AI is a <span className="font-semibold text-foreground">digital AI clone of Markus Turner</span>, trained on how he teaches and thinks. It answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
+          <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus Turner has protected over $68M in client assets and helped create 80+ trustees, and his family has used trusts for three generations. Most families never get that kind of help. Markus AI gives you his method and shows you what you own, what it's worth, and what's at risk.</p>
           <div className="relative mt-6 w-full max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
             <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
