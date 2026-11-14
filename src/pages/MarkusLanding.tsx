@@ -81,13 +81,6 @@ export default function MarkusLanding() {
         <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-          <span className="font-montserrat text-sm font-bold tracking-[0.3em]">MARKUS<span className="text-secondary"> AI</span></span>
-          <div className="flex items-center gap-3">
-            <Link to="/auth" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Member sign in</Link>
-            <Button size="sm" className={goldBtn} onClick={toPlans}>Get started</Button>
-          </div>
-        </nav>
         <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-12 text-center sm:pt-20">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
           <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
