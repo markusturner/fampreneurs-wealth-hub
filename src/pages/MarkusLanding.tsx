@@ -44,6 +44,31 @@ const FAQS = [
   { q: 'How fast can I start?', a: 'Right after checkout. Your login arrives by email, and you can talk to Markus the same day.' },
 ]
 
+const DISCLAIMERS = [
+  { label: '', body: 'This site is not a part of the Facebook website or Facebook Inc. Additionally, This site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK, Inc.' },
+  { label: 'Multi-level marketing', body: 'This program is NOT a multi-level or network marketing firm, Any individual, without any payment by participants, can become a part of the referral program by creating a free account online. Case reference: Koscot Interplanetary, Inc., 86 F.T.C. 1106, 1181 (1975).' },
+  { label: 'Business opportunity', body: 'Social Business Solutions and associated training are NOT considered an income or business opportunity according to the Business Opportunity Rule \u00a7 437.1m. This states \u201Cthat advertising and general advice about business development and training shall not be considered as \u2018providing locations, outlets, accounts, or customers.\u2019\u201D' },
+  { label: 'Income disclaimer', body: 'Although we make every effort to accurately represent the services and/or products presented on this website, Social Business Solutions makes no assurance, representation or promise regarding future earnings or income, or that you will make any specific amount of money, or any money at all, or that you will not lose money. Earnings or income statements, or examples of earnings or income, represent estimates of what you may earn; however, there is no promise or guarantee that you may experience the same level of earnings or income. There is no assurance that any prior success or past results regarding earnings or income may be an indication of your future success or results.' },
+]
+
+function LegalFooter() {
+  return (
+    <footer className="border-t border-border/60 bg-card/30 px-6 py-12">
+      <div className="mx-auto max-w-4xl">
+        <p className="text-xs font-semibold text-muted-foreground">&copy; 2020 Copyrights by VNCI, LLC. All Rights Reserved.</p>
+        <div className="mt-6 space-y-5">
+          {DISCLAIMERS.map((d) => (
+            <div key={d.label || d.body.slice(0, 24)}>
+              {d.label && <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{d.label}</p>}
+              <p className={`text-[11px] leading-relaxed text-muted-foreground/70 ${d.label ? 'mt-1' : ''}`}>{d.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </footer>
+  )
+}
+
 const ASSET_RANGES = ['Under $250K', '$250K to $1M', '$1M to $5M', '$5M to $25M', '$25M+']
 
 function useSeo(title: string, description: string) {
@@ -224,6 +249,8 @@ export default function MarkusLanding() {
         </div>
         <p className="mt-10 text-center text-xs text-muted-foreground">TruHeirs. Markus AI gives education, not legal, tax or financial advice.</p>
       </section>
+
+      <LegalFooter />
     </div>
   )
 }
