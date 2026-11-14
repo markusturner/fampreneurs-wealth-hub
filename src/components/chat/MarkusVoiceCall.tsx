@@ -23,6 +23,7 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
   const [lines, setLines] = useState<Line[]>([])
   const linesRef = useRef<Line[]>([])
   const convoRef = useRef<WelcomeConversation | null>(null)
+  const finishedRef = useRef(false)
   const logRef = useRef<HTMLDivElement | null>(null)
   const { toast } = useToast()
 
@@ -54,6 +55,8 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
   }
 
   const finish = useCallback(async () => {
+    if (finishedRef.current) return
+    finishedRef.current = true
     const convo = convoRef.current
     convoRef.current = null
     setOpen(false)
