@@ -1,0 +1,2 @@
+ALTER TABLE public.markus_user_knowledge DROP CONSTRAINT IF EXISTS markus_user_knowledge_source_type_check;
+ALTER TABLE public.markus_user_knowledge ADD CONSTRAINT markus_user_knowledge_source_type_check CHECK (source_type IN ('note','file','memory'));

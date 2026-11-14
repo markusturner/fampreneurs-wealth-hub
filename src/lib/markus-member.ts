@@ -1,4 +1,4 @@
-// Markus AI members get only Markus AI, the Digital Family Office and their own community.
+// Markus AI members get Markus AI tools, the Digital Family Office, their own community and their own courses.
 export const MARKUS_COMMUNITY = 'markusai'
 
 export const MARKUS_PLANS = {
@@ -18,5 +18,20 @@ const ALLOWED_PREFIXES = ['/markus-ai', '/dashboard', '/digital-family-office', 
 
 export function markusPathAllowed(pathname: string, search: string): boolean {
   if (pathname === '/workspace-community') return new URLSearchParams(search).get('program') === MARKUS_COMMUNITY
+  // Course lessons open on the classroom detail page; the full classroom list stays hidden.
+  if (pathname.startsWith('/classroom/')) return true
   return ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
 }
+
+// Left navigation for Markus-only members, in the order the owner asked for.
+export const MARKUS_NAV = [
+  { key: 'chat', label: 'Markus AI', href: '/markus-ai' },
+  { key: 'voice', label: 'Voice Call', href: '/markus-ai/voice' },
+  { key: 'dfo', label: 'Digital Family Office', href: '/dashboard' },
+  { key: 'community', label: 'Community', href: `/workspace-community?program=${MARKUS_COMMUNITY}` },
+  { key: 'courses', label: 'Courses', href: '/markus-ai/courses' },
+  { key: 'knowledge', label: 'Knowledge Base', href: '/markus-ai/knowledge' },
+  { key: 'memories', label: 'Memories', href: '/markus-ai/memories' },
+  { key: 'skills', label: 'Skills', href: '/markus-ai/skills' },
+] as const
+export type MarkusNavKey = typeof MARKUS_NAV[number]['key']

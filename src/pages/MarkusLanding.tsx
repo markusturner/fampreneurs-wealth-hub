@@ -14,8 +14,8 @@ import { useToast } from '@/hooks/use-toast'
 import { MARKUS_PLANS, type MarkusPlan } from '@/lib/markus-member'
 
 const FEATURES = [
-  { icon: Bot, title: 'A trust and estate advisor that never sleeps', body: 'Ask Markus AI anything, day or night, and get clear answers in plain English. It remembers your family, your goals and every conversation, so you never start over.', wide: true },
-  { icon: Phone, title: 'Talk to Markus by voice', body: 'Tap call and talk it through out loud. Every call turns into a written chat you can come back to.' },
+  { icon: Bot, title: 'A digital AI clone of Markus, on call 24/7', body: 'Ask the AI version of Markus anything, day or night, and get clear answers in plain English. It thinks the way Markus teaches, remembers your family and your goals, and never makes you start over.', wide: true },
+  { icon: Phone, title: 'Talk to Markus by voice', body: 'Tap call and hear Markus in his own voice. Every call turns into a written chat you can come back to.' },
   { icon: LayoutDashboard, title: 'Your whole net worth on one screen', body: 'Bank accounts, investments, real estate and businesses, all in one private Digital Family Office.' },
   { icon: ShieldAlert, title: 'See what is exposed before it costs you', body: 'Spot the assets left open to lawsuits, probate and estate taxes, and know what to ask about first.' },
   { icon: FileLock2, title: 'A private vault for what matters', body: 'Upload deeds, policies and statements. Markus reads them so his answers fit your real situation.' },
@@ -37,6 +37,7 @@ const STEPS = [
 ]
 
 const FAQS = [
+  { q: 'What is Markus AI exactly?', a: 'Markus AI is a digital AI clone of Markus Turner. It is trained on how he teaches and thinks, so you get his way of protecting family wealth by text or voice, any time.' },
   { q: 'Does this include setting up my private trust?', a: 'No. Markus AI is your always-on family office and advisor. Done-with-you private trust setup is part of The Private Estate Accelerator, The Trust Vault and the VIP Weekend.' },
   { q: 'Who is Markus AI built for?', a: 'Families who own real assets, like property, businesses and investments, and want to protect them and pass them down the right way.' },
   { q: 'Is my information private?', a: 'Yes. Your chats, notes and documents are tied to your own account and are not shared with other members.' },
@@ -67,7 +68,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 const goldBtn = 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
 
 export default function MarkusLanding() {
-  useSeo('Markus AI | Your AI Family Office', 'Markus AI is a 24/7 trust and estate advisor and private family office that maps every asset you own and shows you what is exposed.')
+  useSeo('Markus AI | Your AI Family Office', 'Markus AI is a digital AI clone of Markus Turner: a 24/7 trust and estate advisor and private family office that maps every asset you own.')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const go = (plan: MarkusPlan) => navigate(`/markusturnerai/checkout?plan=${plan}`)
@@ -76,7 +77,7 @@ export default function MarkusLanding() {
   return (
     <div className="dark h-[100dvh] overflow-y-auto bg-background font-poppins text-foreground">
       {/* Hero */}
-      <header className="relative isolate min-h-[92vh] overflow-hidden">
+      <header className="relative isolate overflow-hidden">
         <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
@@ -87,7 +88,7 @@ export default function MarkusLanding() {
             <Button size="sm" className={goldBtn} onClick={toPlans}>Get started</Button>
           </div>
         </nav>
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-16 text-center sm:pt-24">
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-12 text-center sm:pt-20">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
           <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
@@ -95,25 +96,21 @@ export default function MarkusLanding() {
           <h1 className="mt-6 font-montserrat text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
             Your AI Family Office.<br /><span className="text-secondary">Every asset mapped and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protected.</span></span>
           </h1>
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" className={`h-12 px-8 text-base ${goldBtn}`} onClick={() => go('annual')}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
-            <Button size="lg" variant="outline" className="h-12 border-border bg-card/40 px-8 text-base backdrop-blur hover:bg-card" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>See what is inside</Button>
+          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI is a <span className="font-semibold text-foreground">digital AI clone of Markus Turner</span>, trained on how he teaches and thinks. It answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
+          <div className="relative mt-10 w-full max-w-3xl">
+            <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
+            <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
+              <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary"><Play className="ml-1 h-6 w-6" /></span>
+                <span className="text-sm">2-minute walkthrough coming soon</span>
+              </div>
+            </div>
           </div>
+          <Button size="lg" className={`mt-10 h-14 px-10 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
           <p className="mt-6 text-xs text-muted-foreground">Built by Markus Turner, Family Wealth Architect</p>
         </div>
       </header>
-
-      {/* Video */}
-      <section className="mx-auto -mt-10 max-w-4xl px-6">
-        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
-          <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary"><Play className="ml-1 h-6 w-6" /></span>
-            <span className="text-sm">2-minute walkthrough coming soon</span>
-          </div>
-        </div>
-      </section>
 
       {/* Pains */}
       <section className="mx-auto max-w-6xl px-6 py-24">
@@ -155,7 +152,7 @@ export default function MarkusLanding() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Meet Markus</p>
           <blockquote className="mt-4 font-montserrat text-2xl font-semibold leading-snug sm:text-3xl">"My name is Markus Turner, a Family Wealth Architect, helping asset-rich families protect what they've built and pass it down for generations."</blockquote>
-          <p className="mt-6 text-muted-foreground">Markus AI is trained on how Markus teaches and thinks. It is like having him on call for your family, any time you need him.</p>
+          <p className="mt-6 text-muted-foreground">Markus AI is a digital AI clone of Markus, built from how he teaches, thinks and talks. It is like having him on call for your family, any time you need him.</p>
           <ul className="mt-6 space-y-3 text-sm">
             {['Answers in plain English, not legal jargon', 'Knows your family and your assets', 'Available 24/7, even by voice'].map((t) => (
               <li key={t} className="flex items-center gap-3"><Check className="h-4 w-4 text-secondary" />{t}</li>

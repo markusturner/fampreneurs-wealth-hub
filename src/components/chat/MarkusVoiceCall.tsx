@@ -11,13 +11,13 @@ import { stripDeliveryCues } from '@/lib/voice-transcript'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 
 type Line = { key: string; role: 'user' | 'assistant'; content: string; at: string; id?: Promise<string | null> }
-type Props = { userId?: string; projectId: string | null; onLive?: (conversation: WelcomeConversation, messages: WelcomeMessage[]) => void; onSaved?: () => void; onEmpty?: () => void }
+type Props = { userId?: string; projectId: string | null; onLive?: (conversation: WelcomeConversation, messages: WelcomeMessage[]) => void; onSaved?: () => void; onEmpty?: () => void; trigger?: (open: () => void) => React.ReactNode }
 
 export function MarkusVoiceCall(props: Props) {
   return <ConversationProvider><MarkusVoiceCallInner {...props} /></ConversationProvider>
 }
 
-function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved, onEmpty }: Props) {
+function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved, onEmpty, trigger }: Props) {
   const [open, setOpen] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -128,7 +128,7 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved, onEmpty }: P
   const live = conversation.status === 'connected'
 
   return <>
-    <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Call Markus" title="Call Markus" onClick={() => setOpen(true)}><Phone /></Button>
+    {trigger ? trigger(() => setOpen(true)) : <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Call Markus" title="Call Markus" onClick={() => setOpen(true)}><Phone /></Button>}
     <Dialog open={open} onOpenChange={value => { if (value) { setOpen(true); return } if (live || connecting) void end(); else void finish() }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>

@@ -9,6 +9,8 @@ import { WelcomeChatLibrary } from '@/components/chat/WelcomeChatLibrary'
 import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { useSearchParams } from 'react-router-dom'
+import { findSkill } from '@/lib/markus-skills'
 
 export function CoachMarkusChat() {
   const { user } = useAuth()
@@ -19,6 +21,18 @@ export function CoachMarkusChat() {
   const composer = useRef<HTMLTextAreaElement>(null)
   const log = useRef<HTMLDivElement>(null)
   const initialized = useRef(false)
+  const [params, setParams] = useSearchParams()
+
+  // A skill opens a fresh chat with its guided request ready to send.
+  useLayoutEffect(() => {
+    const skill = findSkill(params.get('skill'))
+    if (!skill) return
+    initialized.current = true
+    chat.newChat(null)
+    setDraft(skill.prompt)
+    const next = new URLSearchParams(params); next.delete('skill'); setParams(next, { replace: true })
+    requestAnimationFrame(() => composer.current?.focus())
+  }, [params])
 
   // Open the most recent chat from the saved copy right away instead of waiting for the network.
   useLayoutEffect(() => {

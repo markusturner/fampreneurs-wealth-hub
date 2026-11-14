@@ -1,4 +1,5 @@
-import { isMarkusMemberProgram } from '@/lib/markus-member'
+import { isMarkusMemberProgram, MARKUS_NAV } from '@/lib/markus-member'
+import { MARKUS_NAV_ICONS, isMarkusNavActive } from '@/components/markus/MarkusNav'
 import { useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -121,6 +122,14 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
   )
 }
 
+const DFO_PAGES = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Family Office', href: '/digital-family-office' },
+  { label: 'Family Constitution', href: '/family-constitution' },
+  { label: 'Family Calendar', href: '/calendar' },
+  { label: 'Family Members', href: '/members' },
+]
+
 // Search suggestions with access requirements
 const SEARCH_SUGGESTIONS = [
   { label: 'Dashboard', path: '/dashboard', requiresSubscription: true },
@@ -208,8 +217,13 @@ export function AppSidebar({ className }: { className?: string }) {
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Markus AI</p>
             </div>
             <div className="space-y-0.5">
-              <NavItem label="Markus AI" icon={Bot} href="/markus-ai" active={isActive("/markus-ai")} />
-              <NavItem label="Community" icon={MessageSquare} href="/workspace-community?program=markusai" active={currentPath === "/workspace-community"} />
+              {MARKUS_NAV.map(item => item.key === 'dfo' ? (
+                <NavItem key={item.key} label={item.label} icon={MARKUS_NAV_ICONS.dfo} defaultOpen={DFO_PAGES.some(p => p.href === currentPath)}>
+                  {DFO_PAGES.map(p => <SubNavItem key={p.href} label={p.label} href={p.href} active={isActive(p.href)} />)}
+                </NavItem>
+              ) : (
+                <NavItem key={item.key} label={item.label} icon={MARKUS_NAV_ICONS[item.key]} href={item.href} active={isMarkusNavActive(item.href, currentPath, location.search)} />
+              ))}
             </div>
           </>
         )}
@@ -246,8 +260,8 @@ export function AppSidebar({ className }: { className?: string }) {
           </>
         )}
 
-        {/* DIGITAL FAMILY OFFICE — hidden for Lite */}
-        {!isLite && (
+        {/* DIGITAL FAMILY OFFICE — hidden for Lite; Markus members reach it from their own menu */}
+        {!isLite && !isMarkusMember && (
           <>
             <div className="mb-1 mt-5">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Digital Family Office</p>

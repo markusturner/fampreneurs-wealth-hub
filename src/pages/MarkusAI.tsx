@@ -1,4 +1,5 @@
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
+import { MarkusMobileTabs } from '@/components/markus/MarkusNav'
 
 export default function MarkusAI() {
   return (
@@ -13,6 +14,7 @@ export default function MarkusAI() {
             </div>
           </div>
         </div>
+        <MarkusMobileTabs />
         <CoachMarkusChat />
       </div>
     </div>

@@ -57,9 +57,6 @@
 - Community reads are RLS-scoped by current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row. Why: open sign-up must not expose every community.
 - "Active now" uses one presence room; "last active" is community_member_activity. Why: presence forgets visits.
 
-## Markus voice
-- Calls: ai-chat mode voice_session; member notes: markus_user_knowledge. Why: new edge functions 404; shared memory.
-
-## Markus AI membership
-- Phone Markus AI page reuses CoachMarkusChat. Why: one shared chat history.
-- Checkout uses signup-create-checkout (flow=markus) and stripe-webhook; gating in markus-member.ts. Why: new functions 404.
+## Markus AI
+- Voice: ai-chat mode voice_session; checkout: signup-create-checkout flow=markus + stripe-webhook. Why: new functions 404.
+- Tools under /markus-ai/* reuse CoachMarkusChat; notes/memories in markus_user_knowledge. Why: shared history, one gated prefix.

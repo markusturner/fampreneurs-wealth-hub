@@ -27,6 +27,7 @@ const WORKSPACE_COMMUNITY_NAMES = [
   'The Trust Vault',
   'The Private Estate Accelerator',
   'The Legacy InnerCircle',
+  'Markus AI Members',
 ]
 
 export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
