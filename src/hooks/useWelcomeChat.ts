@@ -94,6 +94,21 @@ export function useWelcomeChat(userId: string | undefined) {
     }
   }
 
+  // Shows a chat that is being written live (voice calls) without reloading it from the server.
+  const showLiveConversation = useCallback((conversation: WelcomeConversation, live: WelcomeMessage[]) => {
+    if (!userId) return
+    openRequestRef.current++
+    setActiveConversation(conversation)
+    setProjectId(conversation.project_id)
+    setMessages(live)
+    writeCache(cacheKey(userId, `msgs:${conversation.id}`), live)
+    setConversations(previous => {
+      const next = [conversation, ...previous.filter(chat => chat.id !== conversation.id)]
+      writeCache(cacheKey(userId, 'chats'), next)
+      return next
+    })
+  }, [userId])
+
   const createProject = async (name: string) => {
     if (!userId || !name.trim()) return
     const { data, error } = await supabase.from('chat_projects').insert({ user_id: userId, name: name.trim() }).select().single()
@@ -165,5 +180,5 @@ export function useWelcomeChat(userId: string | undefined) {
     }
   }
 
-  return { conversations, projects, messages, activeConversation, projectId, busy, libraryLoading, libraryError, refresh, newChat, openConversation, createProject, moveToProject, send }
+  return { conversations, projects, messages, activeConversation, projectId, busy, libraryLoading, libraryError, refresh, newChat, openConversation, showLiveConversation, createProject, moveToProject, send }
 }
