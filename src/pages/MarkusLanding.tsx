@@ -87,7 +87,7 @@ export default function MarkusLanding() {
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
           <h1 className="mt-6 font-montserrat text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
-            Your AI Family Office.<br /><span className="text-secondary">Every asset mapped and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protected.</span></span>
+            How to map and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protect</span> every asset<br className="hidden sm:block" /> your family owns, around the clock.
           </h1>
           <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI is a <span className="font-semibold text-foreground">digital AI clone of Markus Turner</span>, trained on how he teaches and thinks. It answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
           <div className="relative mt-10 w-full max-w-3xl">
