@@ -106,27 +106,27 @@ export default function MarkusLanding() {
         <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-8 text-center sm:pt-10">
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-5 pb-10 pt-4 text-center sm:px-6 sm:pt-10">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
-          <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
+          <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 whitespace-nowrap px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-secondary backdrop-blur sm:px-4 sm:py-1.5 sm:text-[11px] sm:tracking-[0.25em]">
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />For families serious about legacy
           </span>
-          <h1 className="mt-5 max-w-3xl font-montserrat text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+          <h1 className="mt-3 max-w-3xl font-montserrat text-[26px] font-bold sm:mt-5 sm:text-3xl leading-[1.1] tracking-tight sm:text-5xl">
             <span className="text-foreground/70">How to</span> <span className="text-secondary">map</span> and <span className="bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">protect</span> every asset your family owns.
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus Turner has protected over $68M in client assets and helped create 80+ trustees, and his family has used trusts for three generations. Most families never get that kind of help. Markus AI gives you his method and shows you what you own, what it's worth, and what's at risk.</p>
-          <div className="relative mt-6 w-full max-w-xl">
+          <p className="mt-2.5 max-w-2xl text-[13px] leading-snug text-muted-foreground sm:mt-4 sm:text-base sm:leading-normal">Markus Turner has protected over $68M in client assets and helped create 80+ trustees, and his family has used trusts for three generations. Most families never get that kind of help. Markus AI gives you his method and shows you what you own, what it's worth, and what's at risk.</p>
+          <div className="relative mt-4 w-full max-w-[17rem] sm:mt-6 sm:max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
             <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
               <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary"><Play className="ml-1 h-6 w-6" /></span>
-                <span className="text-sm">2-minute walkthrough coming soon</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary sm:h-16 sm:w-16"><Play className="ml-1 h-5 w-5 sm:h-6 sm:w-6" /></span>
+                <span className="text-xs sm:text-sm">2-minute walkthrough coming soon</span>
               </div>
             </div>
           </div>
-          <Button size="lg" className={`mt-6 h-12 px-8 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
-          <p className="mt-4 text-xs text-muted-foreground">Built by Markus Turner, Family Wealth Architect</p>
+          <Button size="lg" className={`mt-4 h-11 px-7 text-base shadow-xl sm:mt-6 sm:h-12 sm:px-8 shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
+          <p className="mt-3 text-xs text-muted-foreground sm:mt-4">Built by Markus Turner, Family Wealth Architect</p>
         </div>
       </header>
 
