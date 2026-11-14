@@ -81,16 +81,16 @@ export default function MarkusLanding() {
         <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-12 text-center sm:pt-20">
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-8 text-center sm:pt-10">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
           <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
-          <h1 className="mt-6 font-montserrat text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
-            How to map and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protect</span> every asset<br className="hidden sm:block" /> your family owns, around the clock.
+          <h1 className="mt-5 max-w-3xl font-montserrat text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+            How to map and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protect</span> every asset your family owns.
           </h1>
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI is a <span className="font-semibold text-foreground">digital AI clone of Markus Turner</span>, trained on how he teaches and thinks. It answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
-          <div className="relative mt-10 w-full max-w-3xl">
+          <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus AI is a <span className="font-semibold text-foreground">digital AI clone of Markus Turner</span>, trained on how he teaches and thinks. It answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
+          <div className="relative mt-6 w-full max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
             <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
@@ -100,8 +100,8 @@ export default function MarkusLanding() {
               </div>
             </div>
           </div>
-          <Button size="lg" className={`mt-10 h-14 px-10 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
-          <p className="mt-6 text-xs text-muted-foreground">Built by Markus Turner, Family Wealth Architect</p>
+          <Button size="lg" className={`mt-6 h-12 px-8 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
+          <p className="mt-4 text-xs text-muted-foreground">Built by Markus Turner, Family Wealth Architect</p>
         </div>
       </header>
 
