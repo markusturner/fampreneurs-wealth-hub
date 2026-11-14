@@ -8,6 +8,13 @@
 - When they pay, the GoHighLevel contact also gets a "markusai-paid" tag and the plan details.
 - A copy of each lead and payment is saved in the app so nothing is lost.
 - A thank-you page after payment.
+
+## After they pay
+- An account is created automatically and they get an email with a temporary password and a sign-in link.
+- They must set a new password on first sign-in.
+- They only see three things: the Digital Family Office, a Markus AI page of its own, and a new "Markus AI Members" community.
+- Everything else (courses, trust creation, other communities, Welcome) stays hidden for them.
+- If a payment is canceled or fails, their access turns off.
 - No em dashes or emojis in the page text.
 
 ## What I need from you
@@ -22,4 +29,6 @@
 - Stripe: create products "Markus AI Monthly" $1,000/mo and "Markus AI Annual" $8,997/yr; edge function `markus-checkout` creates a Stripe Checkout session prefilled with the customer email.
 - Edge function `markus-lead`: validates input, inserts into new `markus_leads` table (service-role insert, admin read), upserts GHL contact via `services.leadconnectorhq.com/contacts/upsert` with tag `markusai` and notes.
 - Stripe webhook (existing or new) marks lead paid and adds `markusai-paid` tag in GHL.
+- New program code `markusai` added to the program taxonomy; access gating mirrors TruHeirs Lite (allowed routes: DFO, /markus-ai, community `markusai`). Community RLS tier helpers extended so only markusai members (and staff) see that community.
+- Webhook creates the auth user (service role) with a random temporary password and `must_change_password` flag, assigns program `markusai`, and sends the email through the existing GoHighLevel email function.
 - Secrets: `GHL_PRIVATE_TOKEN`, `GHL_LOCATION_ID`.
