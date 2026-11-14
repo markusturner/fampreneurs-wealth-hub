@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { useConversation } from '@elevenlabs/react'
+import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { Loader2, Mic, MicOff, Phone, PhoneOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,13 @@ import { useToast } from '@/hooks/use-toast'
 
 type Line = { role: 'user' | 'assistant'; content: string; at: string }
 
-export function MarkusVoiceCall({ userId, projectId, onSaved }: { userId?: string; projectId: string | null; onSaved?: () => void }) {
+type Props = { userId?: string; projectId: string | null; onSaved?: () => void }
+
+export function MarkusVoiceCall(props: Props) {
+  return <ConversationProvider><MarkusVoiceCallInner {...props} /></ConversationProvider>
+}
+
+function MarkusVoiceCallInner({ userId, projectId, onSaved }: Props) {
   const [open, setOpen] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [muted, setMuted] = useState(false)
