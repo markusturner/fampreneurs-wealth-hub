@@ -63,4 +63,4 @@
 - Calls: ai-chat mode voice_session; member notes: markus_user_knowledge. Why: new edge functions 404; shared memory.
 
 ## Markus AI membership
-- Markus AI checkout reuses the deployed signup-create-checkout (flow=markus) and stripe-webhook functions with GoHighLevel helpers in _shared/ghl.ts; Markus-only accounts are gated by src/lib/markus-member.ts. Why: new edge functions 404 on this external project, and one helper keeps sidebar, mobile bar and route guards in sync.
+- Checkout uses signup-create-checkout (flow=markus) and stripe-webhook; gating in markus-member.ts. Why: new functions 404.
