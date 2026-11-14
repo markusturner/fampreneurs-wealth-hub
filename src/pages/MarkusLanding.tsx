@@ -79,6 +79,7 @@ export default function MarkusLanding() {
       <header className="relative isolate min-h-[92vh] overflow-hidden">
         <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
           <span className="font-montserrat text-sm font-bold tracking-[0.3em]">MARKUS<span className="text-secondary"> AI</span></span>
           <div className="flex items-center gap-3">
@@ -92,7 +93,7 @@ export default function MarkusLanding() {
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
           <h1 className="mt-6 font-montserrat text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
-            Your AI Family Office.<br /><span className="text-secondary">Every asset mapped and protected.</span>
+            Your AI Family Office.<br /><span className="text-secondary">Every asset mapped and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protected.</span></span>
           </h1>
           <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -120,7 +121,7 @@ export default function MarkusLanding() {
         <h2 className="mx-auto mt-3 max-w-2xl text-center font-montserrat text-3xl font-bold sm:text-4xl">You built the wealth. Now it needs a system.</h2>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {PAINS.map((p) => (
-            <div key={p.title} className="rounded-2xl border border-border bg-card/50 p-6">
+            <div key={p.title} className="rounded-2xl border border-border border-l-2 border-l-accent/70 bg-card/50 p-6 transition-colors hover:border-accent/50">
               <h3 className="font-montserrat text-lg font-semibold">{p.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
             </div>
@@ -169,7 +170,7 @@ export default function MarkusLanding() {
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-2xl border border-border bg-card/50 p-6">
-              <span className="font-montserrat text-3xl font-bold text-secondary/70">{s.n}</span>
+              <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text font-montserrat text-3xl font-bold text-transparent">{s.n}</span>
               <h3 className="mt-3 font-montserrat text-lg font-semibold">{s.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
             </div>
@@ -180,6 +181,7 @@ export default function MarkusLanding() {
       {/* Plans */}
       <section id="plans" className="relative overflow-hidden border-t border-border/60 py-24">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--secondary)/0.12),transparent_60%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.12),transparent_60%)]" />
         <div className="mx-auto max-w-4xl px-6">
           <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Membership</p>
           <h2 className="mt-3 text-center font-montserrat text-3xl font-bold sm:text-4xl">Choose your plan</h2>
@@ -223,6 +225,7 @@ export default function MarkusLanding() {
       <section className="px-6 pb-20">
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-secondary/40 bg-card p-10 text-center sm:p-16">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,hsl(var(--secondary)/0.2),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_60%)]" />
           <div className="relative">
             <h2 className="font-montserrat text-3xl font-bold sm:text-4xl">Your legacy deserves a system.</h2>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">Start today and have Markus on your side tonight.</p>
