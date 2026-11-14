@@ -37,7 +37,7 @@ const STEPS = [
 ]
 
 const FAQS = [
-  { q: 'What is Markus AI exactly?', a: 'Markus AI is a digital AI clone of Markus Turner. It is trained on how he teaches and thinks, so you get his way of protecting family wealth by text or voice, any time.' },
+  { q: 'What is Markus AI exactly?', a: 'Markus AI is a digital AI clone of Markus Turner. It is trained on how he teaches and thinks, so you get his way of protecting family wealth by text or voice, any time. Want to talk to the real Markus?', link: { href: 'https://calendly.com/turnermarkus50/pea-yt', label: 'Book a call with him here.' } },
   { q: 'Does this include setting up my private trust?', a: 'No. Markus AI is your always-on family office and advisor. Done-with-you private trust setup is part of The Private Estate Accelerator, The Trust Vault and the VIP Weekend.' },
   { q: 'Who is Markus AI built for?', a: 'Families who own real assets, like property, businesses and investments, and want to protect them and pass them down the right way.' },
   { q: 'Is my information private?', a: 'Yes. Your chats, notes and documents are tied to your own account and are not shared with other members.' },
@@ -205,7 +205,7 @@ export default function MarkusLanding() {
           {FAQS.map((f) => (
             <AccordionItem key={f.q} value={f.q} className="border-border">
               <AccordionTrigger className="text-left font-montserrat text-base hover:no-underline">{f.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+              <AccordionContent className="text-muted-foreground">{f.a}{"link" in f && f.link && <> <a href={f.link.href} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline underline-offset-4 hover:text-secondary">{f.link.label}</a></>}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
