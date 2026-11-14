@@ -11,10 +11,12 @@ Yes, this is possible. Members tap a "Call Markus" button and talk out loud with
 - A "Call Markus" button on the Markus AI page (phone, tablet and computer).
 - A live call screen with a talking animation, mute and hang up buttons.
 - Markus uses the same knowledge, rules and personality he has in chat now.
-- Each call's written transcript is saved to the member's private Markus history.
+- Markus remembers the member's past chats before the call starts, so he picks up where they left off.
+- Each call's written transcript is saved to the same private Markus history, so chat also remembers the call.
 - Same access rules as chat (Lite and VIP limits stay the same).
 
 ## Technical details
 - ElevenLabs Conversational AI agent using the cloned voice ID, started through a server function that issues a short-lived token (key never in the browser).
 - Agent system prompt mirrors the existing Markus persona; knowledge pulled from the existing approved Markus knowledge search.
+- Token function loads the member's recent ai_chat_history and passes a summary as the agent prompt override, so calls do not start fresh.
 - Transcripts stored in existing ai_chat_history tied to the user.
