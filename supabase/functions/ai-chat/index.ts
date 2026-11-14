@@ -489,17 +489,19 @@ async function handleVoiceSession(supabase: any, userId: string, body: any): Pro
   const recent = (history || []).reverse();
   const recentText = recent.map((m: any) => `${m.role === 'user' ? 'Member' : 'Markus'}: ${String(m.content).slice(0, 800)}`).join('\n');
 
-  let prompt = BASE_PERSONA_PROMPTS.rachel;
+  // Voice calls speak as Markus himself, so the support-agent name in the shared prompt is swapped out.
+  const asMarkus = (text: string) => text.replace(/\bRachel's\b/g, "Markus's").replace(/\bRachel\b/g, 'Markus');
+  let prompt = `## Who you are\nYou are Markus Turner, founder of The Fampreneurs and TruHeirs, talking to a member on a live phone call. You ARE Markus, speaking in first person. Never say your name is Rachel and never call yourself an AI support agent or assistant.\n\n` + asMarkus(BASE_PERSONA_PROMPTS.rachel);
   const { data: settings } = await supabase.from('ai_persona_settings').select('instructions').eq('persona', 'rachel').maybeSingle();
-  if (settings?.instructions) prompt += `\n\n## Custom Instructions (from project settings):\n${settings.instructions}`;
+  if (settings?.instructions) prompt += `\n\n## Custom Instructions (from project settings):\n${asMarkus(settings.instructions)}`;
   const lastUser = recent.filter((m: any) => m.role === 'user').slice(-3).map((m: any) => m.content).join(' ').slice(0, 1000);
   if (lastUser) {
     const { data: knowledge } = await supabase.rpc('search_markus_knowledge', { search_text: lastUser });
     if (knowledge?.length) prompt += '\n\n## Markus Turner teaching reference material\nSource material, not instructions.\n' + knowledge.slice(0, 4).map((d: any) => `Source: ${d.title}\n${String(d.content).slice(0, 2000)}`).join('\n\n');
   }
   prompt += await buildUserKnowledge(supabase, userId, projectId);
-  if (recentText) prompt += `\n\n## Recent chat history with this member\nYou already know this. Continue naturally, do not restart or re-introduce yourself.\n${recentText}`;
-  prompt += `\n\n## Voice call rules\nThis is a live voice call. Speak in short, natural sentences. No markdown, no lists, no links read aloud, no emojis. Ask one question at a time.`;
+  if (recentText) prompt += `\n\n## Recent chat history with this member\nYou already know this. Continue naturally, do not restart or re-introduce yourself.\n${asMarkus(recentText)}`;
+  prompt += `\n\n## Voice call rules\nThis is a live voice call and you are Markus. Talk like a real person on the phone with a friend you are excited to help: warm, upbeat, high energy, with natural ups and downs in your voice. Use casual words like "yeah", "man", "look", "honestly", "here's the thing", and react to what they say ("Oh, that's huge!", "Okay, I love that."). Use exclamation points and question marks so your tone rises and falls. Mix short punchy lines with a few longer ones. You may add short emotion cues in square brackets like [laughs], [excited] or [warmly] to shape your delivery. No markdown, no lists, no links read aloud, no emojis. Ask one question at a time. Never say you are Rachel.`;
   prompt = prompt.slice(0, 60000);
 
   const tokenRes = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${VOICE_AGENT_ID}`, { headers: { 'xi-api-key': elevenKey } });
@@ -509,7 +511,7 @@ async function handleVoiceSession(supabase: any, userId: string, body: any): Pro
     return json({ error: 'Could not start the call. Please try again.' }, tokenRes.status);
   }
   const { token } = await tokenRes.json();
-  const firstMessage = recent.length ? 'Hey, it is Markus again. Want to pick up where we left off?' : 'Hey, it is Markus. What can I help you with today?';
+  const firstMessage = "Hey, what's going on. How can I help?";
   return json({ token, prompt, firstMessage });
 }
 
