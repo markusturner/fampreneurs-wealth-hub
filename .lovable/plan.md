@@ -15,10 +15,10 @@
 - Explainer video: you will send it later; the page shows a placeholder until then.
 
 ## Web address
-- truheirs.markusturnerai.app must be connected as a custom domain in Project Settings, Domains. Until then it works at truheirs.app/markus.
+- The page lives at truheirs.app/markusturnerai. No new domain setup needed.
 
 ## Technical details
-- Pages: `src/pages/MarkusLanding.tsx` (/markus), `MarkusCheckout.tsx` (/markus/checkout?plan=), `MarkusThankYou.tsx`; hostname `truheirs.markusturnerai.app` renders landing at `/`.
+- Pages: `src/pages/MarkusLanding.tsx` (/markusturnerai), `MarkusCheckout.tsx` (/markusturnerai/checkout?plan=), `MarkusThankYou.tsx` (/markusturnerai/thank-you); public routes, no login.
 - Stripe: create products "Markus AI Monthly" $1,000/mo and "Markus AI Annual" $8,997/yr; edge function `markus-checkout` creates a Stripe Checkout session prefilled with the customer email.
 - Edge function `markus-lead`: validates input, inserts into new `markus_leads` table (service-role insert, admin read), upserts GHL contact via `services.leadconnectorhq.com/contacts/upsert` with tag `markusai` and notes.
 - Stripe webhook (existing or new) marks lead paid and adds `markusai-paid` tag in GHL.
