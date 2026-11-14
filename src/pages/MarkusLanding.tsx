@@ -257,7 +257,7 @@ export function MarkusCheckout() {
   return (
     <Shell>
       <main className="mx-auto max-w-lg">
-        <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => navigate('/markusturnerai')}>Back to Markus AI</button>
+        <button className="inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-secondary/10 px-4 py-2 text-sm font-semibold text-secondary transition-colors hover:border-accent hover:bg-accent/15 hover:text-accent" onClick={() => navigate('/markusturnerai')}><span aria-hidden>&larr;</span>Back to Markus AI</button>
         <h1 className="mt-4 text-2xl font-bold">Start your Markus AI membership</h1>
         <p className="mt-1 text-sm text-muted-foreground">A few quick details, then secure card payment.</p>
         <div className="mt-6 grid grid-cols-2 gap-3">
