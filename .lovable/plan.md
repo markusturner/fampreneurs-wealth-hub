@@ -11,8 +11,8 @@
 - No em dashes or emojis in the page text.
 
 ## What I need from you
-- A GoHighLevel Private Integration token and your Location ID (I will ask in a secure form).
-- The explainer video link, if you have one.
+- GoHighLevel token and Location ID: received, will be stored securely.
+- Explainer video: you will send it later; the page shows a placeholder until then.
 
 ## Web address
 - truheirs.markusturnerai.app must be connected as a custom domain in Project Settings, Domains. Until then it works at truheirs.app/markus.
