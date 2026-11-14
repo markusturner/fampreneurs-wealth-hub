@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 
 type Line = { role: 'user' | 'assistant'; content: string; at: string }
 
@@ -85,8 +86,8 @@ function MarkusVoiceCallInner({ userId, projectId, onSaved }: Props) {
           <DialogDescription>Talk out loud with Markus. He remembers your past chats, and this call is saved to your chats.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
-          <div className={`flex h-28 w-28 items-center justify-center rounded-full bg-primary/10 transition-transform duration-300 ${live && conversation.isSpeaking ? 'scale-110 ring-4 ring-primary/40' : ''}`}>
-            <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="" className="h-16 w-16 object-contain" />
+          <div className={`flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-primary/10 transition-transform duration-300 ${live && conversation.isSpeaking ? 'scale-110 ring-4 ring-primary/40' : ''}`}>
+            <img src={markusPhoto.url} alt="Markus" className="h-full w-full rounded-full object-cover" />
           </div>
           <p className="text-sm text-muted-foreground" role="status">{connecting ? 'Connecting...' : live ? (conversation.isSpeaking ? 'Markus is talking' : 'Listening...') : 'Ready to call'}</p>
           {lines.length > 0 && <div className="max-h-40 w-full overflow-y-auto rounded-md border border-border p-2 text-xs">
