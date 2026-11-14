@@ -181,7 +181,7 @@ export default function MarkusLanding() {
               const best = key === 'annual'
               return (
                 <div key={key} className={`relative flex flex-col rounded-3xl border p-8 ${best ? 'border-secondary bg-card shadow-2xl shadow-secondary/20' : 'border-border bg-card/50'}`}>
-                  {best && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-secondary px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-secondary-foreground">Best value - save $3,003</span>}
+                  {best && <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-secondary px-5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-secondary-foreground shadow-lg shadow-secondary/40 ring-2 ring-background">Best value - save $3,003</span>}
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">{p.label}</p>
                   <p className="mt-4 font-montserrat text-5xl font-bold">{p.price}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{p.per}</p>
