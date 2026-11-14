@@ -1,5 +1,6 @@
 import { expandProgramCodes, profileProgramCodes } from './programs'
 import { isVipWeekendProgram } from './workbook'
+import { isMarkusMemberProgram } from './markus-member'
 
 type EntryOptions = {
   programName?: string | null
@@ -11,6 +12,7 @@ type EntryOptions = {
 }
 
 export function mobileEntryPath(options: EntryOptions): string {
+  if (!options.isAdminOrOwner && isMarkusMemberProgram(options.programName)) return '/markus-ai'
   if (!options.isAdminOrOwner && isVipWeekendProgram(options.programName)) return '/protection-workbook'
   if (!options.isAdminOrOwner && (options.softwareOnly || options.familyOfficeOnly)) return '/dashboard'
   const assigned = profileProgramCodes(options.programName)

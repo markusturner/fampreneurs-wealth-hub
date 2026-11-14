@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { FunctionsHttpError } from '@supabase/supabase-js'
-import { Loader2, Play, CheckCircle2 } from 'lucide-react'
+import { Loader2, Play, CheckCircle2, ArrowRight, Bot, Phone, LayoutDashboard, ShieldAlert, FileLock2, Users, MessageSquare, Smartphone, Sparkles, Check } from 'lucide-react'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import estate from '@/assets/markus-estate-dusk.jpg'
+import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,11 +14,33 @@ import { useToast } from '@/hooks/use-toast'
 import { MARKUS_PLANS, type MarkusPlan } from '@/lib/markus-member'
 
 const FEATURES = [
-  ['Markus AI, your private trust and estate AI', '24/7 access'],
-  ['Digital Family Office', 'asset values and exposure view'],
-  ['TruHeirs app access', 'included'],
-  ['Private Markus AI community', 'separate from the Accelerator'],
-  ['Monthly live call', 'with the team'],
+  { icon: Bot, title: 'A trust and estate advisor that never sleeps', body: 'Ask Markus AI anything, day or night, and get clear answers in plain English. It remembers your family, your goals and every conversation, so you never start over.', wide: true },
+  { icon: Phone, title: 'Talk to Markus by voice', body: 'Tap call and talk it through out loud. Every call turns into a written chat you can come back to.' },
+  { icon: LayoutDashboard, title: 'Your whole net worth on one screen', body: 'Bank accounts, investments, real estate and businesses, all in one private Digital Family Office.' },
+  { icon: ShieldAlert, title: 'See what is exposed before it costs you', body: 'Spot the assets left open to lawsuits, probate and estate taxes, and know what to ask about first.' },
+  { icon: FileLock2, title: 'A private vault for what matters', body: 'Upload deeds, policies and statements. Markus reads them so his answers fit your real situation.' },
+  { icon: Users, title: 'Bring your family into the plan', body: 'Family calendar, family members and a family constitution, so the next generation knows the plan.', wide: true },
+  { icon: MessageSquare, title: 'A private room of serious families', body: 'Join the Markus AI Members community and learn from families building the same kind of legacy.' },
+  { icon: Smartphone, title: 'In your pocket on iPhone', body: 'Everything comes with the TruHeirs app, so your family office goes where you go.' },
+]
+
+const PAINS = [
+  { title: 'Your wealth is scattered', body: 'Accounts, properties and paperwork live in ten different places. Nobody sees the full picture.' },
+  { title: 'You do not know what is exposed', body: 'One lawsuit, one probate court or one tax bill can undo decades of hard work.' },
+  { title: 'Your heirs would not know where to start', body: 'If something happened tomorrow, would your family know what you own and what to do?' },
+]
+
+const STEPS = [
+  { n: '01', title: 'Pick your plan', body: 'Monthly or annual. Checkout takes about two minutes.' },
+  { n: '02', title: 'Get your login', body: 'Your login arrives by email right away. Choose your own password on first sign-in.' },
+  { n: '03', title: 'Map and ask', body: 'Add your assets, upload your documents and start asking Markus anything.' },
+]
+
+const FAQS = [
+  { q: 'Does this include setting up my private trust?', a: 'No. Markus AI is your always-on family office and advisor. Done-with-you private trust setup is part of The Private Estate Accelerator, The Trust Vault and the VIP Weekend.' },
+  { q: 'Who is Markus AI built for?', a: 'Families who own real assets, like property, businesses and investments, and want to protect them and pass them down the right way.' },
+  { q: 'Is my information private?', a: 'Yes. Your chats, notes and documents are tied to your own account and are not shared with other members.' },
+  { q: 'How fast can I start?', a: 'Right after checkout. Your login arrives by email, and you can talk to Markus the same day.' },
 ]
 
 const ASSET_RANGES = ['Under $250K', '$250K to $1M', '$1M to $5M', '$5M to $25M', '$25M+']
@@ -39,50 +64,174 @@ function Shell({ children }: { children: React.ReactNode }) {
   )
 }
 
+const goldBtn = 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
+
 export default function MarkusLanding() {
-  useSeo('Markus AI | Your AI Family Office', 'Markus AI answers trust and estate questions in real time and maps every asset you own.')
+  useSeo('Markus AI | Your AI Family Office', 'Markus AI is a 24/7 trust and estate advisor and private family office that maps every asset you own and shows you what is exposed.')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const go = (plan: MarkusPlan) => navigate(`/markusturnerai/checkout?plan=${plan}`)
+  const toPlans = () => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })
+
   return (
-    <Shell>
-      <main className="mx-auto max-w-2xl text-center">
-        {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-md border border-border p-3 text-sm text-muted-foreground">Your checkout was not finished. You can pick a plan again anytime.</p>}
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">For families serious about legacy</p>
-        <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">Your AI Family Office. Your Assets, Mapped And Monitored, 24/7.</h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">Markus AI answers your trust and estate questions in real time, values every asset you own, and shows you exactly what's exposed. It is the same system our enrolled families run inside the Accelerator.</p>
-
-        <div className="mx-auto mt-8 flex aspect-video w-full items-center justify-center rounded-xl border border-border bg-background text-sm text-muted-foreground">
-          <span className="flex items-center gap-2"><Play className="h-4 w-4" />2-minute explainer coming soon</span>
+    <div className="dark h-[100dvh] overflow-y-auto bg-background font-poppins text-foreground">
+      {/* Hero */}
+      <header className="relative isolate min-h-[92vh] overflow-hidden">
+        <img src={estate} alt="A family estate lit up at dusk" width={1920} height={1088} className="absolute inset-0 -z-20 h-full w-full object-cover object-bottom" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background" />
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+          <span className="font-montserrat text-sm font-bold tracking-[0.3em]">MARKUS<span className="text-secondary"> AI</span></span>
+          <div className="flex items-center gap-3">
+            <Link to="/auth" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Member sign in</Link>
+            <Button size="sm" className={goldBtn} onClick={toPlans}>Get started</Button>
+          </div>
+        </nav>
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-16 text-center sm:pt-24">
+          {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
+          <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
+            <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
+          </span>
+          <h1 className="mt-6 font-montserrat text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
+            Your AI Family Office.<br /><span className="text-secondary">Every asset mapped and protected.</span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">Markus AI answers your trust and estate questions the moment you have them, puts your whole net worth on one screen, and shows you exactly where your family is exposed. Day or night.</p>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Button size="lg" className={`h-12 px-8 text-base ${goldBtn}`} onClick={() => go('annual')}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Button size="lg" variant="outline" className="h-12 border-border bg-card/40 px-8 text-base backdrop-blur hover:bg-card" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>See what is inside</Button>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">Built by Markus Turner, Family Wealth Architect</p>
         </div>
+      </header>
 
-        <h2 className="mt-10 text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">What you get</h2>
-        <ul className="mt-4 space-y-2 text-left">
-          {FEATURES.map(([name, note]) => (
-            <li key={name} className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
-              <span>{name}</span><span className="text-right text-xs text-muted-foreground">{note}</span>
-            </li>
+      {/* Video */}
+      <section className="mx-auto -mt-10 max-w-4xl px-6">
+        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
+          <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary"><Play className="ml-1 h-6 w-6" /></span>
+            <span className="text-sm">2-minute walkthrough coming soon</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Pains */}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Sound familiar?</p>
+        <h2 className="mx-auto mt-3 max-w-2xl text-center font-montserrat text-3xl font-bold sm:text-4xl">You built the wealth. Now it needs a system.</h2>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {PAINS.map((p) => (
+            <div key={p.title} className="rounded-2xl border border-border bg-card/50 p-6">
+              <h3 className="font-montserrat text-lg font-semibold">{p.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+            </div>
           ))}
-        </ul>
-
-        <div className="mx-auto mt-8 grid max-w-md gap-4 sm:grid-cols-2">
-          {(['monthly', 'annual'] as MarkusPlan[]).map((key) => {
-            const p = MARKUS_PLANS[key]
-            const best = key === 'annual'
-            return (
-              <div key={key} className={`rounded-xl border p-5 ${best ? 'border-secondary' : 'border-border'} bg-background/60`}>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{best ? 'Annual - best value' : 'Monthly'}</p>
-                <p className="mt-2 text-3xl font-bold">{p.price}</p>
-                <p className="text-xs text-muted-foreground">{p.per}</p>
-                {best && <p className="mt-1 text-xs text-secondary">Save vs. monthly</p>}
-                <Button className="mt-4 w-full bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground" onClick={() => go(key)}>Start {p.label}</Button>
-              </div>
-            )
-          })}
         </div>
-        <p className="mt-10 text-xs text-muted-foreground">No application. No booked call. Pick a plan and get started today.</p>
-      </main>
-    </Shell>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="relative border-y border-border/60 bg-card/30 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-secondary">What you get</p>
+          <h2 className="mx-auto mt-3 max-w-3xl text-center font-montserrat text-3xl font-bold sm:text-4xl">Everything a family office does, for a fraction of what one costs.</h2>
+          <div className="mt-14 grid gap-4 md:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div key={f.title} className={`group rounded-2xl border border-border bg-background/70 p-6 transition-all hover:-translate-y-0.5 hover:border-secondary/50 hover:shadow-xl hover:shadow-secondary/10 ${f.wide ? 'md:col-span-2' : ''}`}>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary transition-colors group-hover:bg-secondary group-hover:text-secondary-foreground"><f.icon className="h-5 w-5" /></span>
+                <h3 className="mt-5 font-montserrat text-lg font-semibold">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Meet Markus */}
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 md:grid-cols-2">
+        <div className="relative mx-auto w-full max-w-sm">
+          <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-secondary/30 to-accent/20 blur-2xl" />
+          <img src={markusPhoto.url} alt="Markus Turner" loading="lazy" className="relative aspect-[4/5] w-full rounded-[1.75rem] border border-border object-cover" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Meet Markus</p>
+          <blockquote className="mt-4 font-montserrat text-2xl font-semibold leading-snug sm:text-3xl">"My name is Markus Turner, a Family Wealth Architect, helping asset-rich families protect what they've built and pass it down for generations."</blockquote>
+          <p className="mt-6 text-muted-foreground">Markus AI is trained on how Markus teaches and thinks. It is like having him on call for your family, any time you need him.</p>
+          <ul className="mt-6 space-y-3 text-sm">
+            {['Answers in plain English, not legal jargon', 'Knows your family and your assets', 'Available 24/7, even by voice'].map((t) => (
+              <li key={t} className="flex items-center gap-3"><Check className="h-4 w-4 text-secondary" />{t}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Steps */}
+      <section className="mx-auto max-w-6xl px-6 pb-24">
+        <h2 className="text-center font-montserrat text-3xl font-bold sm:text-4xl">Up and running today</h2>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {STEPS.map((s) => (
+            <div key={s.n} className="rounded-2xl border border-border bg-card/50 p-6">
+              <span className="font-montserrat text-3xl font-bold text-secondary/70">{s.n}</span>
+              <h3 className="mt-3 font-montserrat text-lg font-semibold">{s.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Plans */}
+      <section id="plans" className="relative overflow-hidden border-t border-border/60 py-24">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--secondary)/0.12),transparent_60%)]" />
+        <div className="mx-auto max-w-4xl px-6">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Membership</p>
+          <h2 className="mt-3 text-center font-montserrat text-3xl font-bold sm:text-4xl">Choose your plan</h2>
+          <div className="mx-auto mt-12 grid max-w-3xl gap-5 md:grid-cols-2">
+            {(['monthly', 'annual'] as MarkusPlan[]).map((key) => {
+              const p = MARKUS_PLANS[key]
+              const best = key === 'annual'
+              return (
+                <div key={key} className={`relative flex flex-col rounded-3xl border p-8 ${best ? 'border-secondary bg-card shadow-2xl shadow-secondary/20' : 'border-border bg-card/50'}`}>
+                  {best && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-secondary px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-secondary-foreground">Best value - save $3,003</span>}
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">{p.label}</p>
+                  <p className="mt-4 font-montserrat text-5xl font-bold">{p.price}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{p.per}</p>
+                  <ul className="mt-6 flex-1 space-y-2.5 text-sm">
+                    {['Markus AI, 24/7 by text and voice', 'Digital Family Office', 'Private document vault', 'Markus AI Members community', 'TruHeirs iPhone app'].map((t) => (
+                      <li key={t} className="flex items-center gap-2.5"><Check className="h-4 w-4 shrink-0 text-secondary" />{t}</li>
+                    ))}
+                  </ul>
+                  <Button size="lg" className={`mt-8 h-12 w-full text-base ${best ? goldBtn : 'bg-foreground text-background hover:bg-accent hover:text-accent-foreground'}`} onClick={() => go(key)}>Start {p.label}</Button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl px-6 pb-24">
+        <h2 className="text-center font-montserrat text-3xl font-bold">Questions</h2>
+        <Accordion type="single" collapsible className="mt-8">
+          {FAQS.map((f) => (
+            <AccordionItem key={f.q} value={f.q} className="border-border">
+              <AccordionTrigger className="text-left font-montserrat text-base hover:no-underline">{f.q}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </section>
+
+      {/* Final CTA */}
+      <section className="px-6 pb-20">
+        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-secondary/40 bg-card p-10 text-center sm:p-16">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,hsl(var(--secondary)/0.2),transparent_70%)]" />
+          <div className="relative">
+            <h2 className="font-montserrat text-3xl font-bold sm:text-4xl">Your legacy deserves a system.</h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">Start today and have Markus on your side tonight.</p>
+            <Button size="lg" className={`mt-8 h-12 px-10 text-base ${goldBtn}`} onClick={toPlans}>Choose my plan<ArrowRight className="ml-2 h-4 w-4" /></Button>
+          </div>
+        </div>
+        <p className="mt-10 text-center text-xs text-muted-foreground">TruHeirs. Markus AI gives education, not legal, tax or financial advice.</p>
+      </section>
+    </div>
   )
 }
 
@@ -145,7 +294,7 @@ export function MarkusCheckout() {
           <Button type="submit" disabled={busy} className="w-full bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground">
             {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Starting checkout...</> : `Continue to payment (${MARKUS_PLANS[plan].price} ${MARKUS_PLANS[plan].per})`}
           </Button>
-          <p className="text-center text-xs text-muted-foreground">Payments are processed securely by Stripe. Cancel anytime.</p>
+          <p className="text-center text-xs text-muted-foreground">Payments are processed securely by Stripe.</p>
         </form>
       </main>
     </Shell>

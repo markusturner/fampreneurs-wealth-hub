@@ -20,3 +20,10 @@ describe('Markus AI members', () => {
     expect(markusPathAllowed('/trust-creation', '')).toBe(false)
   })
 })
+
+import { mobileEntryPath } from '../src/lib/mobile-entry'
+describe('Markus AI member entry', () => {
+  it('phones open Markus AI first for Markus-only members', () => {
+    expect(mobileEntryPath({ programName: 'Markus AI', isAdminOrOwner: false, softwareOnly: true })).toBe('/markus-ai')
+  })
+})

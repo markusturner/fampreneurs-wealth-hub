@@ -130,6 +130,8 @@ function AppWithNotifications() {
         <Route path="/markusturnerai" element={<MarkusLanding />} />
         <Route path="/markusturnerai/checkout" element={<MarkusCheckout />} />
         <Route path="/markusturnerai/thank-you" element={<MarkusThankYou />} />
+        <Route path="/markusai" element={<Navigate to="/markusturnerai" replace />} />
+        <Route path="/markus" element={<Navigate to="/markusturnerai" replace />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
         <Route path="/signup" element={<SignUp />} />
