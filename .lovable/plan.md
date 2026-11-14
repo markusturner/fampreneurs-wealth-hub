@@ -1,7 +1,7 @@
 # Markus AI Landing Page with GoHighLevel
 
 ## What you get
-- A dark landing page matching your photo: gold eyebrow line, big headline, video box, "What you get" list, Monthly $1,000 and Annual $7,997 price cards.
+- A dark landing page matching your photo: gold eyebrow line, big headline, video box, "What you get" list, Monthly $1,000 and Annual $8,997 price cards.
 - Clicking Start Monthly or Start Annual opens a short 2-3 question qualifier (name, email, phone, asset range, biggest concern).
 - On submit, the lead goes into GoHighLevel tagged "markusai", with their answers saved on the contact.
 - Then they are sent to your GoHighLevel checkout page (monthly or annual) with name, email and phone already filled in.
