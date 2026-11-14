@@ -160,7 +160,7 @@ export default function MarkusLanding() {
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-2xl border border-border bg-card/50 p-6">
-              <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text font-montserrat text-3xl font-bold text-transparent">{s.n}</span>
+              <span className="font-montserrat text-3xl font-bold"><span className="text-secondary">{s.n.slice(0, -1)}</span><span className="text-accent">{s.n.slice(-1)}</span></span>
               <h3 className="mt-3 font-montserrat text-lg font-semibold">{s.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
             </div>
