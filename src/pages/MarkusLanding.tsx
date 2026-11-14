@@ -87,7 +87,7 @@ export default function MarkusLanding() {
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
           <h1 className="mt-5 max-w-3xl font-montserrat text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
-            How to map and <span className="bg-gradient-to-r from-secondary via-accent to-accent bg-clip-text text-transparent">protect</span> every asset your family owns.
+            <span className="text-foreground/70">How to</span> <span className="text-secondary">map</span> and <span className="bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">protect</span> every asset your family owns.
           </h1>
           <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus Turner has protected over $68M in client assets and helped create 80+ trustees, and his family has used trusts for three generations. Most families never get that kind of help. Markus AI gives you his method and shows you what you own, what it's worth, and what's at risk.</p>
           <div className="relative mt-6 w-full max-w-xl">
