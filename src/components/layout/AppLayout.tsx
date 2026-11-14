@@ -14,6 +14,7 @@ import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { FamilyToggleBar } from "./FamilyToggleBar"
 import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
 import { WebPushPrompt } from "@/components/dashboard/web-push-prompt"
+import { isMarkusMemberProgram, markusPathAllowed } from "@/lib/markus-member"
 
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
@@ -73,7 +74,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   // TruHeirs subscription is software only: no community or content
   // VIP Weekend clients get Digital Family Office only (no community or content)
   const isVipWeekend = /vip weekend/i.test(p?.program_name || '')
-  const softwareOnly = (p?.software_only === true || isVipWeekend) && !isAdminOrOwner && !isOwner
+  const isMarkusMember = isMarkusMemberProgram(p?.program_name) && !isAdminOrOwner && !isOwner
+  const softwareOnly = (p?.software_only === true || isVipWeekend) && !isAdminOrOwner && !isOwner && !isMarkusMember
+  useEffect(() => {
+    if (isMarkusMember && !markusPathAllowed(location.pathname, location.search)) navigate('/markus-ai', { replace: true })
+  }, [isMarkusMember, location.pathname, location.search, navigate])
   useEffect(() => {
     if (softwareOnly && SOFTWARE_BLOCKED_PREFIXES.some((r) => location.pathname.startsWith(r))) {
       navigate('/dashboard')

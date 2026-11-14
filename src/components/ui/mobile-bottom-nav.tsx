@@ -8,6 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useEffect, useState } from 'react'
 import { profileProgramCodes } from '@/lib/programs'
 import { isVipWeekendProgram } from '@/lib/workbook'
+import { isMarkusMemberProgram } from '@/lib/markus-member'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -51,6 +52,7 @@ export function MobileBottomNav() {
 
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
   const isVipClient = isVipWeekendProgram(profile?.program_name) && !isAdmin && !isOwner
+  const isMarkusMember = isMarkusMemberProgram(profile?.program_name) && !isAdmin && !isOwner
 
   const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo', '/trust-design-booking']
   const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
@@ -127,7 +129,11 @@ export function MobileBottomNav() {
   const isEventsView = new URLSearchParams(location.search).get('view') === 'events'
   const isCommunityActive = location.pathname === '/workspace-community' && !isEventsView
 
-  const navItems = isVipClient ? [
+  const navItems = isMarkusMember ? [
+    { name: 'Markus AI', href: '/markus-ai', icon: Bot },
+    { name: 'Community', href: '/workspace-community?program=markusai', icon: MessageSquare },
+    { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },
+  ] : isVipClient ? [
     { name: 'VIP Weekend Mastermind', href: '/protection-workbook', icon: FileText },
     { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },
   ] : [
@@ -140,7 +146,7 @@ export function MobileBottomNav() {
 
   
 
-  const workspaceItems = isVipClient ? [] : [
+  const workspaceItems = (isVipClient || isMarkusMember) ? [] : [
     ...(!isFamilyMember ? [{ name: 'Trust Creation', href: '/trust-creation', icon: ScrollText }] : []),
     ...(!isFamilyMember ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
     { name: 'Members', href: '/workspace-members', icon: Users },

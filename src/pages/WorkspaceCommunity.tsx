@@ -117,6 +117,7 @@ const PROGRAM_NAMES: Record<string, string> = {
   tfv: 'The Trust Vault',
   tfba: 'The Private Estate Accelerator',
   tffm: 'The Legacy InnerCircle',
+  markusai: 'Markus AI Members',
 }
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {
@@ -124,6 +125,7 @@ const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   tfv: 'Exclusive vault of resources, templates, and tools for family wealth management.',
   tfba: 'The #1 Guided Generational Wealth Community teaching you how to setup private irrevocable trusts!',
   tffm: 'The ultimate mastermind for families ready to build and protect generational fortune.',
+  markusai: 'The private community for Markus AI members.',
 }
 
 const PROGRAM_GROUP_IDS: Record<string, string> = {

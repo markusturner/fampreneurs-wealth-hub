@@ -1,3 +1,4 @@
+import { isMarkusMemberProgram } from '@/lib/markus-member'
 import { useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -8,6 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription"
 import { StripePaymentModal } from "@/components/dashboard/StripePaymentModal"
 import {
   BookOpen,
+  Bot,
   Calendar,
   ChevronDown,
   ClipboardList, FileText,
@@ -152,6 +154,7 @@ export function AppSidebar({ className }: { className?: string }) {
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
   // TruHeirs Lite users (FBU community only) — hide Trust, Succession, DFO, Admin
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
+  const isMarkusMember = isMarkusMemberProgram(profile?.program_name) && !isAdmin && !isOwner
   const profileCommunityCodes = expandProgramCodes([
     ...profileProgramCodes(profile?.program_name),
     ...(subscriptionStatus.programs || []),
@@ -199,7 +202,18 @@ export function AppSidebar({ className }: { className?: string }) {
 
       <ScrollArea className="flex-1 px-3 py-1">
         {/* WORKSPACE - show if not family-office-only, OR if user has a program assigned (admin-invited users) */}
-        {(!isFamilyOfficeOnly || isAdmin || isOwner || isFamilyMember || !!profile?.program_name) && (
+        {isMarkusMember && (
+          <>
+            <div className="mb-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Markus AI</p>
+            </div>
+            <div className="space-y-0.5">
+              <NavItem label="Markus AI" icon={Bot} href="/markus-ai" active={isActive("/markus-ai")} />
+              <NavItem label="Community" icon={MessageSquare} href="/workspace-community?program=markusai" active={currentPath === "/workspace-community"} />
+            </div>
+          </>
+        )}
+        {!isMarkusMember && (!isFamilyOfficeOnly || isAdmin || isOwner || isFamilyMember || !!profile?.program_name) && (
           <>
             <div className="mb-1">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</p>

@@ -1,3 +1,4 @@
+import { isMarkusMemberProgram } from '@/lib/markus-member'
 import { AI_DISCLOSURE } from '@/lib/legal'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -236,6 +237,12 @@ export default function Welcome() {
       navigate('/setup-login', { replace: true })
     }
   }, [loading, user, navigate])
+
+  // Markus AI members go straight to their own Markus AI page
+  useEffect(() => {
+    if (loading || !profile || (user as any)?.user_metadata?.needs_password_setup) return
+    if (isMarkusMemberProgram(profile.program_name)) navigate('/markus-ai', { replace: true })
+  }, [loading, profile, user, navigate])
 
   // Members who haven't finished onboarding must go through it first
   const { isAdminOrOwner: welcomeIsAdmin, isLoading: welcomeRoleLoading } = useIsAdminOrOwner()

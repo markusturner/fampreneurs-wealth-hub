@@ -36,6 +36,7 @@ import SOPDetail from "./pages/SOPDetail";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 import MarkusAI from "./pages/MarkusAI";
+import MarkusLanding, { MarkusCheckout, MarkusThankYou } from "./pages/MarkusLanding";
 import OnboardingSubmissions from "./pages/OnboardingSubmissions";
 
 
@@ -126,6 +127,9 @@ function AppWithNotifications() {
         {/* Public routes - no sidebar */}
         <Route path="/" element={<Auth />} />
         <Route path="/apply" element={<Apply />} />
+        <Route path="/markusturnerai" element={<MarkusLanding />} />
+        <Route path="/markusturnerai/checkout" element={<MarkusCheckout />} />
+        <Route path="/markusturnerai/thank-you" element={<MarkusThankYou />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
         <Route path="/signup" element={<SignUp />} />

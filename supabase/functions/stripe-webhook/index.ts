@@ -2,6 +2,74 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "npm:resend@2.0.0";
+import { ghlAddTags, ghlAddNote } from "../_shared/ghl.ts";
+
+const MARKUS_PROGRAM = "Markus AI";
+
+const buildMarkusEmail = (firstName: string, email: string, tempPassword: string) => `
+<!DOCTYPE html><html><body style="margin:0;background:#f5f5f5;font-family:Arial,sans-serif;color:#333;">
+<div style="max-width:600px;margin:0 auto;padding:20px;">
+<div style="background:#290a52;color:#fff;padding:30px;text-align:center;border-radius:8px 8px 0 0;"><h1 style="margin:0;font-size:26px;">Welcome to Markus AI</h1><p style="margin:8px 0 0;opacity:.9;">Your AI Family Office is ready</p></div>
+<div style="background:#fff;padding:30px;border-radius:0 0 8px 8px;">
+<p>Hi ${firstName},</p>
+<p>Thank you for joining. Your account includes Markus AI, your Digital Family Office, and the private Markus AI Members community.</p>
+<p><strong>Email:</strong> ${email}<br/><strong>Temporary password:</strong> <span style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;">${tempPassword}</span></p>
+<p>When you sign in, you will be asked to choose your own password.</p>
+<p style="text-align:center;margin:30px 0;"><a href="https://truheirs.app/auth" style="background:#ffb500;color:#290a52;padding:14px 36px;text-decoration:none;border-radius:8px;font-weight:bold;">Sign In</a></p>
+<p>Questions? Just reply to info@fampreneurs.com.</p>
+</div></div></body></html>`;
+
+async function activateMarkusMember(db: any, meta: Record<string, string>, sessionId: string, customerId: string | null) {
+  const email = (meta.email || "").toLowerCase();
+  if (!email) return;
+  const firstName = meta.first_name || "";
+  const lastName = meta.last_name || "";
+  const tempPassword = generateSecurePassword();
+  const { data: prof } = await db.from("profiles").select("user_id").ilike("email", email).maybeSingle();
+  let userId: string | undefined = prof?.user_id;
+  let isNew = false;
+  if (userId) {
+    // Existing account: keep their password and current programs, add Markus AI
+    const { data: cur } = await db.from("profiles").select("program_name").eq("user_id", userId).maybeSingle();
+    const names = (cur?.program_name || "").split(",").map((x: string) => x.trim()).filter(Boolean);
+    if (!names.some((n: string) => /markus ai/i.test(n))) names.push(MARKUS_PROGRAM);
+    await db.from("profiles").update({ program_name: names.join(", "), truheirs_access: true, phone: meta.phone || undefined }).eq("user_id", userId);
+  } else {
+    const { data: created, error } = await db.auth.admin.createUser({
+      email, password: tempPassword, email_confirm: true,
+      user_metadata: { first_name: firstName, last_name: lastName, program_name: MARKUS_PROGRAM, needs_password_setup: true },
+    });
+    if (error) { logStep("Markus user create failed", { error: error.message }); return; }
+    userId = created.user?.id;
+    isNew = true;
+    if (userId) {
+      await db.from("profiles").upsert({
+        user_id: userId, first_name: firstName, last_name: lastName, email, phone: meta.phone || null,
+        display_name: `${firstName} ${lastName}`.trim(), program_name: MARKUS_PROGRAM,
+        software_only: true, truheirs_access: true, skip_onboarding: true,
+      }, { onConflict: "user_id" });
+    }
+  }
+  if (!userId) return;
+  const { data: group } = await db.from("community_groups").select("id").eq("name", "Markus AI Members").maybeSingle();
+  if (group?.id) {
+    const { data: gm } = await db.from("group_memberships").select("id").eq("user_id", userId).eq("group_id", group.id).maybeSingle();
+    if (!gm) await db.from("group_memberships").insert({ user_id: userId, group_id: group.id });
+  }
+  await db.from("subscribers").upsert({ email, user_id: userId, stripe_customer_id: customerId, subscribed: true, subscription_tier: "Markus AI", subscription_period: meta.plan === "annual" ? "annual" : "monthly", updated_at: new Date().toISOString() }, { onConflict: "email" });
+  if (meta.lead_id) await db.from("markus_leads").update({ paid_at: new Date().toISOString(), user_id: userId, stripe_session_id: sessionId }).eq("id", meta.lead_id);
+  if (meta.ghl_contact_id) {
+    await ghlAddTags(meta.ghl_contact_id, ["markusai-paid"]);
+    await ghlAddNote(meta.ghl_contact_id, `Paid for Markus AI (${meta.plan === "annual" ? "Annual $8,997/yr" : "Monthly $1,000/mo"})`);
+  }
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) { logStep("RESEND_API_KEY not set"); return; }
+  const resend = new Resend(resendKey);
+  const html = isNew ? buildMarkusEmail(firstName || "there", email, tempPassword)
+    : buildMarkusEmail(firstName || "there", email, "Use your current password").replace("When you sign in, you will be asked to choose your own password.", "Sign in with your existing TruHeirs login.");
+  const { error: mailErr } = await resend.emails.send({ from: "TruHeirs <noreply@truheirs.app>", to: [email], subject: "Your Markus AI login is ready", html });
+  if (mailErr) logStep("Markus email failed", { error: mailErr.message }); else logStep("Markus email sent", { email });
+}
 
 const generateSecurePassword = (): string => {
   const length = 14;
@@ -91,6 +159,10 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const meta = session.metadata || {};
+      if (meta.markus_flow === 'true') {
+        try { await activateMarkusMember(supabaseClient, meta as Record<string, string>, session.id, (session.customer as string) || null); }
+        catch (e) { logStep("Markus activation failed", { error: e instanceof Error ? e.message : String(e) }); }
+      }
       // TruHeirs software-only subscription: turn access back on, software only
       if (meta.truheirs_software === 'true') {
         const payEmail = (session.customer_details?.email || session.customer_email || meta.email || '').toLowerCase();
@@ -199,11 +271,20 @@ serve(async (req) => {
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('user_id')
-        .eq('email', email)
-        .single();
+        .ilike('email', email)
+        .maybeSingle();
 
       if (!profile) {
         logStep("No profile found for email", { email });
+        return new Response("OK", { status: 200 });
+      }
+
+      // Markus AI: turn access off when the subscription ends or payment fails
+      if ((subscription.metadata as any)?.markus_flow === 'true') {
+        const live = event.type !== 'customer.subscription.deleted' && ['active', 'trialing'].includes(subscription.status);
+        await supabaseClient.from('profiles').update({ truheirs_access: live }).eq('user_id', profile.user_id);
+        await supabaseClient.from('subscribers').update({ subscribed: live, updated_at: new Date().toISOString() }).eq('email', email);
+        logStep("Markus subscription updated", { email, live });
         return new Response("OK", { status: 200 });
       }
 

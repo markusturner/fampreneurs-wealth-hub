@@ -4283,6 +4283,57 @@ export type Database = {
         }
         Relationships: []
       }
+      markus_leads: {
+        Row: {
+          asset_range: string | null
+          biggest_concern: string | null
+          created_at: string
+          email: string
+          first_name: string
+          ghl_contact_id: string | null
+          ghl_error: string | null
+          id: string
+          last_name: string
+          paid_at: string | null
+          phone: string
+          plan: string
+          stripe_session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          asset_range?: string | null
+          biggest_concern?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          ghl_contact_id?: string | null
+          ghl_error?: string | null
+          id?: string
+          last_name: string
+          paid_at?: string | null
+          phone: string
+          plan: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          asset_range?: string | null
+          biggest_concern?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          ghl_contact_id?: string | null
+          ghl_error?: string | null
+          id?: string
+          last_name?: string
+          paid_at?: string | null
+          phone?: string
+          plan?: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       markus_user_knowledge: {
         Row: {
           content: string
