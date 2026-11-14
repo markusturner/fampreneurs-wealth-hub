@@ -97,7 +97,7 @@ function MarkusVoiceCallInner({ userId, projectId, onSaved }: Props) {
             {live ? <>
               <Button variant="outline" size="icon" className="h-12 w-12 rounded-full" aria-label={muted ? 'Unmute' : 'Mute'} onClick={() => setMuted(m => !m)}>{muted ? <MicOff /> : <Mic />}</Button>
               <Button variant="destructive" size="icon" className="h-12 w-12 rounded-full" aria-label="Hang up" onClick={() => void end()}><PhoneOff /></Button>
-            </> : <Button className="h-12 gap-2 rounded-full px-6" disabled={connecting || !userId} onClick={() => void start()}>{connecting ? <Loader2 className="animate-spin" /> : <Phone />}Start call</Button>}
+            </> : <Button className="h-12 gap-2 rounded-full bg-[#ffb500] px-6 text-[#290a52] hover:bg-[#2eb2ff] hover:text-white" disabled={connecting || !userId} onClick={() => void start()}>{connecting ? <Loader2 className="animate-spin" /> : <Phone />}Start call</Button>}
           </div>
         </div>
       </DialogContent>
