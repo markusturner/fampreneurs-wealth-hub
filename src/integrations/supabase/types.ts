@@ -14,12 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      markus_user_knowledge: {
-        Row: { content: string; created_at: string; id: string; project_id: string | null; source_type: string; title: string; user_id: string }
-        Insert: { content: string; created_at?: string; id?: string; project_id?: string | null; source_type?: string; title: string; user_id: string }
-        Update: { content?: string; created_at?: string; id?: string; project_id?: string | null; source_type?: string; title?: string; user_id?: string }
-        Relationships: []
-      }
       account_transactions: {
         Row: {
           account_id: string
