@@ -7,16 +7,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import type { WelcomeConversation, WelcomeMessage } from '@/hooks/useWelcomeChat'
+import { stripDeliveryCues } from '@/lib/voice-transcript'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 
 type Line = { key: string; role: 'user' | 'assistant'; content: string; at: string; id?: Promise<string | null> }
-type Props = { userId?: string; projectId: string | null; onLive?: (conversation: WelcomeConversation, messages: WelcomeMessage[]) => void; onSaved?: () => void }
+type Props = { userId?: string; projectId: string | null; onLive?: (conversation: WelcomeConversation, messages: WelcomeMessage[]) => void; onSaved?: () => void; onEmpty?: () => void }
 
 export function MarkusVoiceCall(props: Props) {
   return <ConversationProvider><MarkusVoiceCallInner {...props} /></ConversationProvider>
 }
 
-function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
+function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved, onEmpty }: Props) {
   const [open, setOpen] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -64,18 +65,19 @@ function MarkusVoiceCallInner({ userId, projectId, onLive, onSaved }: Props) {
     await Promise.all(linesRef.current.map(l => l.id))
     if (linesRef.current.length === 0) {
       await supabase.from('chat_conversations').delete().eq('id', convo.id).eq('user_id', userId)
+      onEmpty?.()
     } else {
       await supabase.from('chat_conversations').update({ updated_at: new Date().toISOString() }).eq('id', convo.id).eq('user_id', userId)
       toast({ title: 'Call saved', description: 'You can keep chatting with Markus by typing below.' })
     }
     onSaved?.()
-  }, [userId, onSaved, toast])
+  }, [userId, onSaved, onEmpty, toast])
 
   const conversation = useConversation({
     micMuted: muted,
     onDisconnect: () => { void finish() },
     onMessage: (message: { message?: string; source?: string; role?: string; response_id?: string }) => {
-      const text = message?.message?.trim()
+      const text = stripDeliveryCues(message?.message ?? '')
       if (!text) return
       const fromUser = (message.role ?? message.source) === 'user'
       record(fromUser ? 'user' : 'assistant', text, fromUser ? undefined : message.response_id)

@@ -112,6 +112,16 @@ export default function Welcome() {
     setAnswerAtBottom(false)
   }
 
+  const chatSectionRef = useRef<HTMLElement | null>(null)
+  // Clicking the empty part of the Welcome screen returns it to the full welcome view, like the other chats.
+  const collapseOnOutsideClick = (event: React.PointerEvent<HTMLElement>) => {
+    const target = event.target as Node
+    if (!event.currentTarget.contains(target) || chatSectionRef.current?.contains(target)) return
+    if ((target as Element).closest?.('button, a, input, textarea, [role="menu"], [role="dialog"]')) return
+    if (rachelLoading || welcomeChat.busy || rachelQuestion.trim() || attachments.length > 0 || chatsOpen) return
+    if (welcomeChat.activeConversation || rachelAnswer) resetChat()
+  }
+
   const startNewChat = (folder: string | null = null) => {
     resetChat(folder)
     toast({ title: 'New chat started', description: 'Ask Markus AI anything to begin.' })
@@ -327,7 +337,7 @@ export default function Welcome() {
   }
 
   return (
-    <main className="relative min-h-[100dvh] overflow-x-hidden flex flex-col items-center justify-center px-4 pt-24 pb-12 sm:pt-24 sm:pb-16 bg-background text-foreground">
+    <main onPointerDown={collapseOnOutsideClick} className="relative min-h-[100dvh] overflow-x-hidden flex flex-col items-center justify-center px-4 pt-24 pb-12 sm:pt-24 sm:pb-16 bg-background text-foreground">
       <Helmet>
         <title>Welcome — TruHeirs</title>
         <meta name="description" content="Choose where to go next in your TruHeirs family dashboard." />
@@ -592,7 +602,7 @@ export default function Welcome() {
           )
         })()}
 
-        <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
+        <section ref={chatSectionRef} className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
           <WelcomeChatLibrary chat={welcomeChat} onReset={resetChat} onNewChat={startNewChat} onOpen={openChat} onOpenChange={setChatsOpen} />
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
