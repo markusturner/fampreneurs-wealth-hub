@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
+import { MarkusVoiceCall } from '@/components/chat/MarkusVoiceCall'
+import { MarkusKnowledgeBase } from '@/components/chat/MarkusKnowledgeBase'
+import { useAuth } from '@/contexts/AuthContext'
 import type { useWelcomeChat, WelcomeConversation } from '@/hooks/useWelcomeChat'
 
 type Chat = ReturnType<typeof useWelcomeChat>
@@ -20,6 +23,7 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenCha
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
   const historyId = useId()
+  const { user } = useAuth()
   const { toast } = useToast()
   const activeProject = chat.projects.find(project => project.id === chat.projectId)
   const selectedProject = chat.projects.find(project => project.id === folder)
@@ -66,6 +70,8 @@ export function WelcomeChatLibrary({ chat, onReset, onNewChat, onOpen, onOpenCha
           </DropdownMenu>
         </div>
         <div className="flex shrink-0 items-center">
+          <MarkusVoiceCall userId={user?.id} projectId={chat.projectId} onSaved={() => void chat.refresh()} />
+          <MarkusKnowledgeBase userId={user?.id} projects={chat.projects} projectId={chat.projectId} />
           <Button variant="ghost" className={`h-10 gap-1.5 px-2 text-xs ${open ? 'bg-muted text-foreground' : ''}`} aria-label="View chats" aria-expanded={open} aria-controls={historyId} title="Chats" disabled={chat.busy} onClick={() => { setOpenState(!open); if (!open) void chat.refresh() }}><MessagesSquare /><span>Chats</span></Button>
           <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Add project" title="Add project" disabled={chat.busy} onClick={() => setProjectDialog(true)}><FolderPlus /></Button>
           <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Start new chat" title="New chat" disabled={chat.busy} onClick={() => { onNewChat(chat.projectId); setOpenState(false) }}><Plus /></Button>

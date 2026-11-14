@@ -58,3 +58,7 @@
 ## Community data access
 - Community reads are RLS-scoped by current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row. Why: open sign-up must not expose every community.
 - Member "active now" uses one shared presence room; "last active" lives in community_member_activity (touch/get RPCs). Why: presence forgets past visits; profiles stay untouched.
+
+## Markus voice and knowledge
+- Markus voice calls start through ai-chat mode voice_session (ElevenLabs agent with the owner Markus voice, prompt override carries recent chat history and member knowledge); transcripts save to ai_chat_history. Why: new edge functions on this project can 404, and calls must share chat memory.
+- Member Knowledge Base lives in markus_user_knowledge (owner-only RLS, optional project scope) and is injected into rachel prompts. Why: private per-member context shared by chat and calls.

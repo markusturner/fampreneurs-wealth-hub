@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      markus_user_knowledge: {
+        Row: { content: string; created_at: string; id: string; project_id: string | null; source_type: string; title: string; user_id: string }
+        Insert: { content: string; created_at?: string; id?: string; project_id?: string | null; source_type?: string; title: string; user_id: string }
+        Update: { content?: string; created_at?: string; id?: string; project_id?: string | null; source_type?: string; title?: string; user_id?: string }
+        Relationships: []
+      }
       account_transactions: {
         Row: {
           account_id: string
@@ -4282,6 +4288,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      markus_user_knowledge: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          project_id: string | null
+          source_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          source_type?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          source_type?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "markus_user_knowledge_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "chat_projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meeting_reminders: {
         Row: {
