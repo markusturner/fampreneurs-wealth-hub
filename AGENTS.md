@@ -52,8 +52,6 @@
 - LegalConsentGate (mounted in main.tsx) is the single place that enforces 18+ and Terms acceptance for all account-creation paths. Why: invites and admin-created accounts skip the signup page.
 - Self-service export/deletion runs through the deployed delete-user function (shared handler in _shared/account-privacy.ts) with a browser export and pending-request fallback. Why: new edge functions on this external project return 404.
 
-## Markus AI mobile page
-- Phone Markus AI page reuses CoachMarkusChat. Why: one shared chat history.
 
 ## Community data access
 - Community reads are RLS-scoped by current_user_community_programs() (tiered like expandProgramCodes); child tables check their parent row. Why: open sign-up must not expose every community.
@@ -63,4 +61,5 @@
 - Calls: ai-chat mode voice_session; member notes: markus_user_knowledge. Why: new edge functions 404; shared memory.
 
 ## Markus AI membership
+- Phone Markus AI page reuses CoachMarkusChat. Why: one shared chat history.
 - Checkout uses signup-create-checkout (flow=markus) and stripe-webhook; gating in markus-member.ts. Why: new functions 404.
