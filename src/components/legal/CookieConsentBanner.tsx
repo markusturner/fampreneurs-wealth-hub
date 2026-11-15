@@ -13,7 +13,7 @@ export function CookieConsentBanner() {
   const [open, setOpen] = useState(() => needsCookieBanner())
   const [typing, setTyping] = useState(false)
   const { pathname } = useLocation()
-  const onAuthPage = pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/apply') || pathname.startsWith('/signup') || pathname.startsWith('/register') || pathname.startsWith('/login') || pathname.startsWith('/markusturnerai')
+  const onAuthPage = pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/apply') || pathname.startsWith('/signup') || pathname.startsWith('/register') || pathname.startsWith('/login')
 
   useEffect(() => {
     const reopen = () => setOpen(true)
