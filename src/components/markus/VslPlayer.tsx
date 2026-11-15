@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react'
 
 export function formatTime(seconds: number) {
@@ -10,23 +10,52 @@ export function formatTime(seconds: number) {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
 }
 
-type Props = { src: string; poster: string; fallbackDuration?: number; title?: string }
+export type VslChapter = { t: number; title: string }
 
-export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video' }: Props) {
+/** Seconds of the muted preview loop shown before the visitor clicks play. */
+export const PREVIEW_LOOP_SECONDS = 5
+
+type Props = {
+  src: string
+  poster: string
+  fallbackDuration?: number
+  title?: string
+  chapters?: VslChapter[]
+}
+
+export function currentChapter(chapters: VslChapter[], time: number) {
+  let found: VslChapter | undefined
+  for (const c of chapters) if (time >= c.t) found = c
+  return found
+}
+
+export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video', chapters = [] }: Props) {
   const ref = useRef<HTMLVideoElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const startedRef = useRef(false)
   const [started, setStarted] = useState(false)
   const [playing, setPlaying] = useState(false)
-  const [muted, setMuted] = useState(false)
+  const [muted, setMuted] = useState(true)
   const [time, setTime] = useState(0)
   const [duration, setDuration] = useState(fallbackDuration)
+  const [hoverChapter, setHoverChapter] = useState<number | null>(null)
+  const [frameReady, setFrameReady] = useState(false)
 
   useEffect(() => {
     const v = ref.current
     if (!v) return
-    const onTime = () => setTime(v.currentTime)
+    const onTime = () => {
+      if (!startedRef.current) {
+        if (v.currentTime >= PREVIEW_LOOP_SECONDS) v.currentTime = 0
+        return
+      }
+      setTime(v.currentTime)
+    }
     const onMeta = () => { if (Number.isFinite(v.duration) && v.duration > 0) setDuration(v.duration) }
-    const onPlay = () => { setPlaying(true); setStarted(true) }
+    const onPlay = () => setPlaying(true)
+    const onPlaying = () => setFrameReady(true)
+    v.addEventListener('playing', onPlaying)
     const onPause = () => setPlaying(false)
     v.addEventListener('timeupdate', onTime)
     v.addEventListener('loadedmetadata', onMeta)
@@ -34,7 +63,11 @@ export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video' }
     v.addEventListener('play', onPlay)
     v.addEventListener('pause', onPause)
     v.addEventListener('ended', onPause)
+    // Muted preview autoplay loop
+    v.muted = true
+    void v.play().catch(() => undefined)
     return () => {
+      v.removeEventListener('playing', onPlaying)
       v.removeEventListener('timeupdate', onTime)
       v.removeEventListener('loadedmetadata', onMeta)
       v.removeEventListener('durationchange', onMeta)
@@ -44,18 +77,44 @@ export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video' }
     }
   }, [])
 
+  const startWithSound = () => {
+    const v = ref.current
+    if (!v) return
+    startedRef.current = true
+    setStarted(true)
+    v.currentTime = 0
+    v.muted = false
+    setMuted(false)
+    setTime(0)
+    void v.play().catch(() => setPlaying(false))
+  }
+
   const toggle = () => {
     const v = ref.current
     if (!v) return
-    setStarted(true)
+    if (!startedRef.current) { startWithSound(); return }
     if (v.paused) void v.play().catch(() => setPlaying(false))
     else v.pause()
   }
   const seek = (value: number) => {
     const v = ref.current
     if (!v) return
-    v.currentTime = value
-    setTime(value)
+    const next = Math.max(0, Math.min(duration || value, value))
+    v.currentTime = next
+    setTime(next)
+  }
+  const seekFromPointer = (clientX: number) => {
+    const el = trackRef.current
+    if (!el || !duration) return
+    const rect = el.getBoundingClientRect()
+    seek(((clientX - rect.left) / rect.width) * duration)
+  }
+  const onTrackDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    seekFromPointer(e.clientX)
+  }
+  const onTrackMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) seekFromPointer(e.clientX)
   }
   const toggleMute = () => {
     const v = ref.current
@@ -71,59 +130,105 @@ export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video' }
     else if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen()
   }
 
-  const pct = duration > 0 ? (time / duration) * 100 : 0
+  const pct = duration > 0 ? Math.min(100, (time / duration) * 100) : 0
+  const active = currentChapter(chapters, time)
 
   return (
-    <div ref={wrapRef} className="group relative h-full w-full bg-background">
+    <div ref={wrapRef} className="group relative h-full w-full overflow-hidden bg-background">
       <video
         ref={ref}
         src={src}
         poster={poster}
         playsInline
-        preload="metadata"
+        muted
+        autoPlay
+        preload="auto"
         onClick={toggle}
         className="h-full w-full cursor-pointer object-cover"
         aria-label={title}
       />
 
+      {!frameReady && (
+        <img src={poster} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+      )}
+
       {!started && (
-        <button type="button" onClick={toggle} aria-label={`Play ${title}`} className="absolute inset-0 flex items-center justify-center">
-          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          <span className="absolute inset-0 bg-background/20 transition group-hover:bg-background/10" />
-          <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-2xl shadow-secondary/40 ring-4 ring-secondary/30 transition group-hover:scale-105 sm:h-20 sm:w-20">
-            <Play className="ml-1 h-7 w-7 fill-current sm:h-9 sm:w-9" />
+        <button
+          type="button"
+          onClick={startWithSound}
+          aria-label={`Watch ${title} with sound`}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/45 transition hover:bg-background/35"
+        >
+          <span className="absolute left-3 top-3 flex items-center gap-2 rounded-lg bg-background/70 px-3 py-1.5 text-sm font-medium text-foreground backdrop-blur sm:left-5 sm:top-5">
+            <Play className="h-3.5 w-3.5 fill-current" /> Watch first
           </span>
-          {duration > 0 && (
-            <span className="absolute bottom-3 right-3 rounded-md bg-background/80 px-2 py-1 font-mono text-xs font-semibold text-foreground backdrop-blur">{formatTime(duration)}</span>
-          )}
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-background shadow-2xl transition group-hover:scale-105 sm:h-24 sm:w-24">
+            <Play className="ml-1 h-7 w-7 fill-current sm:h-10 sm:w-10" />
+          </span>
+          <span className="text-base font-medium text-foreground drop-shadow sm:text-lg">Watch with sound</span>
         </button>
       )}
 
       {started && (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3 pb-2 pt-8">
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            step={0.1}
-            value={time}
-            onChange={(e) => seek(Number(e.target.value))}
-            aria-label="Seek"
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full accent-[hsl(var(--secondary))]"
-            style={{ background: `linear-gradient(to right, hsl(var(--secondary)) ${pct}%, hsl(var(--foreground) / 0.25) ${pct}%)` }}
-          />
-          <div className="mt-1.5 flex items-center gap-3 text-foreground">
-            <button type="button" onClick={toggle} aria-label={playing ? 'Pause' : 'Play'} className="hover:text-secondary">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/95 via-background/70 to-transparent px-3 pb-2.5 pt-10">
+          <div className="flex items-center gap-3 text-foreground">
+            <button type="button" onClick={toggle} aria-label={playing ? 'Pause' : 'Play'} className="shrink-0 hover:text-secondary">
               {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </button>
-            <button type="button" onClick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'} className="hover:text-secondary">
+            <span className="shrink-0 font-mono text-xs font-semibold tabular-nums sm:text-sm">{formatTime(time)} / {formatTime(duration)}</span>
+
+            <div
+              ref={trackRef}
+              onPointerDown={onTrackDown}
+              onPointerMove={onTrackMove}
+              role="slider"
+              aria-label="Seek"
+              aria-valuemin={0}
+              aria-valuemax={Math.round(duration)}
+              aria-valuenow={Math.round(time)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') seek(time + 5)
+                if (e.key === 'ArrowLeft') seek(time - 5)
+              }}
+              className="relative flex h-6 min-w-0 flex-1 cursor-pointer touch-none items-center"
+            >
+              <div className="h-1 w-full rounded-full bg-foreground/30" />
+              <div className="absolute left-0 h-1 rounded-full bg-secondary" style={{ width: `${pct}%` }} />
+              {duration > 0 && chapters.map((c, i) => (
+                <button
+                  key={c.t}
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); seek(c.t) }}
+                  onMouseEnter={() => setHoverChapter(i)}
+                  onMouseLeave={() => setHoverChapter(null)}
+                  onFocus={() => setHoverChapter(i)}
+                  onBlur={() => setHoverChapter(null)}
+                  aria-label={`Skip to ${c.title} at ${formatTime(c.t)}`}
+                  className={`absolute h-3 w-3 -translate-x-1/2 rounded-full border-2 border-foreground transition hover:scale-125 ${time >= c.t ? 'bg-secondary' : 'bg-background'}`}
+                  style={{ left: `${(c.t / duration) * 100}%` }}
+                >
+                  {hoverChapter === i && (
+                    <span className={`pointer-events-none absolute bottom-5 whitespace-nowrap rounded-md bg-background/95 px-2 py-1 text-xs font-medium text-foreground shadow-lg ${i === 0 ? 'left-0' : i === chapters.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'}`}>
+                      {formatTime(c.t)} · {c.title}
+                    </span>
+                  )}
+                </button>
+              ))}
+              <span className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-foreground shadow" style={{ left: `${pct}%` }} />
+            </div>
+
+            <button type="button" onClick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'} className="shrink-0 hover:text-secondary">
               {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </button>
-            <span className="font-mono text-xs font-semibold tabular-nums">{formatTime(time)} / {formatTime(duration)}</span>
-            <button type="button" onClick={fullscreen} aria-label="Full screen" className="ml-auto hover:text-secondary">
+            <button type="button" onClick={fullscreen} aria-label="Full screen" className="shrink-0 hover:text-secondary">
               <Maximize className="h-5 w-5" />
             </button>
           </div>
+          {active && (
+            <p className="mt-1 truncate pl-8 text-xs font-medium text-foreground/80">{active.title}</p>
+          )}
         </div>
       )}
     </div>
