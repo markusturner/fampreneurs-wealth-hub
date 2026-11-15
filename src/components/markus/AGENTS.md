@@ -1,0 +1,1 @@
+- MarkusChatView sends surface=markus; ai-chat also detects Markus-only profiles and uses MARKUS_MEMBER_PROMPT. Why: members get no app-wide links or program pitches.
