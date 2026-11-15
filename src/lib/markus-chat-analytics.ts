@@ -53,3 +53,29 @@ export function analyzeChats(rows: ChatRow[], now = new Date()) {
     topUsers,
   }
 }
+
+// Which communities a member belongs to, from their program name, for filtering chat and voice logs.
+export const CHAT_COMMUNITIES = ['Markus AI', 'PEA', 'TTV', 'TLI', 'VIP', 'Lite', 'Other'] as const
+export type ChatCommunity = typeof CHAT_COMMUNITIES[number]
+
+export function chatCommunities(programName?: string | null): ChatCommunity[] {
+  const out = new Set<ChatCommunity>()
+  for (const raw of (programName || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)) {
+    if (/^markus ai$/.test(raw)) out.add('Markus AI')
+    else if (/vip weekend/.test(raw)) out.add('VIP')
+    else if (/private estate accelerator|family business accelerator|\btfba\b/.test(raw)) out.add('PEA')
+    else if (/trust vault|\btfv\b/.test(raw)) out.add('TTV')
+    else if (/legacy innercircle|succession society|family fortune mastermind|\btffm\b/.test(raw)) out.add('TLI')
+    else if (/lite/.test(raw)) out.add('Lite')
+    else out.add('Other')
+  }
+  if (!out.size) out.add('Other')
+  return CHAT_COMMUNITIES.filter(c => out.has(c))
+}
+
+// A voice call is a chat thread with at least one message spoken on a Markus voice call.
+export function voiceCallIds(rows: { conversation_id?: string | null; metadata?: any }[]): Set<string> {
+  const ids = new Set<string>()
+  for (const r of rows) if (r.conversation_id && r.metadata?.source === 'voice') ids.add(r.conversation_id)
+  return ids
+}

@@ -15,6 +15,7 @@ const SHORT_LABELS: Record<string, string> = {
   tfv: 'TTV',
   tfba: 'PEA',
   tffm: 'TLI',
+  markus: 'Markus AI',
 }
 
 // Short display label for a program code (internal code stays 'tfba')

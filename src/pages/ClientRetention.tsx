@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Link2, Users, Paperclip, X as XIcon, FileText } from "lucide-react"
+import { Pencil, AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList, LayoutGrid, Table as TableIcon, GripVertical, ArrowUpDown, Mail, Link2, Users, Paperclip, X as XIcon, FileText, MessageSquare } from "lucide-react"
 
 import { AdminAllUsersManagement } from "@/components/dashboard/admin-all-users-management"
 import { AdminUserManagement } from "@/components/dashboard/admin-user-management"
@@ -84,6 +84,8 @@ function upsellInfo(c: ClientScore): { target: string; price: number; cost: numb
   const name = (c.program_name || "").toLowerCase()
   const key = (c.program || "").toLowerCase()
   if (key === "fbu") return { target: "TTV", price: 5000, cost: Math.max(0, 5000 - (PROGRAM_VALUE.fbu ?? 0)) }
+  // Markus AI members move up to a done-with-you program for their trusts.
+  if (key === "markus") return { target: "TTV", price: 5000, cost: 5000 }
   if (key === "tfv") return { target: "PEA", price: 9000, cost: Math.max(0, 9000 - (PROGRAM_VALUE.tfv ?? 0)) }
   if (key === "tfba") return { target: "TSS", price: 22000, cost: Math.max(0, 22000 - (PROGRAM_VALUE.tfba ?? 0)) }
   if (key === "tffm") {
@@ -272,6 +274,8 @@ export default function ClientRetention() {
   const [viewMode, setViewMode] = useState<"board" | "table">("board")
   const [invitesOpen, setInvitesOpen] = useState(false)
   const [pageView, setPageView] = useState<"clients" | "surveys" | "attendance" | "markus">(isAttendanceView ? "attendance" : "clients")
+  // Client opened from the details popup in the Chat & Voice Logs tab.
+  const [markusFocus, setMarkusFocus] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>("custom")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [boardOrder, setBoardOrder] = useState<string[]>(cached?.boardOrder ?? [])
@@ -1544,7 +1548,7 @@ export default function ClientRetention() {
       <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TTV, PEA & TFFM client.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TTV, PEA, TFFM & Markus AI client.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-sm">
@@ -1559,7 +1563,7 @@ export default function ClientRetention() {
 
       <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1 rounded-lg border bg-card p-0.5 shrink-0">
-          {([["clients","Clients"],["surveys","Surveys"],["attendance","Attendance Log"],["markus","Markus AI Chats"]] as const).map(([v, label]) => (
+          {([["clients","Clients"],["surveys","Surveys"],["attendance","Attendance Log"],["markus","Chat & Voice Logs"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setPageView(v)}
@@ -1577,7 +1581,7 @@ export default function ClientRetention() {
       </div>
 
       {pageView === "markus" ? (
-        <ClientMarkusThreads />
+        <ClientMarkusThreads focusId={markusFocus} />
       ) : pageView === "attendance" ? (
         <div className="min-w-0 overflow-x-auto"><CoachingCallAttendanceLog /></div>
       ) : pageView === "surveys" ? (
@@ -1806,6 +1810,11 @@ export default function ClientRetention() {
                       <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
                       </p>
+                    )}
+                    {selected && (
+                      <Button variant="outline" size="sm" className="mt-2 h-7 text-xs" onClick={() => { setMarkusFocus(selected.user_id); setSelectedId(null); setPageView("markus") }}>
+                        <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Markus AI chats and voice calls
+                      </Button>
                     )}
                   </div>
                   {selected && (

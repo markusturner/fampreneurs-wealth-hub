@@ -1,5 +1,9 @@
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+}
 
 interface Signal { label: string; severity: 'info' | 'warn' | 'critical' }
 
@@ -8,6 +12,7 @@ interface ClientScore {
   full_name: string
   email: string
   program: string | null
+  program_name?: string | null
   contract_start_date: string | null
   score: number
   status: 'at_risk' | 'slipping' | 'stable' | 'expansion_ready'
@@ -18,8 +23,14 @@ interface ClientScore {
   linked_users?: { user_id: string; full_name: string }[]
 }
 
-const PROGRAM_DURATION_DAYS: Record<string, number> = { tfv: 180, tfba: 90, tffm: 365 }
-const PROGRAM_ARR: Record<string, number> = { tfv: 5000, tfba: 9000, tffm: 40000 }
+const PROGRAM_DURATION_DAYS: Record<string, number> = { tfv: 180, tfba: 90, tffm: 365, markus: 365 }
+const PROGRAM_ARR: Record<string, number> = { tfv: 5000, tfba: 9000, tffm: 40000, markus: 12000 }
+
+// Markus AI members have only the Markus AI program (no coaching calls or trusts).
+function isMarkusOnly(programName: string | null | undefined): boolean {
+  const names = (programName || '').split(',').map((n) => n.trim()).filter(Boolean)
+  return names.length > 0 && names.every((n) => /^markus ai$/i.test(n))
+}
 const DRIVE_ROOT_FOLDER = '1qdgqj51PK5oAsgA9A6iExwzKZR3rxo5B' // AI Trust Software
 
 function daysSince(date: string | null | undefined, now = Date.now()): number | null {
@@ -377,7 +388,7 @@ Deno.serve(async (req) => {
     // Active non-Lite clients
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, user_id, first_name, last_name, display_name, email, program_name, contract_start_date, created_at, needs_profile_completion, membership_type, linked_user_ids')
+      .select('id, user_id, first_name, last_name, display_name, email, program_name, contract_start_date, created_at, needs_profile_completion, membership_type, linked_user_ids, program_contract_value')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
@@ -413,11 +424,17 @@ Deno.serve(async (req) => {
       if (last) lastNameCounts.set(last, (lastNameCounts.get(last) ?? 0) + 1)
     }
 
+    // Markus AI yearly value: annual plan $8,997, monthly plan $1,000 x 12.
+    const { data: markusSubs } = await supabase.from('subscribers').select('user_id, subscription_period').eq('subscription_tier', 'Markus AI')
+    const markusPeriod = new Map((markusSubs ?? []).map((r: any) => [r.user_id, r.subscription_period]))
+
     const results: ClientScore[] = []
 
     for (const p of clients) {
       const prog = (p.program_name || '').toLowerCase()
-      const programKey = prog.includes('tffm') || prog.includes('succession') ? 'tffm'
+      const markusOnly = isMarkusOnly(p.program_name)
+      const programKey = markusOnly ? 'markus'
+        : prog.includes('tffm') || prog.includes('succession') ? 'tffm'
         : prog.includes('tfba') || prog.includes('accelerator') ? 'tfba'
         : prog.includes('tfv') || prog.includes('vault') ? 'tfv'
         : 'tfv'
@@ -476,7 +493,28 @@ Deno.serve(async (req) => {
         .sort()
         .reverse()[0] ?? null
       const lastAttendedDays = daysSince(lastAttendedAt)
-      if (programKey === 'tfv') {
+      // -------- Markus AI usage (text chats and voice calls) --------
+      const since30 = new Date(Date.now() - 30 * 86400000).toISOString()
+      const [lastMarkus, markusChats30, markusVoice30] = await Promise.all([
+        supabase.from('ai_chat_history').select('created_at').in('user_id', actIds).eq('role', 'user').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('ai_chat_history').select('id', { count: 'exact', head: true }).in('user_id', actIds).eq('role', 'user').gte('created_at', since30),
+        supabase.from('ai_chat_history').select('conversation_id').in('user_id', actIds).eq('metadata->>source', 'voice').gte('created_at', since30).limit(1000),
+      ])
+      const lastMarkusDays = daysSince(lastMarkus.data?.created_at)
+      const voiceCalls30 = new Set((markusVoice30.data ?? []).map((r: any) => r.conversation_id).filter(Boolean)).size
+      const markusQuestions30 = markusChats30.count ?? 0
+      if (lastMarkusDays !== null) {
+        signals.push({ label: `Markus AI: ${markusQuestions30} message${markusQuestions30 === 1 ? '' : 's'} and ${voiceCalls30} voice call${voiceCalls30 === 1 ? '' : 's'} in 30d (last ${lastMarkusDays}d ago)`, severity: 'info' })
+      }
+
+      if (programKey === 'markus') {
+        // Markus AI members have no coaching calls; using Markus AI is their main engagement.
+        if (lastMarkusDays === null) { attendanceScore = 3; signals.push({ label: 'Has not used Markus AI yet', severity: 'warn' }) }
+        else if (lastMarkusDays > 21) { attendanceScore = 2; signals.push({ label: `No Markus AI use in ${lastMarkusDays}d`, severity: 'critical' }) }
+        else if (lastMarkusDays > 10) { attendanceScore = 5; signals.push({ label: `Markus AI use dropped (${lastMarkusDays}d)`, severity: 'warn' }) }
+        else if (markusQuestions30 >= 10 || voiceCalls30 >= 2) attendanceScore = 9
+        else attendanceScore = 7
+      } else if (programKey === 'tfv') {
         attendanceScore = 8 // neutral-positive; TTV doesn't include coaching calls
       } else if (lastAttendedDays === null) {
         signals.push({ label: 'No coaching call attendance logged', severity: 'warn' })
@@ -511,7 +549,9 @@ Deno.serve(async (req) => {
         (f.mimeType === 'application/vnd.google-apps.folder' && driveMatches.length >= 2)
       )
 
-      if (ascensionEligible) {
+      if (programKey === 'markus') {
+        trustScore = 6 // trusts are not part of Markus AI
+      } else if (ascensionEligible) {
         trustScore = 10
         signals.push({ label: 'Ascension-ready: 3 trusts drafted + assets funded', severity: 'info' })
       } else if (trustCompletedInDrive) {
@@ -613,6 +653,8 @@ Deno.serve(async (req) => {
           signals.push({ label: `Fathom — Last call ${lastFathomDays}d ago`, severity: 'info' })
         }
         signals.push({ label: `Fathom — Scanned ${scanned} transcript${scanned === 1 ? '' : 's'} for this client`, severity: 'info' })
+      } else if (programKey === 'markus') {
+        // No coaching calls in Markus AI, so no Fathom match is expected.
       } else if (fathomMeetings.length > 0) {
         signals.push({ label: `Fathom — Scanned ${fathomMeetings.length} meeting${fathomMeetings.length === 1 ? '' : 's'}; none matched this client's name or email yet`, severity: 'warn' })
         fathomScore = 5
@@ -627,7 +669,9 @@ Deno.serve(async (req) => {
 
       // -------- Tenure / renewal window --------
       let renewalWindow = false
-      if (daysToEnd <= 30) {
+      if (programKey === 'markus') {
+        // Markus AI is a subscription with no program end date.
+      } else if (daysToEnd <= 30) {
         renewalWindow = true
         tenureScore = 10
         signals.push({ label: `Renewal window: ${daysToEnd}d to program end`, severity: 'info' })
@@ -695,7 +739,7 @@ Deno.serve(async (req) => {
       // -------- Real-engagement override --------
       // The weighted score defaults to neutral when a dimension has no data,
       // which bunched every client into "slipping". Grade on actual recency.
-      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays, lastSurveyDays]
+      const recencies = [lastCommunityDays, lastAttendedDays, trustDays, succDays, dmDays, lastFathomDays, lastSurveyDays, lastMarkusDays]
         .filter((d): d is number => typeof d === 'number')
       const mostRecent = recencies.length ? Math.min(...recencies) : null
       const activeDims = recencies.filter((d) => d <= 30).length
@@ -720,7 +764,9 @@ Deno.serve(async (req) => {
       // Framework override: meeting all 3 ascension criteria forces expansion_ready
       let status = classify(score)
       if (ascensionEligible) { status = 'expansion_ready'; score = Math.max(score, 9) }
-      const arr_value = PROGRAM_ARR[programKey] ?? 0
+      const contractValue = Number((p as any).program_contract_value) || 0
+      const markusArr = markusPeriod.get((p as any).user_id) === 'annual' ? 8997 : 12000
+      const arr_value = programKey === 'markus' ? (contractValue > 0 ? contractValue : markusArr) : (PROGRAM_ARR[programKey] ?? 0)
 
       const linkedIds = ((p as any).linked_user_ids as string[] | null) ?? []
 
@@ -735,7 +781,7 @@ Deno.serve(async (req) => {
         status,
         signals,
         arr_value,
-        last_active_at: lastCommunityAt ?? dms.data?.created_at ?? lastAttendedAt ?? null,
+        last_active_at: [lastCommunityAt, dms.data?.created_at, lastAttendedAt, lastMarkus.data?.created_at].filter(Boolean).sort().reverse()[0] ?? null,
         metrics: {
           last_community_days: lastCommunityDays,
           last_attended_days: lastAttendedDays,
@@ -751,7 +797,10 @@ Deno.serve(async (req) => {
           ascension_eligible: ascensionEligible ? 'yes' : 'no',
           trusts_drafted: `${[hasFamily && 'family', hasBusiness && 'business', hasMinistry && 'ministry'].filter(Boolean).join(',') || 'none'}`,
           assets_funded_count: assetCount ?? 0,
-          days_to_program_end: daysToEnd,
+          days_to_program_end: programKey === 'markus' ? null : daysToEnd,
+          last_markus_days: lastMarkusDays,
+          markus_messages_30d: markusQuestions30,
+          markus_voice_calls_30d: voiceCalls30,
           tenure_days: tenureDays,
         },
         linked_users: linkedIds.map((id) => ({ user_id: id, full_name: '' })),
