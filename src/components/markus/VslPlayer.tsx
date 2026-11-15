@@ -206,9 +206,10 @@ export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video', 
                   onFocus={() => setHoverChapter(i)}
                   onBlur={() => setHoverChapter(null)}
                   aria-label={`Skip to ${c.title} at ${formatTime(c.t)}`}
-                  className={`absolute h-3 w-3 -translate-x-1/2 rounded-full border-2 border-foreground transition hover:scale-125 ${time >= c.t ? 'bg-secondary' : 'bg-background'}`}
+                  className="group/dot absolute flex h-6 w-4 -translate-x-1/2 items-center justify-center focus:outline-none"
                   style={{ left: `${(c.t / duration) * 100}%` }}
                 >
+                  <span className={`block w-[2px] rounded-full transition-all duration-200 group-hover/dot:h-3.5 group-focus/dot:h-3.5 ${time >= c.t ? 'h-2 bg-secondary' : 'h-1.5 bg-foreground/40 group-hover/dot:bg-foreground/70'}`} />
                   {hoverChapter === i && (
                     <span className={`pointer-events-none absolute bottom-5 whitespace-nowrap rounded-md bg-background/95 px-2 py-1 text-xs font-medium text-foreground shadow-lg ${i === 0 ? 'left-0' : i === chapters.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'}`}>
                       {formatTime(c.t)} · {c.title}
