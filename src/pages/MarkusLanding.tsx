@@ -108,7 +108,7 @@ export default function MarkusLanding() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
         <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-8 text-center sm:pt-10">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
-          <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur">
+          <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 whitespace-nowrap px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] sm:px-4 sm:text-[11px] sm:tracking-[0.25em] text-secondary backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
           <h1 className="mt-5 max-w-3xl font-montserrat text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
