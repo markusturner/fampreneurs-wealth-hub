@@ -100,7 +100,7 @@ export function VslPlayer({ src, poster, fallbackDuration = 0, title = 'Video' }
       )}
 
       {started && (
-        <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3 pb-2 pt-8 transition-opacity ${playing ? 'opacity-0 group-hover:opacity-100 focus-within:opacity-100' : 'opacity-100'}`}>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3 pb-2 pt-8">
           <input
             type="range"
             min={0}
