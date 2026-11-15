@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { FunctionsHttpError } from '@supabase/supabase-js'
-import { Loader2, Play, CheckCircle2, ArrowRight, Bot, Phone, LayoutDashboard, ShieldAlert, FileLock2, Users, MessageSquare, Smartphone, Sparkles, Check } from 'lucide-react'
+import { Loader2, CheckCircle2, ArrowRight, Bot, Phone, LayoutDashboard, ShieldAlert, FileLock2, Users, MessageSquare, Smartphone, Sparkles, Check } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import estate from '@/assets/markus-estate-dusk.jpg'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
+import vslVideo from '@/assets/markus-ai-vsl.mp4.asset.json'
 import brandLogo from '@/assets/famlytics-truheirs-logo.png.asset.json'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -119,12 +120,8 @@ export default function MarkusLanding() {
           <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">Markus Turner has protected over $68M in client assets and helped create 80+ trustees, and his family has used trusts for three generations. Most families never get that kind of help. Markus AI gives you his method and shows you what you own, what it's worth, and what's at risk.</p>
           <div className="relative mt-6 w-full max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
-            <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--secondary)/0.15),transparent_65%)]" />
-              <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-secondary/50 bg-secondary/10 text-secondary"><Play className="ml-1 h-6 w-6" /></span>
-                <span className="text-sm">2-minute walkthrough coming soon</span>
-              </div>
+            <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
+              <video src={vslVideo.url} controls playsInline preload="metadata" className="h-full w-full object-cover" />
             </div>
           </div>
           <Button size="lg" className={`mt-6 h-12 px-8 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
