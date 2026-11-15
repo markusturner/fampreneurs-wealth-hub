@@ -16,6 +16,7 @@ import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
 import { WebPushPrompt } from "@/components/dashboard/web-push-prompt"
 import { isMarkusMemberProgram, markusPathAllowed } from "@/lib/markus-member"
 import { MARKUS_ONBOARDING_PATH, markusOnboardedKey } from "@/lib/markus-onboarding"
+import { MarkusSidebar, useShowMarkusNav } from "@/components/markus/MarkusNav"
 
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
@@ -76,6 +77,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // VIP Weekend clients get Digital Family Office only (no community or content)
   const isVipWeekend = /vip weekend/i.test(p?.program_name || '')
   const isMarkusMember = isMarkusMemberProgram(p?.program_name) && !isAdminOrOwner && !isOwner
+  const showMarkusNav = useShowMarkusNav()
   const softwareOnly = (p?.software_only === true || isVipWeekend) && !isAdminOrOwner && !isOwner && !isMarkusMember
   useEffect(() => {
     if (isMarkusMember && !markusPathAllowed(location.pathname, location.search)) navigate('/markus-ai', { replace: true })
@@ -200,6 +202,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <DfoDemoToggle />
         </div>
       )}
+      {showMarkusNav && <MarkusSidebar className="hidden md:flex" />}
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
