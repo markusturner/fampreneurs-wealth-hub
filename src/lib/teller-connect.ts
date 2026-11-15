@@ -126,6 +126,9 @@ export async function openTellerConnect(
     }, 100)
   } catch (err) {
     console.error('Error opening Teller Connect:', err)
-    onError('Could not open the bank connection window')
+    const unreachable = err instanceof Error && err.message === 'Failed to load Teller Connect'
+    onError(unreachable
+      ? 'Our bank connection partner (Teller) is down right now. Please try again later.'
+      : 'Could not open the bank connection window')
   }
 }
