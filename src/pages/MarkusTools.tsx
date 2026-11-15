@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Check, GraduationCap, Loader2, Pencil, Phone, Trash2, X } from 'lucide-react'
+import { ArrowRight, Check, GraduationCap, Loader2, Pencil, Phone, Plus, Trash2, X } from 'lucide-react'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 import { MarkusPage } from '@/components/markus/MarkusNav'
 import { MarkusVoiceCall } from '@/components/chat/MarkusVoiceCall'
@@ -11,7 +11,13 @@ import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { MARKUS_SKILLS } from '@/lib/markus-skills'
+import { skillSlug } from '@/lib/markus-skills'
+import { useMarkusSkills } from '@/hooks/useMarkusSkills'
+import { useOwnerRole } from '@/hooks/useOwnerRole'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { MARKUS_NAV_ICONS } from '@/components/markus/MarkusNav'
 
 export function MarkusVoicePage() {
@@ -117,24 +123,88 @@ export function MarkusMemoriesPage() {
 
 export function MarkusSkillsPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { toast } = useToast()
+  const { skills, loaded, reload } = useMarkusSkills()
+  const [editing, setEditing] = useState<SkillDraft | null>(null)
+  const [saving, setSaving] = useState(false)
   const Icon = MARKUS_NAV_ICONS.skills
+  const visible = isOwner ? skills : skills.filter((s) => s.isActive)
+
+  const save = async () => {
+    if (!editing || saving) return
+    const title = editing.title.trim(), body = editing.body.trim(), prompt = editing.prompt.trim()
+    if (!title || !prompt) { toast({ title: 'Add a name and what Markus should do', variant: 'destructive' }); return }
+    setSaving(true)
+    const fields = { title, body, prompt, is_active: editing.isActive }
+    const { error } = editing.rowId
+      ? await supabase.from('markus_skills').update(fields).eq('id', editing.rowId)
+      : await supabase.from('markus_skills').insert({ ...fields, slug: skillSlug(title, skills.map((s) => s.id)), sort_order: Math.max(0, ...skills.map((s) => s.sortOrder)) + 10, created_by: user?.id })
+    setSaving(false)
+    if (error) { toast({ title: 'Could not save skill', description: error.message, variant: 'destructive' }); return }
+    toast({ title: editing.rowId ? 'Skill updated' : 'Skill added' })
+    setEditing(null); void reload()
+  }
+  const remove = async (rowId: string) => {
+    if (!window.confirm('Remove this skill for everyone?')) return
+    const { error } = await supabase.from('markus_skills').delete().eq('id', rowId)
+    if (error) { toast({ title: 'Could not remove skill', description: error.message, variant: 'destructive' }); return }
+    void reload()
+  }
+
   return (
     <MarkusPage title="Skills" description="Pick a skill and Markus starts a new chat that walks you through it.">
-      <div className="grid gap-3 sm:grid-cols-2">
-        {MARKUS_SKILLS.map((s) => (
-          <button key={s.id} onClick={() => navigate(`/markus-ai?skill=${s.id}`)} className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-lg">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/15 text-secondary-foreground"><Icon className="h-5 w-5" /></span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-montserrat font-semibold">{s.title}</span>
-              <span className="mt-1 block text-sm text-muted-foreground">{s.body}</span>
-            </span>
-            <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
-          </button>
-        ))}
-      </div>
+      {isOwner && (
+        <div className="mb-4 flex justify-end">
+          <Button onClick={() => setEditing({ title: '', body: '', prompt: '', isActive: true })} className="gap-2 bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"><Plus className="h-4 w-4" />Add skill</Button>
+        </div>
+      )}
+      {!loaded ? <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" /> : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {visible.map((s) => (
+            <div key={s.rowId} className={`group relative rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-lg ${s.isActive ? '' : 'opacity-60'}`}>
+              <button onClick={() => navigate(`/markus-ai?skill=${s.id}`)} className="flex w-full items-start gap-4 p-5 text-left">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/15 text-secondary-foreground"><Icon className="h-5 w-5" /></span>
+                <span className={`min-w-0 flex-1 ${isOwner ? 'pr-16' : ''}`}>
+                  <span className="block font-montserrat font-semibold">{s.title}</span>
+                  {s.body && <span className="mt-1 block text-sm text-muted-foreground">{s.body}</span>}
+                  {!s.isActive && <span className="mt-1 block text-xs font-medium text-muted-foreground">Hidden from members</span>}
+                </span>
+                {!isOwner && <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />}
+              </button>
+              {isOwner && (
+                <div className="absolute right-3 top-3 flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Edit ${s.title}`} onClick={() => setEditing({ rowId: s.rowId, title: s.title, body: s.body, prompt: s.prompt, isActive: s.isActive })}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Remove ${s.title}`} onClick={() => void remove(s.rowId)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null) }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>{editing?.rowId ? 'Edit skill' : 'Add a skill'}</DialogTitle></DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="space-y-1.5"><Label htmlFor="skill-title">Skill name</Label><Input id="skill-title" value={editing.title} maxLength={80} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="Example: Protect my rental properties" /></div>
+              <div className="space-y-1.5"><Label htmlFor="skill-body">Short description</Label><Input id="skill-body" value={editing.body} maxLength={200} onChange={(e) => setEditing({ ...editing, body: e.target.value })} placeholder="One line members see under the name" /></div>
+              <div className="space-y-1.5"><Label htmlFor="skill-prompt">What Markus should do</Label><Textarea id="skill-prompt" value={editing.prompt} maxLength={3000} rows={5} onChange={(e) => setEditing({ ...editing, prompt: e.target.value })} placeholder="Example: Ask me about my properties one at a time, then explain how I would hold each one." /></div>
+              <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3"><Label htmlFor="skill-active">Show to members</Label><Switch id="skill-active" checked={editing.isActive} onCheckedChange={(v) => setEditing({ ...editing, isActive: v })} /></div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={() => void save()} disabled={saving} className="bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground">{saving && <Loader2 className="animate-spin" />}Save skill</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MarkusPage>
   )
 }
+
+type SkillDraft = { rowId?: string; title: string; body: string; prompt: string; isActive: boolean }
 
 type Course = { id: string; title: string; description: string | null; image_url: string | null; progress: number }
 

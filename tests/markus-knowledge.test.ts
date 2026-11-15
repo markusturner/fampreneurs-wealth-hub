@@ -39,3 +39,34 @@ test('documented YouTube, Instagram and LinkedIn text is retained', () => {
   expect(normalizeSocial('instagram', { id: '2', url: 'https://www.instagram.com/p/2/', caption: 'Instagram teaching', ownerUsername: 'markusturnerofficial' }, '2026-10-21T00:00:00Z')?.owner).toBe('markusturnerofficial');
   expect(normalizeSocial('linkedin', { id: '3', linkedinUrl: 'https://www.linkedin.com/posts/3', content: 'LinkedIn teaching', author: { publicIdentifier: 'markusturner' } }, '2026-10-21T00:00:00Z')?.content).toBe('LinkedIn teaching');
 });
+import { fathomCallKind, driveFolderId, cleanList, YOUTUBE_BACKFILL_LIMIT, BACKFILL_CHARGE_USD } from '../supabase/functions/_shared/markus-knowledge';
+const callConfig = { recorder_email: 'markusturner94@gmail.com', titles: ['The Trust Vault'], sales_titles: ['Strategy Call'] };
+test('coaching calls need an exact owner-listed name', () => {
+  expect(fathomCallKind({ title: 'The Trust Vault', recorded_by: { email: 'markusturner94@gmail.com' } }, callConfig)).toBe('teaching');
+  expect(fathomCallKind({ title: 'The Trust Vault Private', recorded_by: { email: 'markusturner94@gmail.com' } }, callConfig)).toBeNull();
+});
+test('sales calls match when the call name includes an owner-listed name', () => {
+  expect(fathomCallKind({ meeting_title: 'Strategy Call with Jane Doe', recorded_by: { email: 'markusturner94@gmail.com' } }, callConfig)).toBe('sales');
+  expect(fathomCallKind({ meeting_title: 'Weekly team sync', recorded_by: { email: 'markusturner94@gmail.com' } }, callConfig)).toBeNull();
+});
+test('calls recorded by someone other than Markus are never imported', () => {
+  expect(fathomCallKind({ meeting_title: 'Strategy Call with Jane', recorded_by: { email: 'other@example.com' } }, callConfig)).toBeNull();
+});
+test('sales names shorter than three letters never match everything', () => {
+  expect(fathomCallKind({ meeting_title: 'Anything at all', recorded_by: { email: 'markusturner94@gmail.com' } }, { ...callConfig, sales_titles: ['a'] })).toBeNull();
+});
+test('Drive folder links and IDs are both accepted', () => {
+  expect(driveFolderId('https://drive.google.com/drive/folders/1PQKd3-6swwArPpPOuiqqyj9-Q2SXvpkW?usp=sharing')).toBe('1PQKd3-6swwArPpPOuiqqyj9-Q2SXvpkW');
+  expect(driveFolderId('1PQKd3-6swwArPpPOuiqqyj9-Q2SXvpkW')).toBe('1PQKd3-6swwArPpPOuiqqyj9-Q2SXvpkW');
+  expect(driveFolderId('https://example.com')).toBeNull();
+});
+test('the first YouTube import reaches back 100 videos with a $3 cap', () => {
+  const actor = actorFor('youtube', 'https://www.youtube.com/@markusturner', { handle: '@markusturner' }, true);
+  expect(actor.input.videoLimit).toBe(YOUTUBE_BACKFILL_LIMIT);
+  expect(YOUTUBE_BACKFILL_LIMIT).toBe(100);
+  expect(BACKFILL_CHARGE_USD).toBe(3);
+  expect(actorFor('youtube', 'https://www.youtube.com/@markusturner', { handle: '@markusturner' }).input.videoLimit).toBe(10);
+});
+test('call name lists drop blanks and duplicates', () => {
+  expect(cleanList([' The Trust Vault ', 'The Trust Vault', '', 5])).toEqual(['The Trust Vault']);
+});

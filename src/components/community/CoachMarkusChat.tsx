@@ -11,7 +11,8 @@ import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useSearchParams } from 'react-router-dom'
-import { findSkill, MARKUS_SKILLS } from '@/lib/markus-skills'
+import { findSkill } from '@/lib/markus-skills'
+import { useMarkusSkills } from '@/hooks/useMarkusSkills'
 
 // `welcome` opens on a fresh chat with a centered greeting and composer; `hideVoice` drops the call button when a Voice Call page exists.
 // `tools` adds photo/document uploads and speak-to-type to the composer.
@@ -27,17 +28,20 @@ export function CoachMarkusChat({ welcome = false, hideVoice = false, tools = fa
   const [params, setParams] = useSearchParams()
   const fileInput = useRef<HTMLInputElement>(null)
   const extras = useChatComposerTools(text => setDraft(prev => (prev ? `${prev} ${text}` : text)))
+  const { skills, loaded: skillsLoaded } = useMarkusSkills()
+  const activeSkills = skills.filter(s => s.isActive)
 
   // A skill opens a fresh chat with its guided request ready to send.
   useLayoutEffect(() => {
-    const skill = findSkill(params.get('skill'))
+    if (!params.get('skill') || !skillsLoaded) return
+    const skill = findSkill(params.get('skill'), activeSkills)
     if (!skill) return
     initialized.current = true
     chat.newChat(null)
     setDraft(skill.prompt)
     const next = new URLSearchParams(params); next.delete('skill'); setParams(next, { replace: true })
     requestAnimationFrame(() => composer.current?.focus())
-  }, [params])
+  }, [params, skillsLoaded])
 
   // Open the most recent chat from the saved copy right away instead of waiting for the network.
   useLayoutEffect(() => {
@@ -123,7 +127,7 @@ export function CoachMarkusChat({ welcome = false, hideVoice = false, tools = fa
             </div>
           </form>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {MARKUS_SKILLS.slice(0, 4).map(skill => <button key={skill.id} type="button" onClick={() => { setDraft(skill.prompt); requestAnimationFrame(() => composer.current?.focus()) }} className="rounded-full border border-border bg-background px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-accent hover:text-foreground">{skill.title}</button>)}
+            {activeSkills.slice(0, 4).map(skill => <button key={skill.id} type="button" onClick={() => { setDraft(skill.prompt); requestAnimationFrame(() => composer.current?.focus()) }} className="rounded-full border border-border bg-background px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-accent hover:text-foreground">{skill.title}</button>)}
           </div>
           <p className="mt-6 text-center text-[11px] text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p>
         </div>

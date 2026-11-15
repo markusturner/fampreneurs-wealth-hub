@@ -39,9 +39,10 @@
 - Discord reply references use the shared presentation component pointing to the existing parent post across category feeds; presentation never duplicates stored posts or comments.
 
 ## Markus knowledge ingestion
-- Store incremental source content separately from persona uploads and retrieve bounded, approved excerpts through a service-role-only search function; this preserves existing knowledge without growing every chat prompt indefinitely.
-- Ingest only configured owner profiles and exact owner teaching-call titles; Fathom material requires owner privacy approval before shared retrieval because teaching calls can contain private client questions.
-- Run imports only behind admin validation or the internal scheduler secret, with a database lease, source checkpoints, deduplication, spending caps, and persistent access pauses; this prevents duplicate work and unattended failure loops.
+- Store source content apart from persona uploads; retrieve bounded approved excerpts via a service-role-only search. Why: prompts stay small.
+- Ingest only owner profiles, owner-chosen Drive folders, exact teaching-call titles and owner-listed sales-call fragments; Fathom calls become AI-redacted notes needing owner approval. Why: calls hold private client details.
+- Skills: markus_skills table (owner-only writes); markus-skills.ts is fallback. Why: no-code edits.
+- Sync runs in ai-chat (mode knowledge, daily refresh on chat) via _shared/markus-knowledge-sync.ts: admin or trusted schedule, lease, checkpoints, dedupe, spend caps, pauses. Why: new functions 404; npm: imports fail deploy.
 
 ## Community recording imports
 - Mirror PEA community recording posts into Trust Vault using a database trigger and a unique source-post link, so copies are immediate and media updates cannot create duplicates; direct Fathom polling is disabled.
