@@ -1,9 +1,18 @@
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
 import { MarkusMobileTabs, useShowMarkusNav } from '@/components/markus/MarkusNav'
+import { MarkusChatView } from '@/components/markus/MarkusChatView'
 
 export default function MarkusAI() {
-  // In the Markus member area the chat opens like a fresh welcome screen, and calls live on the Voice Call page.
+  // Markus AI members get a ChatGPT-style chat; calls live on the Voice Call page.
   const markusArea = useShowMarkusNav()
+  if (markusArea) {
+    return (
+      <div className="flex h-[100dvh] flex-col overflow-hidden bg-background pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0">
+        <MarkusMobileTabs />
+        <MarkusChatView />
+      </div>
+    )
+  }
   return (
     <div className="community-shell">
       <div className="community-center flex-1">
@@ -17,7 +26,7 @@ export default function MarkusAI() {
           </div>
         </div>
         <MarkusMobileTabs />
-        <CoachMarkusChat welcome={markusArea} hideVoice={markusArea} tools={markusArea} />
+        <CoachMarkusChat />
       </div>
     </div>
   )

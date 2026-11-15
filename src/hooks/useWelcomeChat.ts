@@ -130,7 +130,7 @@ export function useWelcomeChat(userId: string | undefined) {
     setProjectId(folder)
   }
 
-  const send = async (message: string, attachments: unknown[]) => {
+  const send = async (message: string, attachments: unknown[], surface?: 'markus') => {
     if (!userId || busyRef.current) return
     busyRef.current = true
     setBusy(true)
@@ -146,7 +146,7 @@ export function useWelcomeChat(userId: string | undefined) {
         setConversations(previous => [data, ...previous])
       }
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message, persona: 'rachel', instructions: '', conversation_id: conversation.id, attachments },
+        body: { message, persona: 'rachel', instructions: '', conversation_id: conversation.id, attachments, ...(surface ? { surface } : {}) },
       })
       if (error || data?.error || !data?.response) throw error || new Error(data?.error || 'No response')
       if (identityRef.current !== userId) return

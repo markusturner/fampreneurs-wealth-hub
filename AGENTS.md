@@ -62,3 +62,4 @@
 - Voice: ai-chat mode voice_session; checkout: signup-create-checkout flow=markus + stripe-webhook. Why: new functions 404.
 - Tools under /markus-ai/* reuse CoachMarkusChat; notes/memories in markus_user_knowledge. Why: shared history, one gated prefix.
 - Markus-only members finish /markus-ai/start (goals + Terms) before Markus pages. Why: Markus knows goals at first chat.
+- Markus AI member chat (ChatGPT-style view in MarkusChatView) sends surface=markus; ai-chat also detects Markus-only profiles server-side and swaps the app-support prompt for a conversational clone prompt. Why: members must not get app-wide links or program pitches.
