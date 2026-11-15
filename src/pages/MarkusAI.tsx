@@ -17,7 +17,7 @@ export default function MarkusAI() {
           </div>
         </div>
         <MarkusMobileTabs />
-        <CoachMarkusChat welcome={markusArea} hideVoice={markusArea} />
+        <CoachMarkusChat welcome={markusArea} hideVoice={markusArea} tools={markusArea} />
       </div>
     </div>
   )
