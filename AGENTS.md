@@ -22,10 +22,10 @@
 - Account Record All Forms reads workbook submissions from the existing user-scoped trust_submissions query and separates completed workbooks from other trust forms; this includes past and future submissions without duplicating private records.
 
 ## Welcome AI chat
-- Markus assistant replies use shared Markdown-aware presentation blocks across Welcome, Coach Markus and AI Chat; keep stored messages and AI context intact so older conversations gain the same readability without data rewrites.
+- Markus replies use shared Markdown presentation blocks on Welcome, Coach Markus and AI Chat; stored messages stay untouched. Why: old chats gain readability without rewrites.
 - History navigation uses an inline bounded list, not a portal or overlay, so opening history cannot cover the welcome content or composer. This navigation-only change leaves transcript, composer, and chat transport intact.
 - Welcome chat uses the existing chat_projects, chat_conversations, and ai_chat_history tables with the rachel persona and explicit user filters, so its projects and history stay shared with the full AI chat page.
-- Community Coach Markus reuses useWelcomeChat and WelcomeChatLibrary with the same private user-scoped conversations; never store AI exchanges as public community posts. This keeps Welcome and community chat history and folders shared.
+- Community Coach Markus reuses useWelcomeChat/WelcomeChatLibrary private conversations; never public posts. Why: shared history and folders.
 - Mobile Welcome redirects through the shared mobile-entry helper after account setup checks; keep VIP and software-only destinations separate to preserve access restrictions.
 
 ## Community presentation
@@ -60,6 +60,4 @@
 ## Markus AI
 - Voice: ai-chat mode voice_session; checkout: signup-create-checkout flow=markus + stripe-webhook. Why: new functions 404.
 - Tools under /markus-ai/* reuse CoachMarkusChat; notes/memories in markus_user_knowledge. Why: shared history, one gated prefix.
-
-## Markus AI onboarding
 - Markus-only members finish /markus-ai/start (goals in markus_onboarding, Terms via legal-consent helper, goals memory) before Markus pages. Why: Markus knows goals from the first chat.
