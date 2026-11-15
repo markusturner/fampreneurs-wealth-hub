@@ -5,6 +5,7 @@ import { Loader2, Play, CheckCircle2, ArrowRight, Bot, Phone, LayoutDashboard, S
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import estate from '@/assets/markus-estate-dusk.jpg'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
+import brandLogo from '@/assets/famlytics-truheirs-logo.png.asset.json'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -108,6 +109,7 @@ export default function MarkusLanding() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--accent)/0.18),transparent_55%)]" />
         <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-8 text-center sm:pt-10">
           {params.get('payment') === 'cancelled' && <p className="mb-6 rounded-full border border-border bg-card/60 px-4 py-2 text-xs text-muted-foreground backdrop-blur">Your checkout was not finished. Pick a plan whenever you are ready.</p>}
+          <img src={brandLogo.url} alt="Famlytics TruHeirs logo" width={708} height={709} className="mb-4 h-16 w-auto sm:h-20" />
           <span className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 whitespace-nowrap px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] sm:px-4 sm:text-[11px] sm:tracking-[0.25em] text-secondary backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" />For families serious about legacy
           </span>
