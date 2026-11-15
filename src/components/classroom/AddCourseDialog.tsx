@@ -20,6 +20,8 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreated: () => void
+  // Communities ticked when the dialog opens, by name.
+  defaultCommunityNames?: string[]
 }
 
 // Only the four workspace community programs (matches the sidebar)
@@ -30,7 +32,7 @@ const WORKSPACE_COMMUNITY_NAMES = [
   'Markus AI Members',
 ]
 
-export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
+export function AddCourseDialog({ open, onOpenChange, onCreated, defaultCommunityNames }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [title, setTitle] = useState('')
@@ -45,7 +47,10 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
   useEffect(() => {
     if (open) {
       supabase.from('community_groups').select('id, name').order('name').then(({ data }) => {
-        if (data) setCommunities(data.filter(c => WORKSPACE_COMMUNITY_NAMES.includes(c.name)))
+        if (!data) return
+        const list = data.filter(c => WORKSPACE_COMMUNITY_NAMES.includes(c.name))
+        setCommunities(list)
+        if (defaultCommunityNames?.length) setSelectedCommunityIds(list.filter(c => defaultCommunityNames.includes(c.name)).map(c => c.id))
       })
     }
   }, [open])

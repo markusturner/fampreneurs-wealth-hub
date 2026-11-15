@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.limit_personal_markus_skills() FROM PUBLIC, anon, authenticated;

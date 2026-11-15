@@ -33,3 +33,16 @@ export function skillSlug(title: string, taken: string[] = []): string {
   for (let i = 2; taken.includes(slug); i++) slug = `${base}-${i}`
   return slug
 }
+
+// Inherited skills come from Markus and are read-only for members; personal skills belong to one member.
+export function splitSkills<T extends { ownerUserId: string | null }>(skills: T[], userId?: string | null): { inherited: T[]; mine: T[] } {
+  return {
+    inherited: skills.filter((s) => s.ownerUserId === null),
+    mine: userId ? skills.filter((s) => s.ownerUserId === userId) : [],
+  }
+}
+
+export function canEditSkill(skill: { ownerUserId: string | null }, userId?: string | null, isOwner = false): boolean {
+  if (skill.ownerUserId === null) return isOwner
+  return !!userId && skill.ownerUserId === userId
+}

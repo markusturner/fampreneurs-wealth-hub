@@ -173,7 +173,9 @@ export function useWelcomeChat(userId: string | undefined) {
         writeCache(cacheKey(userId, 'chats'), next)
         return next
       })
-      return { reply, saved: !saved.error && !updated.error }
+      const memories = Array.isArray(data.memories) ? data.memories.filter((m: unknown): m is string => typeof m === 'string') : []
+      const assistantId = added.find(entry => entry.role === 'assistant')?.id
+      return { reply, saved: !saved.error && !updated.error, memories, assistantId }
     } finally {
       busyRef.current = false
       setBusy(false)

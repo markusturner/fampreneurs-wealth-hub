@@ -26,6 +26,8 @@ interface Props {
   course: { id: string; title: string; description: string | null; image_url: string | null; community_ids?: string[] } | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  // Runs after a delete instead of going back to the classroom.
+  onDeleted?: () => void
   onUpdated: () => void
 }
 
@@ -34,7 +36,7 @@ interface CommunityGroup {
   name: string
 }
 
-export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Props) {
+export function EditCourseDialog({ course, open, onOpenChange, onUpdated, onDeleted }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -136,7 +138,7 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
     } else {
       toast({ title: 'Course deleted' })
       onOpenChange(false)
-      navigate('/classroom')
+      if (onDeleted) onDeleted(); else navigate('/classroom')
     }
     setDeleting(false)
   }

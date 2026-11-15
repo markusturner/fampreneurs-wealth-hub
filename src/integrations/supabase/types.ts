@@ -4334,6 +4334,24 @@ export type Database = {
         }
         Relationships: []
       }
+      markus_memory_settings: {
+        Row: {
+          memory_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          memory_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          memory_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       markus_onboarding: {
         Row: {
           answers: Json
@@ -4362,6 +4380,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean
+          owner_user_id: string | null
           prompt: string
           slug: string
           sort_order: number
@@ -4374,6 +4393,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          owner_user_id?: string | null
           prompt: string
           slug: string
           sort_order?: number
@@ -4386,6 +4406,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          owner_user_id?: string | null
           prompt?: string
           slug?: string
           sort_order?: number

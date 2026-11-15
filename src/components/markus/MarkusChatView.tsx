@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { ArrowUp, Check, ChevronDown, Copy, FileText, Folder, FolderPlus, Loader2, Mic, Plus, SquarePen, Square, Volume2, X } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ArrowUp, Brain, Check, ChevronDown, Copy, FileText, Folder, FolderPlus, Loader2, Mic, Plus, SquarePen, Square, Volume2, X } from 'lucide-react'
 import { AI_DISCLOSURE } from '@/lib/legal'
 import { MarkusReply } from '@/components/chat/MarkusReply'
 import { MarkusKnowledgeBase } from '@/components/chat/MarkusKnowledgeBase'
@@ -45,6 +45,7 @@ export function MarkusChatView() {
   const { toast } = useToast()
   const [draft, setDraft] = useState('')
   const [pending, setPending] = useState('')
+  const [memoryNote, setMemoryNote] = useState<{ id: string; items: string[] } | null>(null)
   const [projectDialog, setProjectDialog] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -75,7 +76,7 @@ export function MarkusChatView() {
 
   useLayoutEffect(() => { focus() }, [])
 
-  const newChat = () => { chat.newChat(chat.projectId); setDraft(''); focus() }
+  const newChat = () => { chat.newChat(chat.projectId); setDraft(''); setMemoryNote(null); focus() }
   const send = async () => {
     const files = extras.attachments
     const message = draft.trim() || (files.length ? ATTACHMENT_ONLY_PROMPT : '')
@@ -85,6 +86,7 @@ export function MarkusChatView() {
     setPending(files.length ? `${message}\n\n${files.map(f => `[${f.name}]`).join(' ')}` : message)
     try {
       const result = await chat.send(message, files, 'markus')
+      setMemoryNote(result?.memories?.length && result.assistantId ? { id: String(result.assistantId), items: result.memories } : null)
       if (result && !result.saved) toast({ title: 'Reply received, but chat could not be saved', description: 'Please try again.', variant: 'destructive' })
     } catch {
       setDraft(message)
@@ -183,6 +185,7 @@ export function MarkusChatView() {
             : <div key={message.id} className="min-w-0 self-stretch">
                 <MarkusReply content={message.content} bubbleClassName="rounded-none bg-transparent p-0 text-base text-foreground [&_.prose]:text-base" />
                 <ReplyActions text={message.content} />
+                {memoryNote?.id === String(message.id) && <Link to="/markus-ai/memories" title={memoryNote.items.join('\n')} className="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"><Brain className="h-3.5 w-3.5" />Memory updated</Link>}
               </div>)}
           {pending && <div className="max-w-[85%] self-end whitespace-pre-wrap rounded-3xl bg-muted px-5 py-2.5 text-base text-foreground [overflow-wrap:anywhere]">{pending}</div>}
           {chat.busy && <div role="status" aria-label={pending ? 'Markus is thinking' : 'Opening chat'} className="flex items-center gap-2 text-sm text-muted-foreground">
