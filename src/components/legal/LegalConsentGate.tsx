@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { legalAcceptedKey, recordLegalConsent } from '@/lib/legal-consent'
 import { LEGAL_DOCUMENT_VERSION, MINIMUM_AGE, SMS_CONSENT_TEXT, ageOn, isAdult, isConsentExemptRoute } from '@/lib/legal'
 
-const acceptedKey = (userId: string) => `legal_consent_${LEGAL_DOCUMENT_VERSION}_${userId}`
+const acceptedKey = legalAcceptedKey
 
 /**
  * Asks every signed-in member, once per document version, to confirm age (18+),
@@ -65,22 +66,9 @@ export function LegalConsentGate() {
     if (!acceptTerms || !confirmAge) { setError('Please check both required boxes.'); return }
     if (sms && phone.replace(/\D/g, '').length < 10) { setError('Enter a valid mobile number for text messages.'); return }
     setSaving(true)
-    const base = { user_id: user.id, document_version: LEGAL_DOCUMENT_VERSION, source: 'consent_gate', user_agent: navigator.userAgent, metadata: {} }
-    const { error: insertError } = await supabase.from('legal_consents').insert([
-      { ...base, consent_type: 'terms_privacy', granted: true },
-      { ...base, consent_type: 'age_18_plus', granted: true, metadata: { birth_date: birthDate } },
-      { ...base, consent_type: 'email_marketing', granted: marketing },
-      { ...base, consent_type: 'sms', granted: sms, metadata: sms ? { phone, disclosure: SMS_CONSENT_TEXT } : {} },
-    ])
-    if (!insertError) {
-      await supabase.from('communication_preferences').upsert({
-        user_id: user.id, email_marketing: marketing, sms_enabled: sms, sms_phone: sms ? phone : null, updated_at: new Date().toISOString(),
-      })
-      localStorage.setItem(acceptedKey(user.id), '1')
-      setNeedsConsent(false)
-    } else {
-      setError('We could not save your choices. Please try again.')
-    }
+    const ok = await recordLegalConsent({ userId: user.id, birthDate, marketing, sms, phone, source: 'consent_gate' })
+    if (ok) setNeedsConsent(false)
+    else setError('We could not save your choices. Please try again.')
     setSaving(false)
   }
 

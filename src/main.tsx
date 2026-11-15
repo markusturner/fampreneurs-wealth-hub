@@ -37,6 +37,7 @@ import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 import MarkusAI from "./pages/MarkusAI";
 import { MarkusVoicePage, MarkusCoursesPage, MarkusKnowledgePage, MarkusMemoriesPage, MarkusSkillsPage } from "./pages/MarkusTools";
+import MarkusOnboarding from "./pages/MarkusOnboarding";
 import MarkusLanding, { MarkusCheckout, MarkusThankYou } from "./pages/MarkusLanding";
 import OnboardingSubmissions from "./pages/OnboardingSubmissions";
 
@@ -165,6 +166,7 @@ function AppWithNotifications() {
         <Route path="/sops/:sopId" element={<WithLayout><SOPDetail /></WithLayout>} />
         <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
         <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
+        <Route path="/markus-ai/start" element={<MarkusOnboarding />} />
         <Route path="/markus-ai" element={<WithLayout><MarkusAI /></WithLayout>} />
         <Route path="/markus-ai/voice" element={<WithLayout><MarkusVoicePage /></WithLayout>} />
         <Route path="/markus-ai/courses" element={<WithLayout><MarkusCoursesPage /></WithLayout>} />

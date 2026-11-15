@@ -66,6 +66,8 @@ export const CONSENT_EXEMPT_ROUTES = [
   '/', '/auth', '/auth/family', '/signup', '/apply', '/thank-you', '/reset-password',
   '/privacy-policy', '/terms-of-service', '/cookie-policy', '/community-guidelines',
   '/dmca', '/disclaimer', '/security', '/contact-support',
+  // Markus AI onboarding collects the same consent inside its own form.
+  '/markus-ai/start',
 ]
 
 export function isConsentExemptRoute(pathname: string): boolean {

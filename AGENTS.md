@@ -60,3 +60,6 @@
 ## Markus AI
 - Voice: ai-chat mode voice_session; checkout: signup-create-checkout flow=markus + stripe-webhook. Why: new functions 404.
 - Tools under /markus-ai/* reuse CoachMarkusChat; notes/memories in markus_user_knowledge. Why: shared history, one gated prefix.
+
+## Markus AI onboarding
+- Markus-only members are sent once to /markus-ai/start (outside the app shell), which saves goals in markus_onboarding, records Terms via the shared legal-consent helper, and stores a goals memory for Markus. Why: goals and consent come before the Markus navigation, and Markus knows the goals from the first chat.

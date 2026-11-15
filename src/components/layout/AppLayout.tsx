@@ -15,6 +15,7 @@ import { FamilyToggleBar } from "./FamilyToggleBar"
 import { DfoDemoToggle } from "@/components/dashboard/dfo-demo-toggle"
 import { WebPushPrompt } from "@/components/dashboard/web-push-prompt"
 import { isMarkusMemberProgram, markusPathAllowed } from "@/lib/markus-member"
+import { MARKUS_ONBOARDING_PATH, markusOnboardedKey } from "@/lib/markus-onboarding"
 
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members', '/handoff']
@@ -79,6 +80,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (isMarkusMember && !markusPathAllowed(location.pathname, location.search)) navigate('/markus-ai', { replace: true })
   }, [isMarkusMember, location.pathname, location.search, navigate])
+  // Markus AI members fill out their goals and accept the terms once before seeing the Markus AI pages.
+  useEffect(() => {
+    if (!isMarkusMember || !user?.id || (user as any).user_metadata?.needs_password_setup) return
+    if (localStorage.getItem(markusOnboardedKey(user.id)) === '1') return
+    let active = true
+    supabase.from('markus_onboarding' as any).select('user_id').eq('user_id', user.id).maybeSingle().then(({ data, error }) => {
+      if (!active || error) return
+      if (data) localStorage.setItem(markusOnboardedKey(user.id), '1')
+      else navigate(MARKUS_ONBOARDING_PATH, { replace: true })
+    })
+    return () => { active = false }
+  }, [isMarkusMember, user, navigate])
   useEffect(() => {
     if (softwareOnly && SOFTWARE_BLOCKED_PREFIXES.some((r) => location.pathname.startsWith(r))) {
       navigate('/dashboard')

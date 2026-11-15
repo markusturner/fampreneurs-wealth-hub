@@ -4334,6 +4334,27 @@ export type Database = {
         }
         Relationships: []
       }
+      markus_onboarding: {
+        Row: {
+          answers: Json
+          completed_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       markus_user_knowledge: {
         Row: {
           content: string
