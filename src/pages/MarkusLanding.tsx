@@ -11,14 +11,14 @@ import { VslPlayer, type VslChapter } from '@/components/markus/VslPlayer'
 
 const VSL_CHAPTERS: VslChapter[] = [
   { t: 0, title: 'Who this is for' },
-  { t: 48, title: 'Why your wealth is exposed' },
-  { t: 89, title: 'What wealthy families do' },
-  { t: 110, title: 'Meet Markus AI' },
-  { t: 135, title: 'Your digital family office' },
-  { t: 184, title: 'Why trust Markus' },
-  { t: 202, title: 'Everything you get' },
-  { t: 239, title: 'Common questions' },
-  { t: 276, title: 'Get started tonight' },
+  { t: 77, title: 'Why your wealth is exposed' },
+  { t: 137, title: 'The three risks' },
+  { t: 294, title: 'What wealthy families do' },
+  { t: 354, title: 'Meet Markus AI' },
+  { t: 448, title: 'Your digital family office' },
+  { t: 601, title: 'What changes for you' },
+  { t: 702, title: 'Common questions' },
+  { t: 776, title: 'Get started tonight' },
 ]
 import brandLogo from '@/assets/famlytics-truheirs-logo.png.asset.json'
 import { supabase } from '@/integrations/supabase/client'
@@ -135,7 +135,7 @@ export default function MarkusLanding() {
           <div className="relative mt-6 w-full max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
             <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
-              <VslPlayer src={vslVideo.url} poster={vslThumb.url} fallbackDuration={295} title="Markus AI video" chapters={VSL_CHAPTERS} />
+              <VslPlayer src={vslVideo.url} poster={vslThumb.url} fallbackDuration={814} title="Markus AI video" chapters={VSL_CHAPTERS} />
             </div>
           </div>
           <Button size="lg" className={`mt-6 h-12 px-8 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
