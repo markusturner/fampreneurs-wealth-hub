@@ -10,10 +10,11 @@ import { useWelcomeChat, type WelcomeConversation } from '@/hooks/useWelcomeChat
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useSearchParams } from 'react-router-dom'
-import { findSkill } from '@/lib/markus-skills'
+import { findSkill, MARKUS_SKILLS } from '@/lib/markus-skills'
 
-export function CoachMarkusChat() {
-  const { user } = useAuth()
+// `welcome` opens on a fresh chat with a centered greeting and composer; `hideVoice` drops the call button when a Voice Call page exists.
+export function CoachMarkusChat({ welcome = false, hideVoice = false }: { welcome?: boolean; hideVoice?: boolean } = {}) {
+  const { user, profile } = useAuth()
   const chat = useWelcomeChat(user?.id)
   const { toast } = useToast()
   const [draft, setDraft] = useState('')
@@ -36,7 +37,7 @@ export function CoachMarkusChat() {
 
   // Open the most recent chat from the saved copy right away instead of waiting for the network.
   useLayoutEffect(() => {
-    if (initialized.current || !chat.conversations.length) return
+    if (welcome || initialized.current || !chat.conversations.length) return
     initialized.current = true
     void chat.openConversation(chat.conversations[0]).catch(() => {
       toast({ title: 'Could not open recent chat', description: 'Please select it from Chats.', variant: 'destructive' })
@@ -79,10 +80,35 @@ export function CoachMarkusChat() {
     } finally { setPending('') }
   }
 
+  const empty = chat.messages.length === 0 && !pending && !chat.busy
+  const firstName = (profile?.first_name || '').trim()
+  const composerField = (large: boolean) => <Textarea ref={composer} aria-label="Message Coach Markus" placeholder="Ask Markus AI anything..." value={draft} disabled={chat.busy} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send() } }} rows={large ? 2 : 1} className={large ? 'min-h-14 max-h-48 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0' : 'min-h-10 max-h-32 min-w-0 flex-1 resize-none rounded-lg bg-background text-base sm:text-sm'} />
+  const sendButton = <Button type="submit" size="icon" aria-label="Send to Coach Markus" disabled={!draft.trim() || chat.busy} className="shrink-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90"><ArrowUp /></Button>
+  const library = <div className="shrink-0 border-b border-border bg-card px-3 pt-2 sm:px-5">
+    <WelcomeChatLibrary chat={chat} onReset={reset} onNewChat={start} onOpen={open} hideVoice={hideVoice} />
+  </div>
+
+  if (welcome && empty) {
+    return <section aria-label="Coach Markus chat" className="flex min-h-0 min-w-0 flex-1 flex-col">
+      {library}
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8">
+        <div className="w-full max-w-2xl">
+          <h2 className="text-center font-montserrat text-2xl font-semibold text-foreground sm:text-3xl">{firstName ? `What can I help with, ${firstName}?` : 'What can I help with?'}</h2>
+          <form className="mt-6 flex items-end gap-2 rounded-3xl border border-border bg-card p-3 shadow-sm focus-within:border-accent/60" onSubmit={event => { event.preventDefault(); void send() }}>
+            {composerField(true)}
+            {sendButton}
+          </form>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {MARKUS_SKILLS.slice(0, 4).map(skill => <button key={skill.id} type="button" onClick={() => { setDraft(skill.prompt); requestAnimationFrame(() => composer.current?.focus()) }} className="rounded-full border border-border bg-background px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-accent hover:text-foreground">{skill.title}</button>)}
+          </div>
+          <p className="mt-6 text-center text-[11px] text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p>
+        </div>
+      </div>
+    </section>
+  }
+
   return <section aria-label="Coach Markus chat" className="flex min-h-0 min-w-0 flex-1 flex-col">
-    <div className="shrink-0 border-b border-border bg-card px-3 pt-2 sm:px-5">
-      <WelcomeChatLibrary chat={chat} onReset={reset} onNewChat={start} onOpen={open} />
-    </div>
+    {library}
     <div ref={log} role="log" aria-label="Coach Markus messages" aria-live="polite" className="community-scroll">
       {chat.messages.length === 0 && !pending && <div className="flex h-full min-h-40 items-center justify-center"><div className="text-center"><h2 className="text-lg font-semibold text-foreground">Ask Markus AI anything</h2><p className="mt-1 text-xs text-muted-foreground">{AI_DISCLOSURE} <a href="/privacy-policy#ai-chats" className="underline underline-offset-2">How chats are used</a></p></div></div>}
       <div className="flex flex-col gap-5">
@@ -97,8 +123,8 @@ export function CoachMarkusChat() {
       </div>
     </div>
     <form className="community-composer" onSubmit={event => { event.preventDefault(); void send() }}>
-      <Textarea ref={composer} aria-label="Message Coach Markus" placeholder="Ask Markus AI anything..." value={draft} disabled={chat.busy} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send() } }} rows={1} className="min-h-10 max-h-32 min-w-0 flex-1 resize-none rounded-lg bg-background text-base sm:text-sm" />
-      <Button type="submit" size="icon" aria-label="Send to Coach Markus" disabled={!draft.trim() || chat.busy} className="shrink-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90"><ArrowUp /></Button>
+      {composerField(false)}
+      {sendButton}
     </form>
   </section>
 }

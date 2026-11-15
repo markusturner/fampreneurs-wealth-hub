@@ -35,3 +35,11 @@ describe('Markus AI member entry', () => {
     expect(mobileEntryPath({ programName: 'Markus AI', isAdminOrOwner: false, softwareOnly: true })).toBe('/markus-ai')
   })
 })
+
+describe('Markus AI member pages', () => {
+  it('family office and community stay inside the Markus area', () => {
+    const href = (key: string) => MARKUS_NAV.find((i) => i.key === key)?.href
+    expect(href('dfo')).toBe('/markus-ai/family-office')
+    expect(href('community')).toBe('/markus-ai/community')
+  })
+})

@@ -27,8 +27,8 @@ export function markusPathAllowed(pathname: string, search: string): boolean {
 export const MARKUS_NAV = [
   { key: 'chat', label: 'Markus AI', href: '/markus-ai' },
   { key: 'voice', label: 'Voice Call', href: '/markus-ai/voice' },
-  { key: 'dfo', label: 'Digital Family Office', href: '/dashboard' },
-  { key: 'community', label: 'Community', href: `/workspace-community?program=${MARKUS_COMMUNITY}` },
+  { key: 'dfo', label: 'Digital Family Office', href: '/markus-ai/family-office' },
+  { key: 'community', label: 'Community', href: '/markus-ai/community' },
   { key: 'courses', label: 'Courses', href: '/markus-ai/courses' },
   { key: 'knowledge', label: 'Knowledge Base', href: '/markus-ai/knowledge' },
   { key: 'memories', label: 'Memories', href: '/markus-ai/memories' },

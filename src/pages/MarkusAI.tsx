@@ -1,7 +1,9 @@
 import { CoachMarkusChat } from '@/components/community/CoachMarkusChat'
-import { MarkusMobileTabs } from '@/components/markus/MarkusNav'
+import { MarkusMobileTabs, useShowMarkusNav } from '@/components/markus/MarkusNav'
 
 export default function MarkusAI() {
+  // In the Markus member area the chat opens like a fresh welcome screen, and calls live on the Voice Call page.
+  const markusArea = useShowMarkusNav()
   return (
     <div className="community-shell">
       <div className="community-center flex-1">
@@ -15,7 +17,7 @@ export default function MarkusAI() {
           </div>
         </div>
         <MarkusMobileTabs />
-        <CoachMarkusChat />
+        <CoachMarkusChat welcome={markusArea} hideVoice={markusArea} />
       </div>
     </div>
   )

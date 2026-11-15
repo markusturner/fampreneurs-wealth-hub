@@ -131,8 +131,8 @@ export function MobileBottomNav() {
 
   const navItems = isMarkusMember ? [
     { name: 'Markus AI', href: '/markus-ai', icon: Bot },
-    { name: 'Community', href: '/workspace-community?program=markusai', icon: MessageSquare },
-    { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Community', href: '/markus-ai/community', icon: MessageSquare },
+    { name: 'Digital Family Office', href: '/markus-ai/family-office', icon: LayoutDashboard },
   ] : isVipClient ? [
     { name: 'VIP Weekend Mastermind', href: '/protection-workbook', icon: FileText },
     { name: 'Digital Family Office', href: '/dashboard', icon: LayoutDashboard },

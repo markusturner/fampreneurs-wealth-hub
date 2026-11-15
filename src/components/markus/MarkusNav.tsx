@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, Bot, BookOpen, Brain, GraduationCap, LayoutDashboard, MessageSquare, Phone, Sparkles } from 'lucide-react'
+import { Bot, BookOpen, Brain, GraduationCap, LayoutDashboard, MessageSquare, Phone, Sparkles } from 'lucide-react'
 import { MARKUS_NAV, isMarkusMemberProgram, type MarkusNavKey } from '@/lib/markus-member'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -13,17 +12,11 @@ export const MARKUS_NAV_ICONS: Record<MarkusNavKey, React.ComponentType<{ classN
 
 export function isMarkusNavActive(href: string, pathname: string, search: string) {
   const [path, query] = href.split('?')
+  // Family office tabs and community posts live under their own Markus paths.
+  if (path !== '/markus-ai' && pathname.startsWith(path + '/')) return true
   if (pathname !== path) return false
   return query ? search.includes(query) : true
 }
-
-const DFO_LINKS = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Family Office', href: '/digital-family-office' },
-  { label: 'Family Constitution', href: '/family-constitution' },
-  { label: 'Family Calendar', href: '/calendar' },
-  { label: 'Family Members', href: '/members' },
-]
 
 // Markus-only members always see the Markus menu; admins and owners see it on Markus AI pages to preview the member view.
 export function useShowMarkusNav() {
@@ -37,8 +30,6 @@ export function useShowMarkusNav() {
 // Left menu on computers and tablets for the Markus AI member area.
 export function MarkusSidebar({ className }: { className?: string }) {
   const { pathname, search } = useLocation()
-  const dfoActive = DFO_LINKS.some((l) => l.href === pathname)
-  const [dfoOpen, setDfoOpen] = useState(dfoActive)
   const itemClass = (active: boolean) => cn(
     'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
     active ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
@@ -52,26 +43,6 @@ export function MarkusSidebar({ className }: { className?: string }) {
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
         {MARKUS_NAV.map((item) => {
           const Icon = MARKUS_NAV_ICONS[item.key]
-          if (item.key === 'dfo') {
-            return (
-              <div key={item.key}>
-                <button type="button" onClick={() => setDfoOpen((o) => !o)} className={itemClass(dfoActive)} aria-expanded={dfoOpen}>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  <ChevronDown className={cn('h-4 w-4 transition-transform', dfoOpen && 'rotate-180')} />
-                </button>
-                {dfoOpen && (
-                  <div className="ml-7 mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
-                    {DFO_LINKS.map((l) => (
-                      <Link key={l.href} to={l.href} className={cn('block rounded-md px-2 py-1.5 text-[13px]', pathname === l.href ? 'font-semibold text-sidebar-foreground' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground')}>
-                        {l.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          }
           return (
             <Link key={item.key} to={item.href} className={itemClass(isMarkusNavActive(item.href, pathname, search))}>
               <Icon className="h-4 w-4 shrink-0" />{item.label}
