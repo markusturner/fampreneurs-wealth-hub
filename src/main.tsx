@@ -1,3 +1,5 @@
+import { startTrademarks } from "./lib/trademark";
+startTrademarks();
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
