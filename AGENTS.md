@@ -62,4 +62,4 @@
 - Tools under /markus-ai/* reuse CoachMarkusChat; notes/memories in markus_user_knowledge. Why: shared history, one gated prefix.
 
 ## Markus AI onboarding
-- Markus-only members are sent once to /markus-ai/start (outside the app shell), which saves goals in markus_onboarding, records Terms via the shared legal-consent helper, and stores a goals memory for Markus. Why: goals and consent come before the Markus navigation, and Markus knows the goals from the first chat.
+- Markus-only members finish /markus-ai/start (goals in markus_onboarding, Terms via legal-consent helper, goals memory) before Markus pages. Why: Markus knows goals from the first chat.
