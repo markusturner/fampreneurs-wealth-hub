@@ -61,7 +61,7 @@ export function MarkusKnowledgeAdmin({ isOwner }: { isOwner: boolean }) {
     {pauseReason && <div className="border border-destructive rounded-lg p-4 space-y-3"><p className="text-destructive">Imports paused: {pauseReason}</p>{isOwner && <Button variant="outline" disabled={busy} onClick={() => action({ action: 'resume' })}>Resume after restoring access</Button>}</div>}
     <div className="divide-y divide-border border-y border-border">
       {sources.map(source => <div key={source.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
-        <div className="min-w-0"><a className="flex items-center gap-2 text-primary font-medium" href={source.profile_url} target="_blank" rel="noreferrer">{LABELS[source.platform] || source.platform}<ExternalLink className="h-3 w-3" /></a>
+        <div className="min-w-0"><a className="flex items-center gap-2 text-base font-semibold text-foreground hover:underline" href={source.profile_url} target="_blank" rel="noreferrer">{LABELS[source.platform] || source.platform}<ExternalLink className="h-3 w-3" /></a>
           <p className="text-sm text-muted-foreground">Last successful import: {source.last_success_at ? new Date(source.last_success_at).toLocaleString() : 'Not yet imported'}</p>
           <p className="text-sm text-muted-foreground">{totals[source.id]?.approved || 0} items learned{totals[source.id]?.review ? `, ${totals[source.id].review} waiting for your review` : ''}{source.platform === 'google_drive' && !(source.config?.folders || []).length ? '. Add folders below.' : ''}</p>
           {source.last_error && <p className="text-sm text-destructive break-words">{source.last_error}</p>}
