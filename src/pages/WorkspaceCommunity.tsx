@@ -213,7 +213,7 @@ export default function WorkspaceCommunity() {
   const [activeCategory, setActiveCategory] = useState('all')
   const isMobile = useIsMobile()
   // On phones Markus AI lives in the bottom bar, not the community tabs.
-  useEffect(() => { if (isMobile && activeCategory === 'coach') setActiveCategory('all') }, [isMobile, activeCategory])
+  useEffect(() => { if ((isMobile || program === 'markusai') && activeCategory === 'coach') setActiveCategory('all') }, [isMobile, program, activeCategory])
   const [messageSearch, setMessageSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
@@ -1387,7 +1387,7 @@ export default function WorkspaceCommunity() {
   }
   const categoryNav = (mobile = false) => (
     <div className={mobile ? 'community-mobile-categories' : 'community-category-list'}>
-      {(mobile ? allCategories.filter(cat => cat.value !== 'coach') : allCategories).map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
+      {(mobile || program === 'markusai' ? allCategories.filter(cat => cat.value !== 'coach') : allCategories).map((cat, i) => <Button key={cat.value} variant="ghost" onClick={() => { setActiveCategory(cat.value); setCommunityView('feed') }} className={`community-category category-${cat.value}${toneOf(cat.value)} ${activeCategory === cat.value && communityView === 'feed' ? 'is-active' : ''}`}>
         {!mobile && <span className={`community-category-dot category-${cat.value}${toneOf(cat.value)}`} />}{cat.label}
       </Button>)}
     </div>

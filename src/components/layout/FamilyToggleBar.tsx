@@ -23,7 +23,7 @@ export function FamilyToggleBar({ value, onChange }: Props = {}) {
   return (
     <div className="w-full flex justify-center">
       <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
-        {items.map(({ label, short, icon: Icon, tab, paths }) => {
+        {(location.pathname.startsWith('/markus-ai') ? items.filter(i => i.tab === 'dashboard' || i.tab === 'office') : items).map(({ label, short, icon: Icon, tab, paths }) => {
           const active = controlled ? value === tab : paths.includes(location.pathname)
           return (
             <button
