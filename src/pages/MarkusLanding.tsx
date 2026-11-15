@@ -6,6 +6,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import estate from '@/assets/markus-estate-dusk.jpg'
 import markusPhoto from '@/assets/markus_call_photo.png.asset.json'
 import vslVideo from '@/assets/markus-ai-vsl.mp4.asset.json'
+import vslThumb from '@/assets/markus-ai-vsl-thumbnail.jpg.asset.json'
+import { VslPlayer } from '@/components/markus/VslPlayer'
 import brandLogo from '@/assets/famlytics-truheirs-logo.png.asset.json'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -121,7 +123,7 @@ export default function MarkusLanding() {
           <div className="relative mt-6 w-full max-w-xl">
             <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-secondary/25 to-accent/25 blur-2xl" />
             <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-secondary/10">
-              <video src={vslVideo.url} controls playsInline preload="metadata" className="h-full w-full object-cover" />
+              <VslPlayer src={vslVideo.url} poster={vslThumb.url} fallbackDuration={303} title="Markus AI video" />
             </div>
           </div>
           <Button size="lg" className={`mt-6 h-12 px-8 text-base shadow-xl shadow-secondary/20 ${goldBtn}`} onClick={toPlans}>Start my family office<ArrowRight className="ml-2 h-4 w-4" /></Button>
