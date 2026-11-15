@@ -35,3 +35,17 @@ export const MARKUS_NAV = [
   { key: 'skills', label: 'Skills', href: '/markus-ai/skills' },
 ] as const
 export type MarkusNavKey = typeof MARKUS_NAV[number]['key']
+
+// Pinned to the bottom of the Markus menu, apart from the main tools.
+export const MARKUS_GETTING_STARTED = { label: 'Getting Started', href: '/markus-ai/getting-started' } as const
+
+export const MARKUS_GETTING_STARTED_STEPS: { key: MarkusNavKey; title: string; body: string; action: string; href: string }[] = [
+  { key: 'chat', title: 'Say hi to Markus AI', body: 'Ask Markus anything about your family, your assets or your goals. Start simple and go from there.', action: 'Open chat', href: '/markus-ai' },
+  { key: 'knowledge', title: 'Add to your Knowledge Base', body: 'Upload notes or files about your family and what you own. Markus uses them to give you better answers.', action: 'Open Knowledge Base', href: '/markus-ai/knowledge' },
+  { key: 'dfo', title: 'Set up your Digital Family Office', body: 'List your assets so you can see what you own, what it is worth and what is at risk.', action: 'Open Family Office', href: '/markus-ai/family-office' },
+  { key: 'voice', title: 'Try a voice call', body: 'Talk to Markus out loud, just like a phone call. Your call notes save to your chats.', action: 'Start a call', href: '/markus-ai/voice' },
+  { key: 'courses', title: 'Watch a course', body: 'Learn the basics of mapping and protecting your family wealth at your own pace.', action: 'Open Courses', href: '/markus-ai/courses' },
+  { key: 'community', title: 'Introduce yourself', body: 'Say hello to other members in the private Markus AI community.', action: 'Open Community', href: '/markus-ai/community' },
+  { key: 'skills', title: 'Make your own skill', body: 'Create a skill so Markus handles a task the way you like it, every time.', action: 'Open Skills', href: '/markus-ai/skills' },
+  { key: 'memories', title: 'Check your memories', body: 'See what Markus remembers about you. You can edit, delete or turn memory off.', action: 'Open Memories', href: '/markus-ai/memories' },
+]

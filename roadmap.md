@@ -137,3 +137,9 @@
 - [x] Copy 17 existing PEA community recording posts into Trust Vault with original dates and add immediate future-post mirroring
 - [x] Rename programs (Legacy InnerCircle, Trust Vault merge, FBU removed), Markus AI support wording, VIP clients out of PEA lists, Wins show full, post viewers, All chats compacts welcome
 - [x] Disable direct Trust Vault Fathom polling in favor of community-post mirroring
+
+## Markus AI skills, memories, courses and getting started
+- [x] Trust answers offer only The Private Estate Accelerator ($12,000) and The VIP Weekend Mastermind ($45,000); deployed
+- [x] Inherited plus member-created skills, ChatGPT-style memories, owner course editing
+- [x] Getting Started checklist pinned to the bottom of the Markus menu; 42 Markus tests pass, build OK
+- [ ] Verify signed-in member view: external unmanaged authentication prevents real-account checks

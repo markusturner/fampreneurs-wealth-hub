@@ -37,6 +37,7 @@ import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 import MarkusAI from "./pages/MarkusAI";
 import { MarkusFamilyOfficePage, MarkusCommunityPage } from "./pages/MarkusSpaces";
+import MarkusGettingStarted from "./pages/MarkusGettingStarted";
 import { MarkusVoicePage, MarkusCoursesPage, MarkusKnowledgePage, MarkusMemoriesPage, MarkusSkillsPage } from "./pages/MarkusTools";
 import MarkusOnboarding from "./pages/MarkusOnboarding";
 import MarkusLanding, { MarkusCheckout, MarkusThankYou } from "./pages/MarkusLanding";
@@ -176,6 +177,7 @@ function AppWithNotifications() {
         <Route path="/markus-ai/knowledge" element={<WithLayout><MarkusKnowledgePage /></WithLayout>} />
         <Route path="/markus-ai/memories" element={<WithLayout><MarkusMemoriesPage /></WithLayout>} />
         <Route path="/markus-ai/skills" element={<WithLayout><MarkusSkillsPage /></WithLayout>} />
+        <Route path="/markus-ai/getting-started" element={<WithLayout><MarkusGettingStarted /></WithLayout>} />
         <Route path="/messenger" element={<Navigate to="/workspace-community" replace />} />
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />

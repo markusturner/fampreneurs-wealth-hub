@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Bot, BookOpen, Brain, GraduationCap, LayoutDashboard, MessageSquare, Phone, Sparkles } from 'lucide-react'
-import { MARKUS_NAV, isMarkusMemberProgram, type MarkusNavKey } from '@/lib/markus-member'
+import { Bot, BookOpen, Brain, GraduationCap, LayoutDashboard, MessageSquare, Phone, Rocket, Sparkles } from 'lucide-react'
+import { MARKUS_GETTING_STARTED, MARKUS_NAV, isMarkusMemberProgram, type MarkusNavKey } from '@/lib/markus-member'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { cn } from '@/lib/utils'
@@ -50,6 +50,11 @@ export function MarkusSidebar({ className }: { className?: string }) {
           )
         })}
       </nav>
+      <div className="border-t border-sidebar-border px-3 py-3">
+        <Link to={MARKUS_GETTING_STARTED.href} className={itemClass(pathname === MARKUS_GETTING_STARTED.href)}>
+          <Rocket className="h-4 w-4 shrink-0" />{MARKUS_GETTING_STARTED.label}
+        </Link>
+      </div>
     </aside>
   )
 }
@@ -70,6 +75,9 @@ export function MarkusMobileTabs() {
           </Link>
         )
       })}
+      <Link to={MARKUS_GETTING_STARTED.href} className={cn('inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium', pathname === MARKUS_GETTING_STARTED.href ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground')}>
+        <Rocket className="h-3.5 w-3.5" />{MARKUS_GETTING_STARTED.label}
+      </Link>
     </nav>
   )
 }
