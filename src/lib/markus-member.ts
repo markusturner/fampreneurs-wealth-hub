@@ -49,3 +49,10 @@ export const MARKUS_GETTING_STARTED_STEPS: { key: MarkusNavKey; title: string; b
   { key: 'skills', title: 'Make your own skill', body: 'Create a skill so Markus handles a task the way you like it, every time.', action: 'Open Skills', href: '/markus-ai/skills' },
   { key: 'memories', title: 'Check your memories', body: 'See what Markus remembers about you. You can edit, delete or turn memory off.', action: 'Open Memories', href: '/markus-ai/memories' },
 ]
+
+// Mirrors the server's community rule: any account whose program list names Markus AI
+// (or that the server already lists as markusai) may open the Markus AI Members community.
+export function hasMarkusCommunityAccess(programName?: string | null, programs: (string | null | undefined)[] = []): boolean {
+  if (programs.some((p) => String(p || '').toLowerCase() === MARKUS_COMMUNITY)) return true
+  return (programName || '').split(',').some((n) => /^markus ai$/i.test(n.trim()))
+}

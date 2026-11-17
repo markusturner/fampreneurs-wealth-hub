@@ -59,6 +59,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
+import { MARKUS_COMMUNITY, hasMarkusCommunityAccess } from '@/lib/markus-member'
 import { CommentReactions } from '@/components/community/CommentReactions'
 import { ReplyReference } from '@/components/community/ReplyReference'
 import { PostViewers } from '@/components/community/PostViewers'
@@ -294,6 +295,7 @@ export default function WorkspaceCommunity() {
   ])
   // No program selected yet = loading state, don't block
   const hasProgramAccess = !program || isAdmin || isOwner || entitledPrograms.includes(program as any)
+    || (program === MARKUS_COMMUNITY && hasMarkusCommunityAccess(profile?.program_name, subscriptionStatus.programs || []))
 
   const fetchPosts = useCallback(async () => {
     try {
