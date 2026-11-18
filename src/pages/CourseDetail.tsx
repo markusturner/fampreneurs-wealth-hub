@@ -346,6 +346,31 @@ export default function CourseDetail() {
     setIsEditingLesson(true)
   }
 
+  const [deleteModuleTarget, setDeleteModuleTarget] = useState<Module | null>(null)
+  const [deletingModule, setDeletingModule] = useState(false)
+  // Deleting a module either keeps its lessons (they move to the top list) or removes them too.
+  const handleDeleteModule = async (withLessons: boolean) => {
+    const mod = deleteModuleTarget
+    if (!mod) return
+    setDeletingModule(true)
+    try {
+      if (withLessons && mod.lessons.length) {
+        const { error } = await supabase.from('course_videos').delete().eq('module_id', mod.id)
+        if (error) throw error
+      }
+      const { data, error } = await supabase.from('course_modules').delete().eq('id', mod.id).select('id')
+      if (error) throw error
+      if (!data?.length) throw new Error('You do not have permission to delete this module')
+      toast({ title: 'Module deleted' })
+      setDeleteModuleTarget(null)
+      fetchData()
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to delete module', variant: 'destructive' })
+    } finally {
+      setDeletingModule(false)
+    }
+  }
+
   const handleRenameModule = async (moduleId: string) => {
     if (!renameModuleTitle.trim()) { setRenamingModuleId(null); return }
     const { error } = await supabase.from('course_modules').update({ title: renameModuleTitle.trim() } as any).eq('id', moduleId)
@@ -971,6 +996,16 @@ export default function CourseDetail() {
                         title="Restrict to programs"
                       >
                         <Shield className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    )}
+                    {isAdminOrOwner && mod.id !== '__uncategorized' && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setDeleteModuleTarget(mod) }}
+                        className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10"
+                        title="Delete module"
+                        aria-label="Delete module"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
                       </button>
                     )}
                     <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
@@ -1853,6 +1888,29 @@ export default function CourseDetail() {
       {courseId && (
         <>
           <AddModuleDialog courseId={courseId} open={showAddModule} onOpenChange={setShowAddModule} onCreated={fetchData} />
+          <AlertDialog open={!!deleteModuleTarget} onOpenChange={(o) => { if (!o && !deletingModule) setDeleteModuleTarget(null) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete "{deleteModuleTarget?.title}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {deleteModuleTarget?.lessons.length
+                    ? `This module has ${deleteModuleTarget.lessons.length} lesson${deleteModuleTarget.lessons.length === 1 ? '' : 's'}. You can keep them (they move to the top of the course) or delete them with the module. This cannot be undone.`
+                    : 'This module has no lessons. This cannot be undone.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="gap-2">
+                <AlertDialogCancel disabled={deletingModule}>Cancel</AlertDialogCancel>
+                {!!deleteModuleTarget?.lessons.length && (
+                  <Button variant="outline" disabled={deletingModule} onClick={() => handleDeleteModule(false)}>
+                    Keep lessons
+                  </Button>
+                )}
+                <Button variant="destructive" disabled={deletingModule} onClick={() => handleDeleteModule(true)}>
+                  {deletingModule ? 'Deleting...' : deleteModuleTarget?.lessons.length ? 'Delete module and lessons' : 'Delete module'}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <ModuleRestrictDialog
             moduleId={restrictModule?.id ?? null}
             initial={(restrictModule?.required_programs as string[]) || []}
