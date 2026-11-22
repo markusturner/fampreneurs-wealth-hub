@@ -174,7 +174,7 @@ export async function syncUserTellerAccounts(
   }
 
   const result: TellerSyncResult = { accounts_synced: 0, transactions_added: 0, errors: [] }
-  const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   for (const acct of accounts as any[]) {
     const token = acct.plaid_access_token
@@ -188,12 +188,22 @@ export async function syncUserTellerAccounts(
       const balance = Number(balances.available ?? balances.ledger ?? 0) || 0
 
       // Transactions (last 90 days)
-      const txns = await tellerFetch(
-        token,
-        `/accounts/${acct.external_account_id}/transactions?count=250&start_date=${startDate}`,
-      )
+      // Page backwards with from_id until we pass the start date or run out.
+      const txns: any[] = []
+      let fromId: string | null = null
+      for (let page = 0; page < 20; page++) {
+        const batch: any = await tellerFetch(
+          token,
+          `/accounts/${acct.external_account_id}/transactions?count=250${fromId ? `&from_id=${fromId}` : ''}`,
+        )
+        if (!Array.isArray(batch) || batch.length === 0) break
+        txns.push(...batch)
+        const oldest = String(batch[batch.length - 1]?.date || '').split('T')[0]
+        if (batch.length < 250 || (oldest && oldest < startDate)) break
+        fromId = batch[batch.length - 1].id
+      }
 
-      const inserts = (Array.isArray(txns) ? txns : []).map((t: any) => {
+      const inserts = txns.filter((t: any) => String(t.date || '').split('T')[0] >= startDate).map((t: any) => {
         const signed = Number(t.amount || 0)
         return {
           user_id: userId,
