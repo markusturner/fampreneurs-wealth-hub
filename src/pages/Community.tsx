@@ -70,6 +70,7 @@ import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { FinancialReports } from '@/components/dashboard/financial-reports'
+import { BookkeepingReview } from '@/components/dashboard/bookkeeping-review'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 import { useDfoDemo, setDfoDemo } from '@/lib/dfo-demo'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -347,6 +348,7 @@ export default function Community({ showDemoToggle = true }: CommunityProps) {
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <BookkeepingReview />
             <FinancialReports />
           </TabsContent>
 
