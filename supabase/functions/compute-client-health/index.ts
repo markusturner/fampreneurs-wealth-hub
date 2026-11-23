@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0'
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -376,6 +377,7 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (!(await authorizeInternalOrStaff(req, "compute-client-health"))) return deny(corsHeaders)
 
   _deadlineAt = Date.now() + 75_000
 

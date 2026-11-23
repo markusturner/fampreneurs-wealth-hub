@@ -12,6 +12,7 @@ const internalOnly = [
   'send-payment-reminders', 'detect-user-program', 'notify-message-email', 'notify-video-call-start',
   'send-login-credentials', 'send-meeting-reminders', 'send-onboarding-emails', 'send-sms-verification',
   'send-trust-email', 'ttv-recordings-sync', 'family-report', 'test-notifications', 'send-gohighlevel-email',
+  'compute-client-health',
 ]
 
 describe('server functions check who is calling', () => {
