@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
+import { getSignedInUserId, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +37,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
+
+    // Only signed-in members can send a submission alert to the team
+    if (!(await getSignedInUserId(req))) return deny(corsHeaders);
 
     const { type, userName, userEmail, programName, details }: AdminNotifyRequest = await req.json();
     console.log('Admin notification request:', { type, userName, userEmail });

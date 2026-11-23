@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,9 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Only our own database alerts, other server functions, or staff (push test) may send pushes
+    if (!(await authorizeInternalOrStaff(req, "send-push-notification"))) return deny(corsHeaders);
+
     const { user_id, title, message, notification_type, reference_id, link } = body;
 
     console.log(`[PUSH] ===== START OneSignal push =====`);

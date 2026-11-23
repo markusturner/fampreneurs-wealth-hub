@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
+import { isStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -124,6 +125,9 @@ serve(async (req) => {
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+    // Only admins and owners can send retention emails to clients
+    if (!(await isStaff(user.id))) return deny(corsHeaders, 403);
 
     const body = (await req.json()) as Body;
     if (!body?.client_email || !body?.short_draft) {

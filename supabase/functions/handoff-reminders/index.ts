@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders, inviteHtml, sendEmail } from "../_shared/handoff-email.ts";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 // Daily: up to 3 reminders before the deadline, then mark Overdue and alert the owner.
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (!(await authorizeInternalOrStaff(req, "handoff-reminders"))) return deny(corsHeaders);
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data: rows } = await admin.from("handoff_successors").select("*").not("status", "in", "(completed,overdue)");
   let reminders = 0, overdue = 0;

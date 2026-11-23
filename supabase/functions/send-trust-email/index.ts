@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  if (!(await authorizeInternalOrStaff(req, "send-trust-email"))) return deny(corsHeaders);
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");

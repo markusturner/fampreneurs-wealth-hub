@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0';
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,7 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  if (!(await authorizeInternalOrStaff(req, "send-sms-verification"))) return deny(corsHeaders);
 
   try {
     const { phoneNumber, email }: SMSVerificationRequest = await req.json();

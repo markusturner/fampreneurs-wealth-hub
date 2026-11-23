@@ -1,3 +1,4 @@
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { isTrustVaultRecording } from './filter.ts';
 
@@ -8,6 +9,7 @@ const RECORDER = 'markusturner94@gmail.com';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  if (!(await authorizeInternalOrStaff(req, "ttv-recordings-sync"))) return deny(cors);
   const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
   try {
     const key = Deno.env.get('FATHOM_API_KEY');

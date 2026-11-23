@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,7 @@ const html = (name: string, n: number, url: string) => `
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (!(await authorizeInternalOrStaff(req, "payment-retry-reminders"))) return deny(corsHeaders);
   try {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2023-10-16" });
     const resendKey = Deno.env.get("RESEND_API_KEY");

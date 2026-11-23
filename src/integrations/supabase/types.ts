@@ -3871,6 +3871,27 @@ export type Database = {
           },
         ]
       }
+      internal_job_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          purpose: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          purpose: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          purpose?: string
+          token?: string
+        }
+        Relationships: []
+      }
       investment_portfolios: {
         Row: {
           cash_balance: number | null
@@ -7042,6 +7063,10 @@ export type Database = {
         }[]
       }
       community_program_tier: { Args: { p_key: string }; Returns: number }
+      consume_job_token: {
+        Args: { p_purpose: string; p_token: string }
+        Returns: boolean
+      }
       current_user_community_programs: { Args: never; Returns: string[] }
       decrypt_ssn: { Args: { p_value: string }; Returns: string }
       encrypt_ssn: { Args: { p_value: string }; Returns: string }
@@ -7171,6 +7196,7 @@ export type Database = {
         Args: { _owner_id: string }
         Returns: boolean
       }
+      issue_job_token: { Args: { p_purpose: string }; Returns: string }
       log_family_office_action: {
         Args: {
           action_name: string

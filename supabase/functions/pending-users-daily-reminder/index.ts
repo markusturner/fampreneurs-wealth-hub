@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.51.0";
 import { Resend } from "npm:resend@2.0.0";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (!(await authorizeInternalOrStaff(req, "pending-users-daily-reminder"))) return deny(corsHeaders);
 
   try {
     const supabase = createClient(

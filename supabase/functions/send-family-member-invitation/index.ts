@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@4.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getSignedInUserId, isStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,6 +71,20 @@ const handler = async (req: Request): Promise<Response> => {
       isResend = false,
       familyCode
     }: FamilyMemberInvitationRequest = await req.json();
+
+    // Only the person who added this family member (or staff) can email them
+    const callerId = await getSignedInUserId(req);
+    if (!callerId) return deny(corsHeaders);
+    const { data: memberRow } = familyMemberId
+      ? await supabase.from('family_members').select('added_by, email').eq('id', familyMemberId).maybeSingle()
+      : { data: null as { added_by: string; email: string | null } | null };
+    const sameEmail = !!memberRow && String(memberRow.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase();
+    let allowed = sameEmail && (memberRow!.added_by === callerId || (await isStaff(callerId)));
+    if (!allowed && sameEmail) {
+      const { data: me } = await supabase.from('profiles').select('linked_user_ids').eq('user_id', callerId).maybeSingle();
+      allowed = Array.isArray(me?.linked_user_ids) && me!.linked_user_ids.includes(memberRow!.added_by);
+    }
+    if (!allowed) return deny(corsHeaders, 403);
 
     console.log('Processing family member invitation for:', { email, firstName, familyPosition });
 

@@ -1,8 +1,10 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (!(await authorizeInternalOrStaff(req, "autopilot-send-retention"))) return deny(corsHeaders);
 
   try {
     const supabase = createClient(

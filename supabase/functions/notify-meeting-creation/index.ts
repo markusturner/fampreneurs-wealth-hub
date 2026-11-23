@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
+import { getSignedInUserId, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,6 +52,12 @@ const handler = async (req: Request): Promise<Response> => {
     const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
     const { meetingId, meetingTitle, meetingDate, meetingTime, createdBy, zoomLink, calendarLink, location }: NotifyMeetingRequest = await req.json();
+
+    // Only the person who created this meeting can send its alerts
+    const callerId = await getSignedInUserId(req);
+    if (!callerId || callerId !== createdBy) return deny(corsHeaders);
+    const { data: ownMeeting } = await supabase.from('meetings').select('id').eq('id', meetingId).eq('created_by', callerId).maybeSingle();
+    if (!ownMeeting) return deny(corsHeaders, 403);
 
     console.log('Processing meeting notification request:', { meetingId, meetingTitle, meetingDate, meetingTime, createdBy, zoomLink });
 

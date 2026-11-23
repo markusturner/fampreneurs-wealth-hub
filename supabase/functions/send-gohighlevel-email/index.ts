@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0'
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,6 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
+  if (!(await authorizeInternalOrStaff(req, "send-gohighlevel-email"))) return deny(corsHeaders);
 
   try {
     // Authentication check

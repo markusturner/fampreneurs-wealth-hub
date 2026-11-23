@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.51.0";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -341,6 +342,7 @@ Congratulations, and keep that momentum going. Who's next?
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (!(await authorizeInternalOrStaff(req, "community-manager-daily-post"))) return deny(corsHeaders);
 
   try {
     const supabase = createClient(

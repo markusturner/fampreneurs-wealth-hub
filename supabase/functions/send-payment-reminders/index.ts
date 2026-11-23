@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "npm:resend@2.0.0";
+import { authorizeInternalOrStaff, deny } from "../_shared/caller-auth.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -21,6 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  if (!(await authorizeInternalOrStaff(req, "send-payment-reminders"))) return deny(corsHeaders);
 
   try {
     const supabaseClient = createClient(
