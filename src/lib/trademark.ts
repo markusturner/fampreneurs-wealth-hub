@@ -1,5 +1,6 @@
 // Adds a trademark mark after every visible "TruHeirs" and "Markus AI" without changing stored data or program checks.
-const MARK = /(TruHeirs|Markus AI)(?!™)/gi
+// Skips names inside emails, domains and links (e.g. support@truheirs.com, truheirs.app/x).
+const MARK = /(?<![\w@./-])(TruHeirs|Markus AI)(?![\w™@/-]|\.\w)/gi
 const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE', 'NOSCRIPT'])
 
 export function addTrademarks(text: string) { return text.replace(MARK, '$1™') }
