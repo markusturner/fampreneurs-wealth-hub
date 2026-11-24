@@ -36,9 +36,9 @@ async function verifyTellerSignature(rawBody: string, header: string, secret: st
   }
 }
 
-function hexToBytes(hex: string): Uint8Array {
+function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
   const clean = hex.trim()
-  const bytes = new Uint8Array(clean.length / 2)
+  const bytes = new Uint8Array(new ArrayBuffer(clean.length / 2))
   for (let i = 0; i < bytes.length; i++) {
     bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16)
   }
@@ -113,7 +113,7 @@ serve(async (req: Request) => {
     console.error('Error in teller-webhook:', error)
     // Return 200 for unexpected internal errors so Teller does not retry forever;
     // signature failures above already return 400.
-    return new Response(JSON.stringify({ received: true, error: error?.message }), {
+    return new Response(JSON.stringify({ received: true, error: (error as Error)?.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

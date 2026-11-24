@@ -4,6 +4,8 @@
 //   2. Mutual TLS (mTLS) using the app certificate + private key on the TLS connection
 // https://teller.io/docs/api/authentication
 
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const TELLER_API_BASE = 'https://api.teller.io'
 
 export function getTellerHttpClient(): Deno.HttpClient {
@@ -43,7 +45,7 @@ export async function tellerFetch(accessToken: string, path: string): Promise<an
     } catch (err) {
       attempt++
       if (attempt >= maxRetries) {
-        throw new Error(`Teller request failed: ${err?.message || err}`)
+        throw new Error(`Teller request failed: ${(err as Error)?.message || err}`)
       }
       await new Promise((r) => setTimeout(r, attempt * 1500))
       continue
@@ -236,7 +238,7 @@ export async function syncUserTellerAccounts(
 
       result.accounts_synced++
     } catch (err) {
-      result.errors.push(`${acct.account_name}: ${err?.message || err}`)
+      result.errors.push(`${acct.account_name}: ${(err as Error)?.message || err}`)
     }
   }
 

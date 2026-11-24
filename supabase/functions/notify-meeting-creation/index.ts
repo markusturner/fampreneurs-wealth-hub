@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
         return null;
       })
-      .filter(Boolean);
+      .filter((r): r is NonNullable<typeof r> => r !== null);
 
     if (reminders.length > 0) {
       const { error: reminderError } = await supabase
