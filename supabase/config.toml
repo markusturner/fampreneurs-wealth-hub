@@ -18,6 +18,9 @@ verify_jwt = false
 [functions.ai-chat]
 verify_jwt = false
 
+[functions.kickbooks-bridge]
+verify_jwt = false
+
 [functions.family-plan-to-drive]
 verify_jwt = true
 
