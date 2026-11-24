@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 import { handleMarkusKnowledge, markusKnowledgeDue } from '../_shared/markus-knowledge-sync.ts';
 import { MARKUS_TRUST_RULE } from '../_shared/markus-programs.ts';
+import { handleKickbooksBridge } from '../_shared/kickbooks-bridge.ts';
 import { MEMORY_LIMIT, MEMORY_SCHEMA, cleanMemoryUpdate, memoryInstructions } from '../_shared/markus-memory.ts';
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -600,6 +601,8 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
     const rawBody = await req.json().catch(() => ({}));
+    // Kickbooks asks for Markus knowledge and Markus AI membership here (it checks its own key).
+    if (rawBody?.mode === 'kickbooks-bridge') return await handleKickbooksBridge(req, rawBody);
     // Markus knowledge admin and scheduled imports share this function.
     if (rawBody?.mode === 'knowledge') {
       const { mode: _mode, ...knowledgeBody } = rawBody;
